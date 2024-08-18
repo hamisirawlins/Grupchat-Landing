@@ -3,20 +3,16 @@
 import MainLayout from "@/layouts/MainLayout.astro";
 import HeroSection from "@components/sections/landing/HeroSection.astro";
 import HeroSectionAlt from "@components/sections/landing/HeroSectionAlt.astro";
-import ClientsSection from "@components/sections/landing/ClientsSection.astro";
 import FeaturesGeneral from "@components/sections/features/FeaturesGeneral.astro";
 import FeaturesNavs from "@components/sections/features/FeaturesNavs.astro";
 import TestimonialsSection from "@components/sections/testimonials/TestimonialsSection.astro";
-import PricingSection from "@components/sections/pricing/PricingSection.astro";
 import FAQ from "@components/sections/misc/FAQ.astro";
 import AnnouncementBanner from "@components/ui/banners/AnnouncementBanner.astro";
-import heroImage from "@images/hero-image.avif";
 import faqs from "@data/faqs.json";
 import features from "@data/features.json";
-import pricing from "@data/pricing.json";
-import featureImage from "@images/features-image.avif";
+import logoImage from "@images/logo/logo.png";
+import homeImage from "@images/home.jpg";
 import construction from "@images/construction-image.avif";
-import tools from "@images/automated-tools.avif";
 import dashboard from "@images/dashboard-image.avif";
 
 const avatarSrcs: Array<string> = [
@@ -30,56 +26,51 @@ const avatarSrcs: Array<string> = [
 <MainLayout>
   <AnnouncementBanner
     btnId="dismiss-button"
-    btnTitle="Explore ScrewFast on GitHub"
-    url="https://github.com/mearashadowfax/ScrewFast"
+    btnTitle="Visit Dashboard"
+    url="https://grupchat-io.vercel.app/sign-in"
   />
 
   <HeroSection
-    title=`Equip Your Projects with <span
-        class="text-yellow-500 dark:text-yellow-400">ScrewFast</span>`
-    subTitle="Top-quality hardware tools and expert construction services for every project need."
-    primaryBtn="Start Exploring"
-    primaryBtnURL="/products"
-    secondaryBtn="Contact Sales Team"
+    title=`Powering Plans Beyond the <span
+        class="text-yellow-500 dark:text-yellow-400">Group Chat</span>`
+    subTitle=`When We Gather Together In The Moonlit Village Ground, It Is Not Because Of The Moon. Every Man Can See It In His Own Compound. We Come Together Because It Is Good For Kinsmen To Do So. ~ Chinua Achebe`
+    primaryBtn="Start Pooling"
+    primaryBtnURL="https://grupchat-io.vercel.app/"
+    secondaryBtn="How It Works"
     secondaryBtnURL="/contact"
     withReview={true}
     avatars={avatarSrcs}
-    rating=`<span class="font-bold">4.8</span> / 5`
+    rating=`<span class="font-bold">5</span> / 5`
     starCount={4}
-    reviews=`From Over <span class="font-bold">12.8k</span> Reviews`
-    src={heroImage}
-    alt="Stack of ScrewFast product boxes containing assorted hardware tools"
-  />
-
-  <ClientsSection
-    title="Trusted by Industry Leaders"
-    subTitle="Experience the reliability chosen by industry giants."
+    reviews=`From Over <span class="font-bold">20</span> Reviews`
+    src={logoImage}
+    alt="GrupChat logo"
   />
 
   <FeaturesGeneral
-    title="Meeting Industry Demands"
-    subTitle="At ScrewFast, we tackle the unique challenges encountered in the hardware and construction sectors. From cutting-edge tools to expert services, we're dedicated to helping you overcome obstacles and achieve your goals."
-    src={featureImage}
-    alt="ScrewFast products in floating boxes"
+    title="Pooling With Friends Has Never Been Easier"
+    subTitle="At GrupChat, we ensure plans don't ghost you once they are dreamt. Seamlessly plan, pool and track your friend groups poolings for your activities with ease and transparency."
+    src={""}
+    alt="GrupChat product in a floating boxes"
     features={features}
   />
 
   <FeaturesNavs
-    title=`Customize <span class="text-yellow-500 dark:text-yellow-400">ScrewFast</span>'s offerings to perfectly suit your hardware and construction needs.`
+    title=`Customize <span class="text-yellow-500 dark:text-yellow-400">GrupChat</span>'s offerings to perfectly suit your hardware and construction needs.`
     tabs={[
       {
-        heading: "Cutting-Edge Tools",
+        heading: "Cutting-Edge Tech",
         content:
-          "Empower your projects with ScrewFast's cutting-edge tools. Experience enhanced efficiency in construction management with our sophisticated automated solutions.",
+          "Empower your group projects with GrupChat's cutting-edge platform. Experience enhanced efficiency and transparency in funded group activities.",
         svg: "tools",
-        src: tools,
-        alt: "Yellow and black heavy equipment on brown grass field",
+        src: homeImage,
+        alt: "A group of friends on a beach",
         first: true,
       },
       {
         heading: "Intuitive Dashboards",
         content:
-          "Navigate with ease using ScrewFast's intuitive dashboards. Set up and oversee your projects seamlessly, with user-friendly interfaces designed for quick and effective workflow management.",
+          "Navigate and analyze with ease using GrupChat's intuitive dashboard. Set up your account and oversee your different pools seamlessly, with user-friendly interfaces designed for quick and effective actions.",
         svg: "dashboard",
         src: dashboard,
         alt: "A screenshot or graphic representation of the intuitive dashboard",
@@ -88,7 +79,7 @@ const avatarSrcs: Array<string> = [
       {
         heading: "Robust Features",
         content:
-          "Minimize complexity, maximize productivity. ScrewFast's robust features are engineered to streamline your construction process, delivering results that stand out for their excellence.",
+          "Minimize complexity, maximize effectiveness. GrupChat's robust features are engineered to streamline your pooling process, ensuring plans transcend the group's chats.",
         svg: "house",
         src: construction,
         alt: "Gray metal building frame near tower crane during daytime",
@@ -97,49 +88,47 @@ const avatarSrcs: Array<string> = [
   />
 
   <TestimonialsSection
-    title="Fast-Track Your Projects"
-    subTitle="At ScrewFast, we ensure a swift start with instant account setup. Experience the speed of construction redefined."
+    title="Friends, Funds and Funs"
+    subTitle="At GrupChat, we ensure a swift start with seamless account setup."
     ;
     testimonials={[
       {
         content:
-          "ScrewFast dramatically boosted our project efficiency. Setup was instant, and their rapid response times are phenomenal. Truly a game-changer in hardware and construction support!",
-        author: "Samantha Ruiz",
-        role: "Chief Operating Officer | ConstructIt Inc.",
+          "Aaaah nice nice, Very nice",
+        author: "Beta Tester",
+        role: "GrupChat User",
         avatarSrc:
-          "https://images.unsplash.com/photo-1593104547489-5cfb3839a3b5?q=80&w=1453&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D8&auto=format&fit=facearea&facepad=2&w=320&h=320&q=80",
+          "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1724005954~exp=1724009554~hmac=9aff38ab5bd074bd633a6407ca00bb148e05ae2c5c275bb1b53f9d3c810d6a0c&w=1380",
       },
     ]}
     statistics={[
       {
-        count: "70k+",
+        count: "1k+",
         description:
-          "customers equipped — from DIY to major construction firms",
+          "users served",
       },
       {
-        count: "35%",
+        count: "50+",
         description:
-          "uptick in project efficiency with ScrewFast tools and services",
+          "pools created and utilized",
       },
       {
-        count: "15.3%",
+        count: "100%",
         description:
-          "reduction in maintenance costs reported by long-term clients",
+          "Customer Satistfaction",
       },
       {
-        count: "2x",
-        description: "quicker assembly using innovative fastening solutions",
+        count: "35x",
+        description: "transition from group plans to actual activities",
       },
     ]}
   />
 
-  <PricingSection pricing={pricing} />
-
   <FAQ title="Frequently<br />asked questions" faqs={faqs} />
 
   <HeroSectionAlt
-    title="Let's Build Together"
-    subTitle="ScrewFast is an open-source template, meticulously crafted with Astro, Tailwind CSS, and Preline UI frameworks."
+    title="Let's Grow Together"
+    subTitle="GrupChat is the brainchild of a merge between the ways of the old and new world. "
     url="https://github.com/mearashadowfax/ScrewFast"
   />
 </MainLayout>

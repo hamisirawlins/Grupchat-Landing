@@ -1,28 +1,16 @@
 // An array of links for navigation bar
 const navBarLinks = [
   { name: "Home", url: "/" },
-  { name: "Products", url: "/products" },
-  { name: "Services", url: "/services" },
-  { name: "Blog", url: "/blog" },
-  { name: "Contact", url: "/contact" },
+  { name: "Contact Us", url: "/contact" },
+  { name: "Login", url: "https://grupchat-io.vercel.app/sign-in" },
+  { name: "Sign Up", url: "https://grupchat-io.vercel.app/sign-up" },
 ];
 // An array of links for footer
 const footerLinks = [
   {
-    section: "Ecosystem",
-    links: [
-      { name: "Documentation", url: "/welcome-to-docs/" },
-      { name: "Tools & Equipment", url: "/products" },
-      { name: "Construction Services", url: "/services" },
-    ],
-  },
-  {
     section: "Company",
     links: [
-      { name: "About us", url: "#" },
-      { name: "Blog", url: "/blog" },
-      { name: "Careers", url: "#" },
-      { name: "Customers", url: "#" },
+      { name: "Privacy Policy", url: "#" },
     ],
   },
 ];
