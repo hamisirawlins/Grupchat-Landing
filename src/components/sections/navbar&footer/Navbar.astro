@@ -2,10 +2,10 @@
 //Import relevant dependencies
 import ThemeIcon from "@components/ThemeIcon.astro";
 import NavLink from "@components/ui/links/NavLink.astro";
-import Authentication from "../misc/Authentication.astro";
 import enStrings from "@utils/navigation.ts";
 import frStrings from "@utils/fr/navigation.ts";
-import LanguagePicker from "@components/ui/LanguagePicker.astro";
+import { Image } from "astro:assets";
+import logoImage from "@images/logo/logo.png";
 
 // Select the correct translation based on the page's lang prop:
 const strings = Astro.currentLocale === "fr" ? frStrings : enStrings;
@@ -28,7 +28,7 @@ const homeUrl = Astro.currentLocale === "fr" ? "/fr" : "/";
         href={homeUrl}
         aria-label="Brand"
       >
-        <img src="src/images/logo/logo.png" class="h-16 w-auto" />
+        <Image src={logoImage} class="h-16 w-auto" alt="GrupChat Logo" />
       </a>
       <!-- Collapse toggle for smaller screens -->
       <div class="ml-auto mr-5 md:hidden">
