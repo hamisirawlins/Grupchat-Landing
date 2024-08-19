@@ -14,6 +14,10 @@
       "answer": "Yes, Grupchat is designed to work with M-Pesa. You will need an M-Pesa phone number to sign up and use GrupChat."
     },
     {
+      "question": "How Much?",
+      "answer": "GrupChat charges a 2% fee on withdrawals that lessens the bigger your plans. This ensures we continue to provide a seamless and rewarding experience for our users."
+    },
+    {
       "question": "Does GrupChat have a limit to how many members a pool can have?",
       "answer": "No, GrupChat currently doesn't limit the number of pool members. However, we recommend keeping the number minimal and to persons you are a familiar with, since withdrawals involve approval requests."
     }
