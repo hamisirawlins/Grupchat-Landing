@@ -1,11 +1,11 @@
-import ogImageSrc from "@images/social.png";
+import ogImageSrc from "@images/dash.png";
 
 export const SITE = {
   title: "GrupChat",
   tagline: "From 'We Should Do This' to 'We Did This'",
   description: "GrupChat facilitates easy and transparent pooling of funds among peers for trips, projects and so much more.",
   description_short: "GrupChat facilitates easy pooling of funds among peers.",
-  url: "https://grupchat.uk",
+  url: "https://grupchat.vercel.app",
   author: "Hamisi Rawlins",
 };
 
