@@ -10,7 +10,7 @@ const footerLinks = [
   {
     section: "Company",
     links: [
-      { name: "Privacy Policy", url: "#" },
+      { name: "Privacy Policy", url: "/privacy-policy" },
     ],
   },
 ];
