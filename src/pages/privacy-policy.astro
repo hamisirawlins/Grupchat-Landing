@@ -1,0 +1,32 @@
+---
+// Import the necessary components
+import MainLayout from "@/layouts/MainLayout.astro";
+import PrivacyPolicyComponent from "@/components/sections/privacypolicy/PrivacyPolicy.astro";
+import { SITE } from "@data/constants";
+
+const pageTitle: string = `Contact | ${SITE.title}`;
+---
+
+<!--Utilizing MainLayout for the outer layout of the page, and defining meta for SEO purposes-->
+<MainLayout
+  title={pageTitle}
+  structuredData={{
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": "https://grupchat.uk/contact",
+    "url": "https://grupchat.uk/contact",
+    "name": "Contact Us | GrupChat",
+    "description":
+      "Have questions on or want to learn our privacy policy? Find it shared below.",
+    "isPartOf": {
+      "@type": "WebSite",
+      "url": "https://grupchat.info",
+      "name": "GrupChat",
+      "description":
+        "GrupChat facilitataes easy pooling among friends, family, and colleagues.",
+    },
+    "inLanguage": "en-US"
+  }}
+>
+    <PrivacyPolicyComponent />
+</MainLayout>
