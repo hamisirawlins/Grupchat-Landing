@@ -1,4 +1,4 @@
-import ogImageSrc from "public/dash.png";
+import ogImageSrc from "@images/social.png";
 
 export const SITE = {
   title: "GrupChat",
