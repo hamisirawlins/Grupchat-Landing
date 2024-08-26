@@ -8,14 +8,14 @@ import vercel from '@astrojs/vercel/serverless';
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://grupchat.vercel.app/",
-  image: {
-    domains: ["images.unsplash.com"],
-  },
   output: 'server',
   adapter: vercel({
     webAnalytics: { enabled: true }
   }),
+  site: "https://grupchat.vercel.app/",
+  image: {
+    domains: ["images.unsplash.com"],
+  },
   prefetch: true,
   integrations: [
     tailwind(),
