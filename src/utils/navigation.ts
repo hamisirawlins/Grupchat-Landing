@@ -17,9 +17,9 @@ const footerLinks = [
 // An object of links for social icons
 const socialLinks = {
   facebook: "https://www.facebook.com/",
-  x: "https://twitter.com/",
-  github: "https://github.com/mearashadowfax/ScrewFast",
-  google: "https://www.google.com/",
+  x: "https://x.com/grupchatinfo",
+  instagram: "https://www.instagram.com/grupchat.info/",
+  google: "https://www.google.com/search?q=grupchatinfo&rlz=1C5CHFA_enKE1117KE1118&oq=grupchatinfo&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIICAEQABgNGB4yCggCEAAYCBgNGB4yDQgDEAAYhgMYgAQYigUyDQgEEAAYhgMYgAQYigUyBggFEEUYPDIGCAYQRRg8MgYIBxBFGDzSAQg0MTgyajBqN6gCALACAA&sourceid=chrome&ie=UTF-8",
   slack: "https://slack.com/",
 };
 
