@@ -1,134 +1,64 @@
 ---
-// Import the necessary components
-import MainLayout from "@/layouts/MainLayout.astro";
-import HeroSection from "@components/sections/landing/HeroSection.astro";
-import HeroSectionAlt from "@components/sections/landing/HeroSectionAlt.astro";
-import FeaturesGeneral from "@components/sections/features/FeaturesGeneral.astro";
-import FeaturesNavs from "@components/sections/features/FeaturesNavs.astro";
-import TestimonialsSection from "@components/sections/testimonials/TestimonialsSection.astro";
-import FAQ from "@components/sections/misc/FAQ.astro";
-import AnnouncementBanner from "@components/ui/banners/AnnouncementBanner.astro";
-import faqs from "@data/faqs.json";
-import features from "@data/features.json";
-import logoImage from "@images/logo/logo.png";
-import homeImage from "@images/home.jpg";
-import construction from "@images/construction-image.avif";
-import dashboard from "@images/dashboard-image.avif";
-
-const testimonialSrc = "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1724005954~exp=1724009554~hmac=9aff38ab5bd074bd633a6407ca00bb148e05ae2c5c275bb1b53f9d3c810d6a0c&w=1380"
-const avatarSrcs: Array<string> = [
-  "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80",
-  "https://images.unsplash.com/photo-1531927557220-a9e23c1e4794?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80",
-  "https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&&auto=format&fit=facearea&facepad=3&w=300&h=300&q=80",
-  "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80",
-];
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Hero from '../components/Hero.astro';
+import Features from '../components/Features.astro';
+import Benefits from '../components/Benefits.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import FAQ from '../components/FAQ.astro';
+import Download from '../components/Download.astro';
+import Footer from '../components/Footer.astro';
+import homepageImg from '../../src/assets/images/homepage.png';
+// Template components - commented out for now
+// import HeaderPresentation from "../components/presentation/header"
+// import FeaturePresentation from "../components/presentation/feature"
+// import LogosPresentation from "../components/presentation/logos"
+// import DevFreePresentation from "../components/presentation/developerFree"
+// import PalettePresentationFree from "../components/presentation/palette"
+// import CodePresentation from "../components/presentation/code"
+// import FreeToProPresentation from "../components/presentation/freeToPro"
+// import AstroPresentation from "../components/presentation/astro"
+// import PagesFreePresentation from "../components/presentation/pagesFree"
+// import GithubPresentation from "../components/presentation/github"
+// import PricingPresentation from "../components/presentation/pricing"
+// import FooterFreePresentation from "../components/presentation/footerFree"
 ---
 
-<MainLayout>
-  <AnnouncementBanner
-    btnId="dismiss-button"
-    btnTitle="Visit Dashboard"
-    url="https://grupchat-io.vercel.app/sign-in"
-  />
-
-  <HeroSection
-    title=`Powering Plans Beyond the <span
-        class="text-yellow-500 dark:text-yellow-400">Group Chat</span>`
-    subTitle=`Remember those plans you made at the start of the year in the group chat? The girls trips and boyz trips? Enjoy seamless and trackable pools with withdrawal approvals and say goodbye to being the designated friend-group accountant!`
-    primaryBtn="Start Pooling"
-    primaryBtnURL="https://grupchat-io.vercel.app/"
-    secondaryBtn=""
-    secondaryBtnURL="/contact"
-    withReview={true}
-    avatars={avatarSrcs}
-    rating=`<span class="font-bold">5</span> / 5`
-    starCount={4}
-    reviews=`From Over <span class="font-bold">20</span> Reviews`
-    src={logoImage}
-    alt="GrupChat logo"
-  />
-
-  <FeaturesGeneral
-    title="Pooling With Friends Has Never Been Easier"
-    subTitle="At GrupChat, we ensure plans don't ghost you once they are dreamt. Seamlessly plan, pool and track your friend groups poolings for your activities with ease and transparency."
-    src={""}
-    alt="GrupChat product in a floating boxes"
-    features={features}
-  />
-
-  <FeaturesNavs
-    title=`Customize <span class="text-yellow-500 dark:text-yellow-400">GrupChat</span>'s offerings to perfectly suit your friend group needs.`
-    tabs={[
-      {
-        heading: "Cutting-Edge Tech",
-        content:
-          "Empower your group projects with GrupChat's cutting-edge platform. Experience enhanced efficiency and transparency in funded group activities.",
-        svg: "tools",
-        src: homeImage,
-        alt: "A group of friends on a beach",
-        first: true,
-      },
-      {
-        heading: "Intuitive Dashboards",
-        content:
-          "Navigate and analyze with ease using GrupChat's intuitive dashboard. Set up your account and oversee your different pools seamlessly, with user-friendly interfaces designed for quick and effective actions.",
-        svg: "dashboard",
-        src: dashboard,
-        alt: "A screenshot or graphic representation of the intuitive dashboard",
-        second: true,
-      },
-      {
-        heading: "Robust Features",
-        content:
-          "Minimize complexity, maximize effectiveness. GrupChat's robust features are engineered to streamline your pooling process, ensuring plans transcend the group's chats.",
-        svg: "house",
-        src: construction,
-        alt: "Gray metal building frame near tower crane during daytime",
-      },
-    ]}
-  />
-
-  <TestimonialsSection
-    title="Friends, Funds and Fun"
-    subTitle="At GrupChat, we ensure you and your friends live up to as many group plans as possible."
-    ;
-    testimonials={[
-      {
-        content:
-          "When We Gather Together In The Moonlit Village Ground, It Is Not Because Of The Moon. Every Man Can See It In His Own Compound. We Come Together Because It Is Good For Kinsmen To Do So.",
-        author: "~ Chinua Achebe",
-        role: "A Potential GrupChat User",
-        avatarSrc: testimonialSrc,
-      },
-    ]}
-    statistics={[
-      {
-        count: "Below 2%",
-        description:
-          "Service charge",
-      },
-      {
-        count: "50+",
-        description:
-          "pools created and utilized",
-      },
-      {
-        count: "100%",
-        description:
-          "Customer Satistfaction",
-      },
-      {
-        count: "5x",
-        description: "Likelihood transition from group plans to actual activities",
-      },
-    ]}
-  />
-
-  <FAQ title="Frequently<br />asked questions" faqs={faqs} />
-
-  <HeroSectionAlt
-    title="Let's Grow Together"
-    subTitle="GrupChat is the brainchild of a merge between the ways of the old and new world. "
-    url="https://github.com/mearashadowfax/ScrewFast"
-  />
-</MainLayout>
+<Layout title="GrupChat - Powering Plans Beyond The Chat">
+	<head slot="head">
+		<meta name="description" content="GrupChat makes it easy to pool M-Pesa funds with friends and family. Achieve your group goals with transparency and trust." />
+		<meta property="og:title" content="GrupChat - Powering Plans Beyond The Chat" />
+		<meta property="og:description" content="GrupChat makes it easy to pool M-Pesa funds with friends and family. Achieve your group goals with transparency and trust." />
+		<meta property="og:image" content={homepageImg.src} />
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://grupchat.com/" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="GrupChat - Powering Plans Beyond The Chat" />
+		<meta name="twitter:description" content="GrupChat makes it easy to pool M-Pesa funds with friends and family. Achieve your group goals with transparency and trust." />
+		<meta name="twitter:image" content={homepageImg.src} />
+		<link rel="canonical" href="https://grupchat.com/" />
+	</head>
+	<Navbar />
+	<main>
+		<Hero />
+		<Features />
+		<Benefits />
+		<HowItWorks />
+		<FAQ />
+		<Download />
+		<Footer />
+		<!-- Template components - commented out for now -->
+		<!-- <HeaderPresentation client:only="react" />
+		<FeaturePresentation client:only="react" />
+		<LogosPresentation client:only="react" />
+		<DevFreePresentation client:only="react" />
+		<PalettePresentationFree client:only="react" />
+		<CodePresentation client:only="react" />
+		<FreeToProPresentation client:only="react" />
+		<AstroPresentation client:only="react" />
+		<PagesFreePresentation client:only="react" />
+		<PricingPresentation client:only="react" />
+		<GithubPresentation client:only="react" />
+		<FooterFreePresentation client:only="react" /> -->
+	</main>
+</Layout>

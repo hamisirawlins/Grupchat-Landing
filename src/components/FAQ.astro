@@ -1,0 +1,39 @@
+---
+const faqs = [
+  {
+    question: 'How do I create a new pool?',
+    answer: 'Tap the "+" button on the home screen and follow the steps to create a new pool. You can set the pool name, currency, and invite members.'
+  },
+  {
+    question: 'How do I invite members to my pool?',
+    answer: 'In the pool details screen, tap "Manage Members" and then "Invite Members". You can invite members via email or share an invite link.'
+  },
+  {
+    question: 'How do I make a deposit?',
+    answer: 'In the pool details screen, tap "Deposit" and enter the amount you want to deposit. You can also add a note to describe the deposit.'
+  },
+  {
+    question: 'How do I withdraw from a pool?',
+    answer: 'In the pool details screen, tap "Withdraw" and enter the amount you want to withdraw. The withdrawal will be processed according to the pool\'s rules.'
+  },
+];
+---
+<section id="faq" class="py-24 bg-white">
+  <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-display font-bold tracking-tight text-gray-900 sm:text-4xl">Frequently Asked Questions</h2>
+      <p class="mt-4 text-lg text-gray-600">Find answers to common questions about GrupChat</p>
+    </div>
+    <div class="space-y-4">
+      {faqs.map((faq, idx) => (
+        <details class="group border border-gray-200 rounded-xl p-4 transition-all">
+          <summary class="font-semibold text-gray-900 cursor-pointer flex items-center justify-between">
+            {faq.question}
+            <span class="ml-2 text-primary-main group-open:rotate-90 transition-transform">▶</span>
+          </summary>
+          <div class="mt-2 text-gray-700">{faq.answer}</div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section> 

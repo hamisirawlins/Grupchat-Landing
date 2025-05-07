@@ -1,0 +1,43 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+---
+<Layout title="Rate The App - GrupChat">
+  <Navbar />
+  <section class="max-w-2xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-primary-main mb-8">Rate The App</h1>
+    <p class="mb-6 text-gray-700">We value your feedback! Please rate GrupChat and let us know how we can improve.</p>
+    <form action="mailto:grupchatinfo@gmail.com" method="POST" enctype="text/plain" class="space-y-6 bg-white rounded-xl shadow p-6">
+      <div>
+        <label class="block text-gray-700 font-medium mb-1">Your Rating <span class="text-red-500">*</span></label>
+        <div class="flex items-center gap-2">
+          <input type="radio" id="star1" name="Rating" value="1" required class="accent-primary-main" />
+          <label for="star1" class="text-yellow-400 text-2xl cursor-pointer">★</label>
+          <input type="radio" id="star2" name="Rating" value="2" class="accent-primary-main" />
+          <label for="star2" class="text-yellow-400 text-2xl cursor-pointer">★★</label>
+          <input type="radio" id="star3" name="Rating" value="3" class="accent-primary-main" />
+          <label for="star3" class="text-yellow-400 text-2xl cursor-pointer">★★★</label>
+          <input type="radio" id="star4" name="Rating" value="4" class="accent-primary-main" />
+          <label for="star4" class="text-yellow-400 text-2xl cursor-pointer">★★★★</label>
+          <input type="radio" id="star5" name="Rating" value="5" class="accent-primary-main" />
+          <label for="star5" class="text-yellow-400 text-2xl cursor-pointer">★★★★★</label>
+        </div>
+      </div>
+      <div>
+        <label class="block text-gray-700 font-medium mb-1" for="feedback">Feedback (optional)</label>
+        <textarea id="feedback" name="Feedback" rows="4" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-main"></textarea>
+      </div>
+      <div>
+        <label class="block text-gray-700 font-medium mb-1" for="email">Email (optional)</label>
+        <input type="email" id="email" name="Email" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-main" />
+      </div>
+      <button type="submit" class="w-full bg-gradient-to-r from-primary-main to-primary-dark text-white font-semibold py-3 rounded-xl shadow hover:from-primary-dark hover:to-primary-main transition-all duration-200">Submit Rating</button>
+    </form>
+    <div class="mt-6 bg-primary-main/10 border-l-4 border-primary-main p-4 rounded">
+      <p class="text-primary-main font-medium">If the button above does not open your email app, you can send your rating and feedback directly to <a href="mailto:grupchatinfo@gmail.com" class="underline">grupchatinfo@gmail.com</a>.</p>
+    </div>
+    <p class="mt-8 text-gray-500 text-sm">Thank you for helping us make GrupChat better!</p>
+  </section>
+  <Footer />
+</Layout> 

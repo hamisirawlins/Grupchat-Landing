@@ -1,0 +1,30 @@
+---
+import logo from '../assets/icons/logo.png';
+---
+<nav class="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-gray-100 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <!-- Brand -->
+      <a href="/" class="flex items-center gap-2">
+        <img src={logo.src} alt="GrupChat Logo" class="h-8 w-8" />
+        <span class="font-display text-lg font-bold text-primary-main">GrupChat</span>
+      </a>
+      <!-- Navigation -->
+      <div class="hidden md:flex gap-8 items-center">
+        <a href="/" class="text-gray-700 hover:text-primary-main font-medium transition">Home</a>
+        <a href="/#features" class="text-gray-700 hover:text-primary-main font-medium transition">Features</a>
+        <a href="/#how-it-works" class="text-gray-700 hover:text-primary-main font-medium transition">How It Works</a>
+        <a href="/#faq" class="text-gray-700 hover:text-primary-main font-medium transition">FAQ</a>
+        <a href="/#download" class="text-gray-700 hover:text-primary-main font-medium transition">Download</a>
+      </div>
+      <!-- Get Started Button -->
+      <div class="hidden md:block">
+        <a href="/#download" class="inline-flex items-center px-5 py-2 rounded-xl font-semibold bg-gradient-to-r from-primary-main to-primary-dark text-white shadow hover:from-primary-dark hover:to-primary-main transition-all duration-200">Get Started</a>
+      </div>
+      <!-- Mobile Menu (optional, placeholder) -->
+      <div class="md:hidden">
+        <!-- Hamburger menu could go here -->
+      </div>
+    </div>
+  </div>
+</nav> 

@@ -1,0 +1,131 @@
+---
+import { Image } from 'astro:assets';
+import chatIcon from '../assets/icons/chat.svg';
+import contactsIcon from '../assets/icons/contacts.svg';
+import analyticsIcon from '../assets/icons/analytics.svg';
+---
+
+<section id="features" class="py-24 bg-gray-50">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <!-- Section Header -->
+    <div class="text-center max-w-3xl mx-auto mb-16">
+      <h2 class="text-3xl font-display font-bold tracking-tight text-gray-900 sm:text-4xl">
+        Simple, Secure, and Transparent
+      </h2>
+      <p class="mt-4 text-lg text-gray-600">
+        Everything you need to manage group funds with M-Pesa, all in one place
+      </p>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
+      <!-- Feature 1: Easy Pool Creation -->
+      <div class="relative bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
+        <div class="absolute -top-4 left-8">
+          <div class="bg-blue-200 rounded-xl p-3">
+            <Image src={chatIcon} alt="Create Pool" class="w-6 h-6 text-white" />
+          </div>
+        </div>
+        <div class="mt-4">
+          <h3 class="text-xl font-semibold text-gray-900">Create Pools Instantly</h3>
+          <p class="mt-2 text-gray-600">
+            Set up a new pool in seconds. Define your goal, set the target amount, and invite your group members.
+          </p>
+        </div>
+      </div>
+
+      <!-- Feature 2: M-Pesa Integration -->
+      <div class="relative bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
+        <div class="absolute -top-4 left-8">
+          <div class="bg-blue-200 rounded-xl p-3">
+            <Image src={contactsIcon} alt="M-Pesa Integration" class="w-6 h-6 text-white" />
+          </div>
+        </div>
+        <div class="mt-4">
+          <h3 class="text-xl font-semibold text-gray-900">Seamless M-Pesa Integration</h3>
+          <p class="mt-2 text-gray-600">
+            Direct M-Pesa integration for instant deposits and withdrawals. No need to switch apps.
+          </p>
+        </div>
+      </div>
+
+      <!-- Feature 3: Real-time Tracking -->
+      <div class="relative bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow duration-200">
+        <div class="absolute -top-4 left-8">
+          <div class="bg-blue-200 rounded-xl p-3">
+            <Image src={analyticsIcon} alt="Track Progress" class="w-6 h-6 text-white" />
+          </div>
+        </div>
+        <div class="mt-4">
+          <h3 class="text-xl font-semibold text-gray-900">Real-time Progress Tracking</h3>
+          <p class="mt-2 text-gray-600">
+            Monitor contributions, track progress, and get instant notifications when goals are reached.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile App Preview -->
+    <div class="mt-24 relative">
+      <div class="absolute inset-0 bg-gradient-to-r from-primary-light/20 via-transparent to-secondary-light/20 rounded-3xl"></div>
+      <div class="relative bg-white rounded-3xl p-8 md:p-12 shadow-xl">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <h3 class="text-2xl font-display font-bold text-gray-900">
+              Manage Your Pools On The Go
+            </h3>
+            <ul class="mt-6 space-y-4">
+              <li class="flex items-start">
+                <div class="flex-shrink-0">
+                  <div class="flex items-center justify-center h-6 w-6 rounded-full bg-gradient-to-br from-primary-main to-primary-dark">
+                    <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+                <p class="ml-3 text-gray-600">Instant M-Pesa notifications for all transactions</p>
+              </li>
+              <li class="flex items-start">
+                <div class="flex-shrink-0">
+                  <div class="flex items-center justify-center h-6 w-6 rounded-full bg-gradient-to-br from-secondary-main to-secondary-dark">
+                    <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+                <p class="ml-3 text-gray-600">Easy contribution tracking and reminders</p>
+              </li>
+              <li class="flex items-start">
+                <div class="flex-shrink-0">
+                  <div class="flex items-center justify-center h-6 w-6 rounded-full bg-gradient-to-br from-accent-purple to-accent-blue">
+                    <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+                <p class="ml-3 text-gray-600">Secure fund management with transparency</p>
+              </li>
+            </ul>
+          </div>
+          <div class="relative">
+            <!-- Mobile Frame -->
+            <div class="relative mx-auto w-64 h-[500px] bg-gray-900 rounded-[3rem] p-3 shadow-2xl">
+              <div class="absolute inset-0 bg-gradient-to-b from-primary-main/20 to-secondary-main/20 rounded-[2.5rem]"></div>
+              <div class="relative h-full bg-white rounded-[2.5rem] overflow-hidden">
+                <!-- App Preview Content -->
+                <div class="h-full bg-gradient-to-b from-gray-50 to-white p-4">
+                  <div class="space-y-4">
+                    <div class="h-8 bg-gradient-to-r from-primary-main/10 to-primary-dark/10 rounded-lg"></div>
+                    <div class="h-32 bg-gradient-to-r from-secondary-main/5 to-secondary-dark/5 rounded-xl"></div>
+                    <div class="h-24 bg-gradient-to-r from-accent-purple/5 to-accent-blue/5 rounded-xl"></div>
+                    <div class="h-24 bg-gradient-to-r from-primary-main/5 to-primary-dark/5 rounded-xl"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section> 

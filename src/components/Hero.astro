@@ -1,0 +1,71 @@
+---
+import { Image } from 'astro:assets';
+import heroIllustration from '../assets/illustrations/hero.svg';
+import { brandConfig } from '../config/brand';
+---
+
+<section class="relative overflow-hidden bg-white">
+  <!-- Background gradient -->
+  <div class="absolute inset-0 bg-gradient-to-br from-primary-light/10 via-transparent to-secondary-light/10"></div>
+  
+  <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+    <div class="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-8 items-center">
+      <!-- Content -->
+      <div class="max-w-2xl">
+        <h1 class="text-4xl font-display font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+          Powering Plans Beyond<br />
+          <span class="text-primary-main">The Chat</span>
+        </h1>
+        <p class="mt-6 text-xl text-gray-600 leading-8">
+          GrupChat makes it easy to pool M-Pesa funds with friends and family. Whether it's a trip, a gift, or a shared plan, we help you achieve your group goals with transparency and trust. 
+        </p>
+        <div class="mt-10 flex items-center gap-x-6">
+          <a
+            href="#download"
+            class="rounded-xl bg-primary-main px-8 py-4 text-lg font-semibold text-white shadow-sm hover:bg-primary-dark transition-colors duration-200"
+          >
+            Start Pooling
+          </a>
+          <a
+            href="#features"
+            class="text-lg font-semibold text-gray-700 hover:text-primary-main transition-colors duration-200"
+          >
+            See How It Works <span aria-hidden="true">→</span>
+          </a>
+        </div>
+        
+        <!-- Stats -->
+        <div class="mt-12 grid grid-cols-3 gap-x-6">
+          <div>
+            <p class="text-4xl font-bold tracking-tight text-primary-main">Ksh 250+</p>
+            <p class="mt-2 text-base text-gray-600">Pooled Successfully</p>
+          </div>
+          <div>
+            <p class="text-4xl font-bold tracking-tight text-primary-main">10+</p>
+            <p class="mt-2 text-base text-gray-600">Active Groups</p>
+          </div>
+          <div>
+            <p class="text-4xl font-bold tracking-tight text-primary-main">5★</p>
+            <p class="mt-2 text-base text-gray-600">Trust Rating</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Hero Image -->
+      <div class="relative lg:mt-0">
+        <div class="relative">
+          <Image
+            src={heroIllustration}
+            alt="GrupChat Fund Pooling Interface"
+            class="w-full h-auto"
+            width={720}
+            height={480}
+          />
+          <!-- Floating Elements -->
+          <div class="absolute -top-6 -right-6 w-24 h-24 bg-secondary-light/20 rounded-full blur-2xl"></div>
+          <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-primary-light/20 rounded-full blur-2xl"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section> 
