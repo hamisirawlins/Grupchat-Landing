@@ -2,34 +2,30 @@
 import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
-import { useState } from 'react';
 ---
 <Layout title="Report A Bug - GrupChat">
   <Navbar />
   <section class="max-w-2xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
     <h1 class="text-3xl font-bold text-primary-main mb-8">Report A Bug</h1>
     <p class="mb-6 text-gray-700">Help us improve GrupChat by reporting any bugs or issues you encounter.</p>
-    <form action="mailto:grupchatinfo@gmail.com" method="POST" enctype="text/plain" class="space-y-6 bg-white rounded-xl shadow p-6">
-      <div>
-        <label class="block text-gray-700 font-medium mb-1" for="name">Name (optional)</label>
-        <input type="text" id="name" name="Name" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-main" />
-      </div>
-      <div>
-        <label class="block text-gray-700 font-medium mb-1" for="email">Email (optional)</label>
-        <input type="email" id="email" name="Email" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-main" />
-      </div>
-      <div>
-        <label class="block text-gray-700 font-medium mb-1" for="description">Bug Description <span class="text-red-500">*</span></label>
-        <textarea id="description" name="Bug Description" required rows="4" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-main"></textarea>
-      </div>
-      <div>
-        <label class="block text-gray-700 font-medium mb-1" for="steps">Steps to Reproduce (optional)</label>
-        <textarea id="steps" name="Steps to Reproduce" rows="2" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-main"></textarea>
-      </div>
-      <button type="submit" class="w-full bg-gradient-to-r from-primary-main to-primary-dark text-white font-semibold py-3 rounded-xl shadow hover:from-primary-dark hover:to-primary-main transition-all duration-200">Submit Bug Report</button>
-    </form>
+    
+    <!-- Google Form Embed -->
+    <div class="bg-white rounded-xl shadow p-6">
+      <iframe 
+        src="YOUR_GOOGLE_FORM_EMBED_URL" 
+        width="100%" 
+        height="800" 
+        frameborder="0" 
+        marginheight="0" 
+        marginwidth="0"
+        class="rounded-lg"
+      >
+        Loading…
+      </iframe>
+    </div>
+
     <div class="mt-6 bg-primary-main/10 border-l-4 border-primary-main p-4 rounded">
-      <p class="text-primary-main font-medium">If the button above does not open your email app, you can send your bug report directly to <a href="mailto:grupchatinfo@gmail.com" class="underline">grupchatinfo@gmail.com</a>.</p>
+      <p class="text-primary-main font-medium">If you're having trouble with the form, you can send your bug report directly to <a href="mailto:grupchatinfo@gmail.com" class="underline">grupchatinfo@gmail.com</a>.</p>
     </div>
     <p class="mt-8 text-gray-500 text-sm">Your feedback helps us make GrupChat better. Thank you!</p>
   </section>
