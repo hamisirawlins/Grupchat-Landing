@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
+import ResponsiveIframe from '../components/ResponsiveIframe.astro';
 ---
 <Layout title="Rate The App - GrupChat">
   <Navbar />
@@ -11,17 +12,10 @@ import Footer from '../components/Footer.astro';
     
     <!-- Google Form Embed -->
     <div class="bg-white rounded-xl shadow p-6">
-      <iframe 
-        src="YOUR_RATING_FORM_EMBED_URL" 
-        width="100%" 
-        height="600" 
-        frameborder="0" 
-        marginheight="0" 
-        marginwidth="0"
-        class="rounded-lg"
-      >
-        Loading…
-      </iframe>
+      <ResponsiveIframe 
+        src="https://docs.google.com/forms/d/e/1FAIpQLSfY95JXyp1sCJY4y5zs97bajYYxbDoRHsDC7GHMnIIEwslzMQ/viewform?embedded=true"
+        title="Rating Form"
+      />
     </div>
 
     <div class="mt-6 bg-primary-main/10 border-l-4 border-primary-main p-4 rounded">

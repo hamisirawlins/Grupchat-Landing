@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
+import ResponsiveIframe from '../components/ResponsiveIframe.astro';
 ---
 <Layout title="Manage Your Data - GrupChat">
   <Navbar />
@@ -15,7 +16,7 @@ import Footer from '../components/Footer.astro';
       </p>
       <ul class="list-disc ml-6 mt-2 text-blue-600">
         <li>Download a copy of your data</li>
-        <li>Request correction of your email or phone number</li>
+        <li>Request correction of inaccurate data</li>
         <li>Delete your account and all associated data</li>
       </ul>
     </div>
@@ -25,56 +26,36 @@ import Footer from '../components/Footer.astro';
       <div class="bg-white rounded-xl shadow p-6">
         <h2 class="text-xl font-semibold text-gray-900 mb-4">Download Your Data</h2>
         <p class="text-gray-600 mb-4">
-          Request a copy of your personal data in a structured, commonly used format. This includes your profile information, transaction history, and usage data.
+          Request a copy of your personal data in a structured, commonly used format. This includes your profile information and transaction history.
         </p>
-        <div class="bg-white rounded-xl">
-          <iframe 
-            src="YOUR_DATA_DOWNLOAD_FORM_EMBED_URL" 
-            width="100%" 
-            height="400" 
-            frameborder="0" 
-            marginheight="0" 
-            marginwidth="0"
-            class="rounded-lg"
-          >
-            Loading…
-          </iframe>
-        </div>
+        <ResponsiveIframe 
+          src="https://docs.google.com/forms/d/e/1FAIpQLSdGIHKYi6VhudUJoINBURubuA1AISM1M9XrNT3qTxhrtUAp6A/viewform?embedded=true"
+          title="Data Download Form"
+        />
       </div>
 
       <!-- Data Correction -->
       <div class="bg-white rounded-xl shadow p-6">
         <h2 class="text-xl font-semibold text-gray-900 mb-4">Correct Your Data</h2>
         <p class="text-gray-600 mb-4">
-          Need to update your email address or phone number? Submit a correction request and we'll help you update your information.
+          Request corrections to your profile information if you notice any inaccuracies.
         </p>
-        <div class="bg-white rounded-xl">
-          <iframe 
-            src="YOUR_DATA_CORRECTION_FORM_EMBED_URL" 
-            width="100%" 
-            height="400" 
-            frameborder="0" 
-            marginheight="0" 
-            marginwidth="0"
-            class="rounded-lg"
-          >
-            Loading…
-          </iframe>
-        </div>
+        <ResponsiveIframe 
+          src="https://docs.google.com/forms/d/e/1FAIpQLSeJzhTyJsS6tQR7CpC2JzFpgUfgBXCPUsTMCgHNY2Yp89FjJQ/viewform?embedded=true"
+          title="Data Correction Form"
+        />
       </div>
 
       <!-- Account Deletion -->
       <div class="bg-white rounded-xl shadow p-6">
         <h2 class="text-xl font-semibold text-gray-900 mb-4">Delete Your Account</h2>
         <p class="text-gray-600 mb-4">
-          This will permanently delete your account and all associated data. This action cannot be undone. Please note that some data may be retained for up to 90 days for legal compliance and fraud prevention purposes.
+          This will permanently delete your account and all associated data. This action cannot be undone.
         </p>
-        <a 
-          href="/delete-account" 
-          class="inline-block bg-red-600 text-white px-6 py-3 rounded-xl hover:bg-red-700 transition-colors duration-200"
-        >
-          Proceed to Account Deletion
-        </a>
+        <ResponsiveIframe 
+          src="https://docs.google.com/forms/d/e/1FAIpQLScOhWamkYcMQ-xy-W4Q7dJJ6YuDK00RzRMyOYR5u0UuRpDZkA/viewform?embedded=true"
+          title="Account Deletion Form"
+        />
       </div>
     </div>
 
@@ -88,18 +69,17 @@ import Footer from '../components/Footer.astro';
     <div class="mt-8 p-6 bg-gray-50 rounded-xl">
       <h2 class="text-lg font-semibold text-gray-900 mb-4">Data Retention</h2>
       <p class="text-gray-600">
-        When you request account deletion:
+        Some data may be retained for up to 90 days after deletion for:
       </p>
       <ul class="list-disc ml-6 mt-2 text-gray-600">
-        <li>Your account and associated data will be deleted within 30 days</li>
-        <li>Some data may be retained for up to 90 days for:</li>
-        <ul class="list-disc ml-6 mt-2">
-          <li>Legal compliance requirements</li>
-          <li>Fraud prevention</li>
-          <li>Dispute resolution</li>
-        </ul>
-        <li>After 90 days, all data will be permanently deleted from our systems</li>
+        <li>Legal compliance requirements</li>
+        <li>Fraud prevention</li>
+        <li>Dispute resolution</li>
+        <li>Service recovery in case of accidental deletion</li>
       </ul>
+      <p class="mt-4 text-gray-600">
+        After 90 days, all data will be permanently deleted from our systems.
+      </p>
     </div>
   </section>
   <Footer />
