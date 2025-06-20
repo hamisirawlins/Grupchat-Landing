@@ -26,7 +26,7 @@ export function HeroSectionFour() {
             className="mb-12 w-full opacity-80 md:w-10/12 lg:w-7/12 mx-auto px-28 z-10"
           >
             We&apos;re constantly trying to express ourselves and actualize our
-            dreams. If you have the opportunity to play this game.
+            dreams. If you have the opportunity, play the game.
           </Typography>
           <div className="w-auto mx-auto">
             <div className="flex items-center">
