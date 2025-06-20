@@ -57,14 +57,16 @@ export function HeroSectionTwo() {
                 />
                 Download Ios
               </Button>
-              <Button color="dark" className="flex items-center">
-                <img
-                  src="logos/logo-android.svg"
-                  alt="ios"
-                  className="-mt-0.5 mr-1.5 h-6 w-6"
-                />
-                Download Android
-              </Button>
+              <a href="https://play.google.com/apps/testing/com.grupchat" target="_blank" rel="noopener">
+                <Button color="dark" className="flex items-center">
+                  <img
+                    src="logos/logo-android.svg"
+                    alt="android"
+                    className="-mt-0.5 mr-1.5 h-6 w-6"
+                  />
+                  Download Android
+                </Button>
+              </a>
             </div>
           </div>
           <div className="hidden lg:flex">
