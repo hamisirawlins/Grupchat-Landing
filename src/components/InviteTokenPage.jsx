@@ -11,7 +11,7 @@ export default function InviteTokenPage({ token }) {
       setError(null);
       setInvitation(null);
       try {
-        const res = await fetch('https://api.grupchat.info/notificationsinvitation/validate', {
+        const res = await fetch('https://api.grupchat.info/notifications/invitation/validate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token }),
