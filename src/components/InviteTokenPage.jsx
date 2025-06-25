@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-export default function InviteTokenPage({ params }) {
-  const token = params.token;
+export default function InviteTokenPage({ token }) {
   const [loading, setLoading] = useState(true);
   const [invitation, setInvitation] = useState(null);
   const [error, setError] = useState(null);
