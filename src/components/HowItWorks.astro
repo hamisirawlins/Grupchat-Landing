@@ -1,11 +1,21 @@
-<section id="how-it-works" class="py-24 bg-gray-50">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+---
+---
+
+<section id="how-it-works" class="py-24 bg-gray-900 relative overflow-hidden">
+  <!-- Background elements -->
+  <div class="absolute inset-0">
+    <div class="absolute top-0 left-1/4 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 right-1/4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-500/5 to-blue-500/5 rounded-full blur-3xl"></div>
+  </div>
+
+  <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <!-- Section Header -->
-    <div class="text-center max-w-3xl mx-auto mb-16">
-      <h2 class="text-3xl font-display font-bold tracking-tight text-gray-900 sm:text-4xl">
-        How GrupChat Works
+    <div class="text-center max-w-3xl mx-auto mb-16 animate-fade-in-up">
+      <h2 class="text-3xl font-display font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+        How <span class="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">GrupChat</span> Works
       </h2>
-      <p class="mt-4 text-lg text-gray-600">
+      <p class="mt-4 text-lg text-gray-300">
         Three simple steps to start pooling funds with your friends
       </p>
     </div>
@@ -13,23 +23,28 @@
     <!-- Steps -->
     <div class="relative">
       <!-- Connection Line -->
-      <div class="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-main via-secondary-main to-accent-purple -translate-y-1/2"></div>
+      <div class="hidden lg:block absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 -translate-y-1/2 rounded-full shadow-lg">
+        <div class="absolute inset-0 bg-gradient-to-r from-purple-400/50 to-blue-400/50 rounded-full animate-pulse"></div>
+      </div>
 
       <div class="grid grid-cols-1 gap-12 lg:grid-cols-3">
         <!-- Step 1: Create Pool -->
-        <div class="relative">
+        <div class="relative group animate-fade-in-up">
           <div class="flex flex-col items-center">
-            <div class="flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-primary-main to-primary-dark text-white text-xl font-bold mb-6">
-              1
+            <div class="relative">
+              <div class="flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 text-white text-2xl font-bold mb-6 shadow-lg group-hover:shadow-purple-500/25 transition-all duration-300 group-hover:scale-110">
+                1
+              </div>
+              <div class="absolute inset-0 bg-gradient-to-br from-purple-400 to-blue-400 rounded-full blur-lg opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
             </div>
-            <div class="bg-white rounded-2xl p-8 shadow-sm text-center">
-              <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-primary-main/10 mx-auto mb-6">
-                <svg class="h-6 w-6 text-primary-main" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300 group-hover:transform group-hover:scale-105 text-center shadow-xl">
+              <div class="flex items-center justify-center h-14 w-14 rounded-xl bg-gradient-to-r from-purple-600/20 to-blue-600/20 mx-auto mb-6 group-hover:shadow-purple-500/25 transition-all duration-300">
+                <svg class="h-7 w-7 text-purple-400 group-hover:text-purple-300 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
               </div>
-              <h3 class="text-xl font-semibold text-gray-900">Create Your Pool</h3>
-              <p class="mt-2 text-gray-600">
+              <h3 class="text-xl font-semibold text-white group-hover:text-purple-300 transition-colors duration-300">Create Your Pool</h3>
+              <p class="mt-2 text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                 Set up a new pool, name it, and set your target amount. Invite friends and family to join.
               </p>
             </div>
@@ -37,19 +52,22 @@
         </div>
 
         <!-- Step 2: Connect M-Pesa -->
-        <div class="relative">
+        <div class="relative group animate-fade-in-up" style="animation-delay: 0.1s;">
           <div class="flex flex-col items-center">
-            <div class="flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-secondary-main to-secondary-dark text-white text-xl font-bold mb-6">
-              2
+            <div class="relative">
+              <div class="flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-white text-2xl font-bold mb-6 shadow-lg group-hover:shadow-blue-500/25 transition-all duration-300 group-hover:scale-110">
+                2
+              </div>
+              <div class="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full blur-lg opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
             </div>
-            <div class="bg-white rounded-2xl p-8 shadow-sm text-center">
-              <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-secondary-main/10 mx-auto mb-6">
-                <svg class="h-6 w-6 text-secondary-main" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 group-hover:transform group-hover:scale-105 text-center shadow-xl">
+              <div class="flex items-center justify-center h-14 w-14 rounded-xl bg-gradient-to-r from-blue-600/20 to-purple-600/20 mx-auto mb-6 group-hover:shadow-blue-500/25 transition-all duration-300">
+                <svg class="h-7 w-7 text-blue-400 group-hover:text-blue-300 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h3 class="text-xl font-semibold text-gray-900">Connect M-Pesa Phone Number</h3>
-              <p class="mt-2 text-gray-600">
+              <h3 class="text-xl font-semibold text-white group-hover:text-blue-300 transition-colors duration-300">Connect M-Pesa Phone Number</h3>
+              <p class="mt-2 text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                 Use your M-Pesa Phone Number to transact. One-time setup for instant deposits and withdrawals.
               </p>
             </div>
@@ -57,19 +75,22 @@
         </div>
 
         <!-- Step 3: Start Contributing -->
-        <div class="relative">
+        <div class="relative group animate-fade-in-up" style="animation-delay: 0.2s;">
           <div class="flex flex-col items-center">
-            <div class="flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-accent-purple to-accent-blue text-white text-xl font-bold mb-6">
-              3
+            <div class="relative">
+              <div class="flex items-center justify-center h-20 w-20 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 text-white text-2xl font-bold mb-6 shadow-lg group-hover:shadow-purple-500/25 transition-all duration-300 group-hover:scale-110">
+                3
+              </div>
+              <div class="absolute inset-0 bg-gradient-to-br from-purple-400 to-blue-400 rounded-full blur-lg opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
             </div>
-            <div class="bg-white rounded-2xl p-8 shadow-sm text-center">
-              <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-accent-purple/10 mx-auto mb-6">
-                <svg class="h-6 w-6 text-accent-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300 group-hover:transform group-hover:scale-105 text-center shadow-xl">
+              <div class="flex items-center justify-center h-14 w-14 rounded-xl bg-gradient-to-r from-purple-600/20 to-blue-600/20 mx-auto mb-6 group-hover:shadow-purple-500/25 transition-all duration-300">
+                <svg class="h-7 w-7 text-purple-400 group-hover:text-purple-300 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 class="text-xl font-semibold text-gray-900">Start Contributing</h3>
-              <p class="mt-2 text-gray-600">
+              <h3 class="text-xl font-semibold text-white group-hover:text-purple-300 transition-colors duration-300">Start Contributing</h3>
+              <p class="mt-2 text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
                 Make contributions anytime. Track progress and get notified when goals are reached.
               </p>
             </div>
@@ -79,13 +100,18 @@
     </div>
 
     <!-- CTA -->
-    <div class="mt-24 text-center">
-      <a href="#download" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-gradient-to-r from-primary-main to-primary-dark hover:from-primary-dark hover:to-primary-main transition-all duration-200 shadow-lg hover:shadow-xl">
-        Get Started Now
-        <svg class="ml-2 -mr-1 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div class="mt-24 text-center animate-fade-in-up" style="animation-delay: 0.3s;">
+      <a href="#download" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-semibold rounded-xl text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-purple-500/25 transform hover:scale-105 relative overflow-hidden group">
+        <span class="relative z-10">Get Started Now</span>
+        <div class="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+        <svg class="ml-2 -mr-1 w-5 h-5 relative z-10 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
         </svg>
       </a>
+      
+      <!-- Floating elements around CTA -->
+      <div class="absolute -top-4 -left-4 w-8 h-8 bg-purple-500/30 rounded-full blur-lg animate-pulse"></div>
+      <div class="absolute -bottom-4 -right-4 w-8 h-8 bg-blue-500/30 rounded-full blur-lg animate-pulse delay-1000"></div>
     </div>
   </div>
 </section> 

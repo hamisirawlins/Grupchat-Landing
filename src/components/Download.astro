@@ -1,77 +1,117 @@
-<section id="download" class="py-24 bg-white">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+---
+---
+
+<section id="download" class="py-24 bg-gray-900 relative overflow-hidden">
+  <!-- Background elements -->
+  <div class="absolute inset-0">
+    <div class="absolute top-0 left-1/4 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 right-1/4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-500/5 to-blue-500/5 rounded-full blur-3xl"></div>
+  </div>
+
+  <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
       <!-- Left Column: App Preview -->
-      <div class="relative">
+      <div class="relative animate-fade-in-left">
         <!-- Mobile Frame -->
-        <div class="relative mx-auto w-64 h-[500px] bg-gray-900 rounded-[3rem] p-3 shadow-2xl">
-          <div class="absolute inset-0 bg-gradient-to-b from-primary-main/20 to-secondary-main/20 rounded-[2.5rem]"></div>
-          <div class="relative h-full bg-white rounded-[2.5rem] overflow-hidden flex flex-col">
+        <div class="relative mx-auto w-64 h-[500px] bg-gray-900 rounded-[3rem] p-3 shadow-2xl border border-gray-700/50">
+          <div class="absolute inset-0 bg-gradient-to-b from-purple-600/20 to-blue-600/20 rounded-[2.5rem]"></div>
+          <div class="relative h-full bg-gray-800 rounded-[2.5rem] overflow-hidden flex flex-col">
             <!-- App Preview Content -->
-            <div class="h-full bg-gradient-to-b from-gray-50 to-white p-2 flex flex-col gap-4">
+            <div class="h-full bg-gradient-to-b from-gray-800 to-gray-900 p-2 flex flex-col gap-4">
               <img src="/invites.png" alt="App Preview" class="w-full h-auto rounded-xl shadow-lg" />
             </div>
           </div>
+          
+          <!-- Floating elements around phone -->
+          <div class="absolute -top-4 -right-4 w-8 h-8 bg-purple-500/30 rounded-full blur-lg animate-pulse"></div>
+          <div class="absolute -bottom-4 -left-4 w-8 h-8 bg-blue-500/30 rounded-full blur-lg animate-pulse delay-1000"></div>
+          <div class="absolute top-1/2 -right-6 w-4 h-4 bg-purple-400/40 rounded-full blur-md animate-bounce"></div>
         </div>
       </div>
 
       <!-- Right Column: Download Info -->
-      <div class="text-center lg:text-left">
-        <h2 class="text-3xl font-display font-bold tracking-tight text-gray-900 sm:text-4xl">
-          Get GrupChat for Android & Web
+      <div class="text-center lg:text-left animate-fade-in-right">
+        <h2 class="text-3xl font-display font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+          Get <span class="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">GrupChat</span> for Android & Web
         </h2>
-        <p class="mt-4 text-lg text-gray-600">
+        <p class="mt-4 text-lg text-gray-300">
           Start pooling funds with your friends and family. Available on Android and Web.
         </p>
 
         <!-- Key Features -->
         <div class="mt-8 space-y-4">
-          <div class="flex items-center">
+          <div class="flex items-center group">
             <div class="flex-shrink-0">
-              <div class="flex items-center justify-center h-8 w-8 rounded-full bg-primary-main/10">
-                <svg class="h-5 w-5 text-primary-main" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div class="flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-r from-purple-600/20 to-blue-600/20 group-hover:shadow-purple-500/25 transition-all duration-300">
+                <svg class="h-6 w-6 text-purple-400 group-hover:text-purple-300 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             </div>
-            <p class="ml-3 text-gray-600">Instant M-Pesa processing</p>
+            <p class="ml-3 text-gray-300 group-hover:text-gray-200 transition-colors duration-300">Instant M-Pesa processing</p>
           </div>
-          <div class="flex items-center">
+          <div class="flex items-center group">
             <div class="flex-shrink-0">
-              <div class="flex items-center justify-center h-8 w-8 rounded-full bg-secondary-main/10">
-                <svg class="h-5 w-5 text-secondary-main" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div class="flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 group-hover:shadow-blue-500/25 transition-all duration-300">
+                <svg class="h-6 w-6 text-blue-400 group-hover:text-blue-300 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             </div>
-            <p class="ml-3 text-gray-600">Real-time progress tracking</p>
+            <p class="ml-3 text-gray-300 group-hover:text-gray-200 transition-colors duration-300">Real-time progress tracking</p>
           </div>
-          <div class="flex items-center">
+          <div class="flex items-center group">
             <div class="flex-shrink-0">
-              <div class="flex items-center justify-center h-8 w-8 rounded-full bg-accent-purple/10">
-                <svg class="h-5 w-5 text-accent-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div class="flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-r from-purple-600/20 to-blue-600/20 group-hover:shadow-purple-500/25 transition-all duration-300">
+                <svg class="h-6 w-6 text-purple-400 group-hover:text-purple-300 transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             </div>
-            <p class="ml-3 text-gray-600">Achieve group plans</p>
+            <p class="ml-3 text-gray-300 group-hover:text-gray-200 transition-colors duration-300">Achieve group plans</p>
           </div>
         </div>
 
         <!-- Download Buttons -->
         <div class="mt-12 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-          <a href="https://play.google.com/apps/testing/com.grupchat" target="_blank" rel="noopener" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-gradient-to-r from-secondary-main to-secondary-dark hover:from-secondary-dark hover:to-secondary-main transition-all duration-200 shadow-lg hover:shadow-xl">
-            <svg class="h-6 w-6 mr-2" viewBox="0 0 24 24" fill="currentColor">
+          <a href="https://play.google.com/apps/testing/com.grupchat" target="_blank" rel="noopener" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-semibold rounded-xl text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-purple-500/25 transform hover:scale-105 relative overflow-hidden group">
+            <span class="relative z-10">Download for Android</span>
+            <div class="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+            <svg class="h-7 w-7 mr-3 relative z-10" viewBox="0 0 24 24" fill="currentColor">
               <path d="M3.5 3.59L20.5 12L3.5 20.41V3.59ZM3.5 1C2.67 1 2 1.67 2 2.5V21.5C2 22.33 2.67 23 3.5 23L22.5 14L3.5 1Z"/>
             </svg>
-            Download for Android
           </a>
-          <a href="https://grupchat.info/" target="_blank" rel="noopener" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-secondary-main bg-gray-100 hover:bg-gray-200 transition-all duration-200 shadow-lg hover:shadow-xl">
-            <svg class="h-6 w-6 mr-2" viewBox="0 0 24 24" fill="currentColor">
+          <a href="https://grupchat.info/" target="_blank" rel="noopener" class="inline-flex items-center justify-center px-8 py-4 border border-gray-600/50 text-lg font-semibold rounded-xl text-white bg-gray-800/50 backdrop-blur-sm hover:bg-gray-700/50 hover:border-purple-500/50 transition-all duration-300 shadow-lg hover:shadow-purple-500/25 transform hover:scale-105 group">
+            <svg class="h-7 w-7 mr-3 text-purple-400 group-hover:text-purple-300 transition-colors duration-300" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
             </svg>
             Use on Web
           </a>
+        </div>
+        
+        <!-- Additional Info -->
+        <div class="mt-8 p-6 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700/50">
+          <div class="flex items-center justify-center lg:justify-start space-x-6 text-sm text-gray-400">
+            <div class="flex items-center">
+              <svg class="h-4 w-4 mr-2 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Free to download
+            </div>
+            <div class="flex items-center">
+              <svg class="h-4 w-4 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              Secure & encrypted
+            </div>
+            <div class="flex items-center">
+              <svg class="h-4 w-4 mr-2 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Instant setup
+            </div>
+          </div>
         </div>
       </div>
     </div>

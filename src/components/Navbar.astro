@@ -1,29 +1,58 @@
 ---
 import logo from '../assets/icons/logo-clear.png';
 ---
-<nav class="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-gray-100 shadow-sm">
+
+<nav class="sticky top-0 z-50 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800/50 shadow-2xl">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16">
+    <div class="flex items-center justify-between h-20">
       <!-- Brand -->
-      <a href="/" class="flex items-center gap-2">
-        <img src={logo.src} alt="GrupChat Logo" class="h-8 w-8" />
-        <span class="font-display text-lg font-bold text-primary-main">GrupChat</span>
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="relative">
+          <img src={logo.src} alt="GrupChat Logo" class="h-10 w-10 transition-transform duration-300 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-purple-500/20 rounded-full blur-lg group-hover:bg-purple-500/30 transition-all duration-300"></div>
+        </div>
+        <span class="font-display text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">GrupChat</span>
       </a>
+      
       <!-- Navigation -->
       <div class="hidden md:flex gap-8 items-center">
-        <a href="/" class="text-gray-700 hover:text-primary-main font-medium transition">Home</a>
-        <a href="/#features" class="text-gray-700 hover:text-primary-main font-medium transition">Features</a>
-        <a href="/#how-it-works" class="text-gray-700 hover:text-primary-main font-medium transition">How It Works</a>
-        <a href="/#faq" class="text-gray-700 hover:text-primary-main font-medium transition">FAQ</a>
-        <a href="/#download" class="text-gray-700 hover:text-primary-main font-medium transition">Download</a>
+        <a href="/" class="text-gray-300 hover:text-white font-medium transition-all duration-300 relative group">
+          Home
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-300 group-hover:w-full"></span>
+        </a>
+        <a href="/#features" class="text-gray-300 hover:text-white font-medium transition-all duration-300 relative group">
+          Features
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-300 group-hover:w-full"></span>
+        </a>
+        <a href="/#how-it-works" class="text-gray-300 hover:text-white font-medium transition-all duration-300 relative group">
+          How It Works
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-300 group-hover:w-full"></span>
+        </a>
+        <a href="/#faq" class="text-gray-300 hover:text-white font-medium transition-all duration-300 relative group">
+          FAQ
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-300 group-hover:w-full"></span>
+        </a>
+        <a href="/#download" class="text-gray-300 hover:text-white font-medium transition-all duration-300 relative group">
+          Download
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-300 group-hover:w-full"></span>
+        </a>
       </div>
+      
       <!-- Get Started Button -->
       <div class="hidden md:block">
-        <a href="/#download" class="inline-flex items-center px-5 py-2 rounded-xl font-semibold bg-gradient-to-r from-primary-main to-primary-dark text-white shadow hover:from-primary-dark hover:to-primary-main transition-all duration-200">Get Started</a>
+        <a href="/#download" class="inline-flex items-center px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 hover:shadow-purple-500/25 relative overflow-hidden group">
+          <span class="relative z-10">Get Started</span>
+          <div class="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+        </a>
       </div>
-      <!-- Mobile Menu (optional, placeholder) -->
+      
+      <!-- Mobile Menu Button -->
       <div class="md:hidden">
-        <!-- Hamburger menu could go here -->
+        <button class="text-gray-300 hover:text-white transition-colors duration-300">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
       </div>
     </div>
   </div>

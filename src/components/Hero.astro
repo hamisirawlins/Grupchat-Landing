@@ -4,66 +4,110 @@ import heroIllustration from '../assets/illustrations/hero.svg';
 import { brandConfig } from '../config/brand';
 ---
 
-<section class="relative overflow-hidden bg-white">
-  <!-- Background gradient -->
-  <div class="absolute inset-0 bg-gradient-to-br from-primary-light/10 via-transparent to-secondary-light/10"></div>
+<section class="relative min-h-screen bg-gray-900 overflow-hidden">
+  <!-- Background gradient overlay -->
+  <div class="absolute inset-0 bg-gradient-to-br from-gray-900 via-purple-900/20 to-blue-900/20"></div>
   
+  <!-- Animated background elements -->
+  <div class="absolute inset-0 overflow-hidden">
+    <div class="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-500/5 to-blue-500/5 rounded-full blur-3xl animate-pulse delay-500"></div>
+  </div>
+
   <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
-    <div class="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-8 items-center">
-      <!-- Content -->
-      <div class="max-w-2xl">
-        <h1 class="text-4xl font-display font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-          Powering Plans Beyond<br />
-          <span class="text-primary-main">The Chat</span>
-        </h1>
-        <p class="mt-6 text-xl text-gray-600 leading-8">
-          GrupChat makes it easy to pool M-Pesa funds with friends and family. Whether it's a trip, a gift, or a shared plan, we help you achieve your group goals with transparency and trust. 
-        </p>
-        <div class="mt-10 flex items-center gap-x-6">
-          <a
-            href="#download"
-            class="rounded-xl bg-primary-main px-8 py-4 text-lg font-semibold text-white shadow-sm hover:bg-primary-dark transition-colors duration-200"
-          >
-            Start Pooling
-          </a>
-          <a
-            href="#features"
-            class="text-lg font-semibold text-gray-700 hover:text-primary-main transition-colors duration-200"
-          >
-            See How It Works <span aria-hidden="true">→</span>
-          </a>
-        </div>
-        
-        <!-- Stats -->
-        <div class="mt-12 grid grid-cols-3 gap-x-6">
-          <div>
-            <p class="text-4xl font-bold tracking-tight text-primary-main">Ksh 250+</p>
-            <p class="mt-2 text-base text-gray-600">Pooled Successfully</p>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[80vh]">
+      
+      <!-- Left Panel - Hero Visual Section -->
+      <div class="relative lg:order-1 order-2">
+        <div class="relative">
+          <!-- Hero background with desert-like gradient -->
+          <div class="relative h-[500px] lg:h-[600px] rounded-2xl overflow-hidden bg-gradient-to-br from-purple-900/40 via-gray-800/60 to-blue-900/40 backdrop-blur-sm border border-gray-700/50">
+            <!-- Desert landscape effect -->
+            <div class="absolute inset-0 bg-gradient-to-t from-amber-900/30 via-transparent to-purple-900/20"></div>
+            
+            <!-- Floating elements -->
+            <div class="absolute top-8 left-8 w-16 h-16 bg-white/10 rounded-full blur-xl animate-bounce"></div>
+            <div class="absolute top-24 right-12 w-12 h-12 bg-purple-400/20 rounded-full blur-lg animate-pulse delay-300"></div>
+            <div class="absolute bottom-16 left-16 w-20 h-20 bg-blue-400/20 rounded-full blur-xl animate-pulse delay-700"></div>
+            
+            <!-- Navigation dots -->
+            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
+              <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+              <div class="w-2 h-2 bg-white rounded-full"></div>
+              <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+            </div>
+            
+            <!-- Promotional text overlay -->
+            <div class="absolute bottom-20 left-1/2 transform -translate-x-1/2 text-center">
+              <h3 class="text-2xl lg:text-3xl font-bold text-white mb-2 animate-fade-in-up">
+                Capturing Moments, Creating Memories
+              </h3>
+            </div>
           </div>
-          <div>
-            <p class="text-4xl font-bold tracking-tight text-primary-main">10+</p>
-            <p class="mt-2 text-base text-gray-600">Active Groups</p>
+          
+          <!-- Floating cards -->
+          <div class="absolute -top-6 -right-6 w-32 h-20 bg-gradient-to-r from-purple-600/90 to-blue-600/90 rounded-xl backdrop-blur-sm border border-purple-400/30 shadow-2xl animate-fade-in-right">
+            <div class="p-3">
+              <div class="text-xs text-purple-200">Pooled Successfully</div>
+              <div class="text-lg font-bold text-white">Ksh 250+</div>
+            </div>
           </div>
-          <div>
-            <p class="text-4xl font-bold tracking-tight text-primary-main">5★</p>
-            <p class="mt-2 text-base text-gray-600">Trust Rating</p>
+          
+          <div class="absolute -bottom-6 -left-6 w-32 h-20 bg-gradient-to-r from-blue-600/90 to-purple-600/90 rounded-xl backdrop-blur-sm border border-blue-400/30 shadow-2xl animate-fade-in-left">
+            <div class="p-3">
+              <div class="text-xs text-blue-200">Active Groups</div>
+              <div class="text-lg font-bold text-white">10+</div>
+            </div>
           </div>
         </div>
       </div>
       
-      <!-- Hero Image -->
-      <div class="relative lg:mt-0">
-        <div class="relative">
-          <Image
-            src={heroIllustration}
-            alt="GrupChat Fund Pooling Interface"
-            class="w-full h-auto"
-            width={720}
-            height={480}
-          />
-          <!-- Floating Elements -->
-          <div class="absolute -top-6 -right-6 w-24 h-24 bg-secondary-light/20 rounded-full blur-2xl"></div>
-          <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-primary-light/20 rounded-full blur-2xl"></div>
+      <!-- Right Panel - Content Section -->
+      <div class="lg:order-2 order-1 animate-fade-in-left">
+        <div class="max-w-2xl">
+          <h1 class="text-4xl lg:text-6xl xl:text-7xl font-display font-bold tracking-tight text-white mb-6 leading-tight">
+            Powering Plans Beyond
+            <span class="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">The Chat</span>
+          </h1>
+          
+          <p class="text-xl text-gray-300 leading-8 mb-8">
+            GrupChat makes it easy to pool M-Pesa funds with friends and family. Whether it's a trip, a gift, or a shared plan, we help you achieve your group goals with transparency and trust.
+          </p>
+          
+          <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-12">
+            <a
+              href="#download"
+              class="inline-flex items-center px-8 py-4 rounded-xl font-semibold bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 hover:shadow-purple-500/25 relative overflow-hidden group"
+            >
+              <span class="relative z-10">Start Pooling</span>
+              <div class="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+            </a>
+            
+            <a
+              href="#features"
+              class="inline-flex items-center text-lg font-semibold text-gray-300 hover:text-white transition-all duration-300 group"
+            >
+              See How It Works 
+              <span class="ml-2 transform group-hover:translate-x-1 transition-transform duration-300">→</span>
+            </a>
+          </div>
+          
+          <!-- Stats -->
+          <div class="grid grid-cols-3 gap-6">
+            <div class="text-center p-4 rounded-xl bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300 group">
+              <p class="text-3xl font-bold text-purple-400 group-hover:text-purple-300 transition-colors duration-300">Ksh 250+</p>
+              <p class="mt-2 text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">Pooled Successfully</p>
+            </div>
+            <div class="text-center p-4 rounded-xl bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 group">
+              <p class="text-3xl font-bold text-blue-400 group-hover:text-blue-300 transition-colors duration-300">10+</p>
+              <p class="mt-2 text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">Active Groups</p>
+            </div>
+            <div class="text-center p-4 rounded-xl bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300 group">
+              <p class="text-3xl font-bold text-purple-400 group-hover:text-purple-300 transition-colors duration-300">5★</p>
+              <p class="mt-2 text-sm text-gray-400 group-hover:text-gray-300 transition-colors duration-300">Trust Rating</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
