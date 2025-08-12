@@ -12,6 +12,7 @@
     "@firebase/auth": "^1.11.0",
     "@headlessui/react": "^2.2.7",
     "@hookform/resolvers": "^5.2.1",
+    "@vercel/analytics": "^1.5.0",
     "clsx": "^2.1.1",
     "firebase": "^12.1.0",
     "framer-motion": "^12.23.12",
