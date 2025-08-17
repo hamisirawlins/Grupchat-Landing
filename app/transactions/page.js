@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
+import { dashboardAPI, handleApiError } from '@/lib/api';
 import { 
   ArrowUpRight,
   ArrowDownLeft,
@@ -14,10 +15,10 @@ import {
   ArrowLeft,
   Download,
   Eye,
-  Clock,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
 
 export default function TransactionsPage() {
@@ -27,115 +28,138 @@ export default function TransactionsPage() {
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [dateRange, setDateRange] = useState('all');
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [minAmount, setMinAmount] = useState('');
+  const [maxAmount, setMaxAmount] = useState('');
+  const [poolId, setPoolId] = useState('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  
+  // Real data state
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filterLoading, setFilterLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalTransactions: 0,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
 
   useEffect(() => {
     if (!user) {
       router.push('/');
+      return;
     }
+
+    loadTransactions();
   }, [user, router]);
+
+  const loadTransactions = async (page = 1) => {
+    try {
+      if (page === 1) {
+        setFilterLoading(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
+
+      const options = {
+        page,
+        limit: 20,
+        ...(filterType !== 'all' && { type: filterType }),
+        ...(filterStatus !== 'all' && { status: filterStatus }),
+        ...(searchTerm && { search: searchTerm }),
+        ...(dateRange !== 'all' && { dateRange }),
+        ...(dateRange === 'custom' && startDate && endDate && { 
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString()
+        }),
+        ...(minAmount && { minAmount: parseFloat(minAmount) }),
+        ...(maxAmount && { maxAmount: parseFloat(maxAmount) }),
+        ...(poolId && { poolId })
+      };
+
+      const response = await dashboardAPI.getUserTransactions(options);
+      
+      if (response.success) {
+        setTransactions(response.data.transactions);
+        setPagination(response.data.pagination);
+      } else {
+        setError(response.message || 'Failed to load transactions');
+      }
+    } catch (err) {
+      console.error('Error loading transactions:', err);
+      setError(handleApiError(err, 'Failed to load transactions'));
+    } finally {
+      setLoading(false);
+      setFilterLoading(false);
+    }
+  };
+
+  const handleFilterChange = () => {
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setFilterLoading(true);
+    loadTransactions(1);
+  };
+
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
+    // Debounce search to avoid too many API calls
+    const timeoutId = setTimeout(() => {
+      handleFilterChange();
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  };
+
+  const handleDateRangeChange = (value) => {
+    setDateRange(value);
+    if (value === 'custom') {
+      // Don't auto-reload for custom date range
+      return;
+    }
+    handleFilterChange();
+  };
+
+  const handleCustomDateChange = () => {
+    if (startDate && endDate) {
+      handleFilterChange();
+    }
+  };
+
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setFilterType('all');
+    setFilterStatus('all');
+    setDateRange('all');
+    setStartDate(null);
+    setEndDate(null);
+    setMinAmount('');
+    setMaxAmount('');
+    setPoolId('');
+    setShowAdvancedFilters(false);
+    handleFilterChange();
+  };
+
+  const handlePageChange = (newPage) => {
+    loadTransactions(newPage);
+  };
 
   if (!user) {
     return null;
   }
 
-  // Mock transactions data
-  const allTransactions = [
-    {
-      transactionId: "txn_001",
-      poolId: "550e8400-e29b-41d4-a716-446655440001",
-      poolName: "Team Vacation Fund",
-      type: "deposit",
-      amount: 5000,
-      status: "success",
-      description: "Monthly contribution",
-      mpesaPhone: "+254712345678",
-      referenceId: "MPesa123456",
-      createdAt: "2024-10-15T10:30:00Z",
-      processedAt: "2024-10-15T10:35:00Z"
-    },
-    {
-      transactionId: "txn_002",
-      poolId: "550e8400-e29b-41d4-a716-446655440002",
-      poolName: "Office Equipment",
-      type: "deposit",
-      amount: 7500,
-      status: "pending",
-      description: "Equipment fund contribution",
-      mpesaPhone: "+254712345678",
-      referenceId: "MPesa789012",
-      createdAt: "2024-10-14T14:20:00Z",
-      processedAt: null
-    },
-    {
-      transactionId: "txn_003",
-      poolId: "550e8400-e29b-41d4-a716-446655440001",
-      poolName: "Team Vacation Fund",
-      type: "withdrawal",
-      amount: 15000,
-      status: "success",
-      description: "Hotel booking payment",
-      mpesaPhone: "+254712345678",
-      referenceId: "MPesa345678",
-      createdAt: "2024-10-13T09:15:00Z",
-      processedAt: "2024-10-13T09:20:00Z"
-    },
-    {
-      transactionId: "txn_004",
-      poolId: "550e8400-e29b-41d4-a716-446655440003",
-      poolName: "Emergency Fund",
-      type: "deposit",
-      amount: 10000,
-      status: "failed",
-      description: "Emergency fund contribution",
-      mpesaPhone: "+254712345678",
-      referenceId: "MPesa901234",
-      createdAt: "2024-10-12T16:45:00Z",
-      processedAt: "2024-10-12T16:50:00Z"
-    },
-    {
-      transactionId: "txn_005",
-      poolId: "550e8400-e29b-41d4-a716-446655440002",
-      poolName: "Office Equipment",
-      type: "fee",
-      amount: 150,
-      status: "success",
-      description: "Platform service fee",
-      referenceId: "FEE_AUTO_001",
-      createdAt: "2024-10-11T12:00:00Z",
-      processedAt: "2024-10-11T12:00:00Z"
-    }
-  ];
+  // Since filtering is now handled by the backend, we use the transactions directly
+  const filteredTransactions = transactions;
 
-  const filteredTransactions = allTransactions.filter(transaction => {
-    const matchesSearch = transaction.poolName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.referenceId.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || transaction.type === filterType;
-    const matchesStatus = filterStatus === 'all' || transaction.status === filterStatus;
     
-    let matchesDate = true;
-    if (dateRange !== 'all') {
-      const transactionDate = new Date(transaction.createdAt);
-      const now = new Date();
-      const daysAgo = {
-        '7d': 7,
-        '30d': 30,
-        '90d': 90
-      }[dateRange];
-      
-      if (daysAgo) {
-        const cutoffDate = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
-        matchesDate = transactionDate >= cutoffDate;
-      }
-    }
-    
-    return matchesSearch && matchesType && matchesStatus && matchesDate;
-  });
+
 
   const StatusBadge = ({ status }) => {
     const styles = {
       success: { icon: CheckCircle, bg: 'bg-green-100', text: 'text-green-800' },
-      pending: { icon: Clock, bg: 'bg-yellow-100', text: 'text-yellow-800' },
       failed: { icon: XCircle, bg: 'bg-red-100', text: 'text-red-800' }
     };
     
@@ -168,21 +192,62 @@ export default function TransactionsPage() {
     );
   };
 
+  const getPoolTypeIcon = (type) => {
+    const poolTypes = {
+      general: { emoji: '💰', bg: 'bg-blue-100', text: 'text-blue-600' },
+      trip: { emoji: '🌴', bg: 'bg-green-100', text: 'text-green-600' },
+      business: { emoji: '💼', bg: 'bg-purple-100', text: 'text-purple-600' },
+      education: { emoji: '📚', bg: 'bg-orange-100', text: 'text-orange-600' },
+      event: { emoji: '🎉', bg: 'bg-pink-100', text: 'text-pink-600' },
+      goody: { emoji: '🎁', bg: 'bg-yellow-100', text: 'text-yellow-600' }
+    };
+    
+    return poolTypes[type] || { emoji: '🔧', bg: 'bg-gray-100', text: 'text-gray-600' };
+  };
+
   const TransactionCard = ({ transaction }) => (
     <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="font-semibold text-gray-900 truncate">{transaction.poolName}</h3>
+            <div className="flex items-center gap-2">
+              {transaction.pools?.type && (
+                <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-sm ${getPoolTypeIcon(transaction.pools.type).bg}`}>
+                  <span className={getPoolTypeIcon(transaction.pools.type).text}>
+                    {getPoolTypeIcon(transaction.pools.type).emoji}
+                  </span>
+                </div>
+              )}
+              <div>
+                <h3 
+                  className="font-semibold text-gray-900 truncate hover:text-blue-600 cursor-pointer transition-colors"
+                  onClick={() => router.push(`/pools/${transaction.pool_id}`)}
+                  title="Click to view pool details"
+                >
+                  {transaction.pools?.name || 'Unknown Pool'}
+                </h3>
+                {transaction.pools?.type && (
+                  <span className="text-xs text-gray-500 capitalize">
+                    {transaction.pools.type} Pool
+                  </span>
+                )}
+              </div>
+            </div>
             <TypeBadge type={transaction.type} />
             <StatusBadge status={transaction.status} />
           </div>
-          <p className="text-sm text-gray-600 mb-2">{transaction.description}</p>
+          <p className="text-sm text-gray-600 mb-2">{transaction.description || 'No description'}</p>
           <div className="flex items-center gap-4 text-xs text-gray-500">
-            <span>ID: {transaction.transactionId}</span>
-            <span>Ref: {transaction.referenceId}</span>
-            {transaction.mpesaPhone && (
-              <span>Phone: {transaction.mpesaPhone}</span>
+            {transaction.reference_id && (
+              <span>Ref: {transaction.reference_id}</span>
+            )}
+            {transaction.pools?.type && (
+              <span className="px-2 py-1 bg-gray-100 rounded-full text-xs">
+                {transaction.pools.type}
+              </span>
+            )}
+            {transaction.mpesa_phone && (
+              <span>Phone: {transaction.mpesa_phone}</span>
             )}
           </div>
         </div>
@@ -191,10 +256,10 @@ export default function TransactionsPage() {
             transaction.type === 'deposit' ? 'text-green-600' :
             transaction.type === 'withdrawal' ? 'text-red-600' : 'text-gray-600'
           }`}>
-            {transaction.type === 'withdrawal' ? '-' : '+'}KSh {transaction.amount.toLocaleString()}
+            {transaction.type === 'withdrawal' ? '-' : '+'}KSh {parseFloat(transaction.amount).toLocaleString()}
           </p>
           <p className="text-xs text-gray-500">
-            {new Date(transaction.createdAt).toLocaleDateString('en-US', {
+            {new Date(transaction.created_at).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
               hour: '2-digit',
@@ -204,10 +269,10 @@ export default function TransactionsPage() {
         </div>
       </div>
       
-      {transaction.processedAt && (
+      {transaction.processed_at && (
         <div className="pt-3 border-t border-gray-100">
           <p className="text-xs text-gray-500">
-            Processed: {new Date(transaction.processedAt).toLocaleDateString('en-US', {
+            Processed: {new Date(transaction.processed_at).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
               hour: '2-digit',
@@ -219,19 +284,23 @@ export default function TransactionsPage() {
     </div>
   );
 
-  const totalAmount = filteredTransactions.reduce((sum, t) => {
-    if (t.type === 'deposit') return sum + t.amount;
-    if (t.type === 'withdrawal') return sum - t.amount;
+  // Only include successful transactions in financial calculations
+  // Failed transactions don't represent actual money movement
+  const successfulTransactions = filteredTransactions.filter(t => t.status === 'success');
+  
+  const totalAmount = successfulTransactions.reduce((sum, t) => {
+    if (t.type === 'deposit') return sum + parseFloat(t.amount);
+    if (t.type === 'withdrawal') return sum - parseFloat(t.amount);
     return sum;
   }, 0);
 
-  const depositTotal = filteredTransactions
-    .filter(t => t.type === 'deposit' && t.status === 'success')
-    .reduce((sum, t) => sum + t.amount, 0);
+  const depositTotal = successfulTransactions
+    .filter(t => t.type === 'deposit')
+    .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
-  const withdrawalTotal = filteredTransactions
-    .filter(t => t.type === 'withdrawal' && t.status === 'success')
-    .reduce((sum, t) => sum + t.amount, 0);
+  const withdrawalTotal = successfulTransactions
+    .filter(t => t.type === 'withdrawal')
+    .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
   return (
     <DashboardLayout 
@@ -240,11 +309,39 @@ export default function TransactionsPage() {
     >
       {/* Header Actions */}
       <div className="flex items-center justify-between mb-6">
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
-          <Download className="w-4 h-4" />
-          <span className="hidden sm:inline">Export</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => loadTransactions()}
+            disabled={loading}
+            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors flex items-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
+        </div>
+        <div className="text-right">
+          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">Export</span>
+          </button>
+        </div>
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600" />
+            <p className="text-red-600">{error}</p>
+            <button
+              onClick={() => setError(null)}
+              className="ml-auto p-1 text-red-400 hover:text-red-600"
+            >
+              <XCircle className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -292,15 +389,19 @@ export default function TransactionsPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search transactions..."
+              placeholder="Search by pool name, description, or reference..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
+
           </div>
           <select
             value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
+            onChange={(e) => {
+              setFilterType(e.target.value);
+              handleFilterChange();
+            }}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
             <option value="all">All Types</option>
@@ -310,18 +411,20 @@ export default function TransactionsPage() {
           </select>
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={(e) => {
+              setFilterStatus(e.target.value);
+              handleFilterChange();
+            }}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
             <option value="all">All Status</option>
             <option value="success">Success</option>
-            <option value="pending">Pending</option>
             <option value="failed">Failed</option>
           </select>
           <select
             value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            onChange={(e) => handleDateRangeChange(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 bg-white"
           >
             <option value="all">All Time</option>
             <option value="7d">Last 7 days</option>
@@ -329,31 +432,208 @@ export default function TransactionsPage() {
             <option value="90d">Last 90 days</option>
           </select>
         </div>
+
+        {/* Advanced Filters Toggle */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <button
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            <Filter className="w-4 h-4" />
+            {showAdvancedFilters ? 'Hide' : 'Show'} Advanced Filters
+          </button>
+        </div>
+
+        {/* Advanced Filters */}
+        {showAdvancedFilters && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Custom Date Range */}
+              {dateRange === 'custom' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
+                    <input
+                      type="date"
+                      value={startDate ? startDate.toISOString().split('T')[0] : ''}
+                      onChange={(e) => setStartDate(new Date(e.target.value))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">End Date</label>
+                    <input
+                      type="date"
+                      value={endDate ? endDate.toISOString().split('T')[0] : ''}
+                      onChange={(e) => setEndDate(new Date(e.target.value))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <button
+                      onClick={handleCustomDateChange}
+                      disabled={!startDate || !endDate}
+                      className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Apply Custom Date Range
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* Amount Range */}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Min Amount (KSh)</label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={minAmount}
+                  onChange={(e) => setMinAmount(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Max Amount (KSh)</label>
+                <input
+                  type="number"
+                  placeholder="10000"
+                  value={maxAmount}
+                  onChange={(e) => setMaxAmount(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Pool Filter */}
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-medium text-gray-700 mb-1">Pool ID (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="Enter pool ID to filter by specific pool"
+                  value={poolId}
+                  onChange={(e) => setPoolId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Apply Advanced Filters Button */}
+            <div className="mt-4 flex gap-3">
+              <button
+                onClick={handleFilterChange}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+              >
+                Apply Filters
+              </button>
+              <button
+                onClick={clearAllFilters}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200"
+              >
+                Clear All Filters
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+              {/* Filter Summary */}
+        {!filterLoading && (searchTerm || filterType !== 'all' || filterStatus !== 'all' || dateRange !== 'all' || minAmount || maxAmount || poolId) && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-blue-800">
+                <Filter className="w-4 h-4" />
+                <span className="font-medium">Active Filters:</span>
+                {searchTerm && <span className="px-2 py-1 bg-blue-100 rounded text-xs">Search: "{searchTerm}"</span>}
+                {filterType !== 'all' && <span className="px-2 py-1 bg-blue-100 rounded text-xs">{filterType}</span>}
+                {filterStatus !== 'all' && <span className="px-2 py-1 bg-blue-100 rounded text-xs">{filterStatus}</span>}
+                {dateRange !== 'all' && <span className="px-2 py-1 bg-blue-100 rounded text-xs">{dateRange === 'custom' ? 'Custom Date' : `${dateRange} ago`}</span>}
+                {minAmount && <span className="px-2 py-1 bg-blue-100 rounded text-xs">Min: KSh {minAmount}</span>}
+                {maxAmount && <span className="px-2 py-1 bg-blue-100 rounded text-xs">Max: KSh {maxAmount}</span>}
+                {poolId && <span className="px-2 py-1 bg-blue-100 rounded text-xs">Pool: {poolId}</span>}
+              </div>
+              <button
+                onClick={clearAllFilters}
+                className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+              >
+                Clear All
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Filter Loading Indicator */}
+        {filterLoading && (
+          <div className="text-center py-8">
+            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+            <p className="text-sm text-gray-600">Applying filters...</p>
+          </div>
+        )}
 
       {/* Transactions List */}
-      <div className="space-y-4">
-        {filteredTransactions.map((transaction) => (
-          <TransactionCard key={transaction.transactionId} transaction={transaction} />
-        ))}
-      </div>
+      {loading ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading transactions...</p>
+        </div>
+      ) : !filterLoading && (
+        <div className="space-y-4">
+          {filteredTransactions.map((transaction) => (
+            <TransactionCard key={transaction.transaction_id} transaction={transaction} />
+          ))}
+        </div>
+      )}
 
-      {filteredTransactions.length === 0 && (
+      {/* Pagination */}
+      {!loading && !filterLoading && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-8">
+          <button
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={!pagination.hasPrevPage}
+            className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+          >
+            Previous
+          </button>
+          
+          <span className="px-4 py-2 text-sm text-gray-600">
+            Page {pagination.currentPage} of {pagination.totalPages}
+          </span>
+          
+          <button
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={!pagination.hasNextPage}
+            className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && !filterLoading && filteredTransactions.length === 0 && (
         <div className="text-center py-12">
           <ArrowUpRight className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No transactions found</h3>
           <p className="text-gray-500 mb-6">
-            {searchTerm || filterType !== 'all' || filterStatus !== 'all' || dateRange !== 'all'
-              ? 'Try adjusting your search or filter criteria'
-              : 'Your transactions will appear here once you start contributing to pools'
+            {transactions.length === 0
+              ? 'You haven\'t made any transactions yet. Start by joining a pool and making your first deposit!'
+              : 'No transactions match your current filters. Try adjusting your search or filter criteria.'
             }
           </p>
-          <button
-            onClick={() => router.push('/pools')}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-          >
-            View Pools
-          </button>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => router.push('/pools')}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            >
+              View Pools
+            </button>
+            {(searchTerm || filterType !== 'all' || filterStatus !== 'all' || dateRange !== 'all' || minAmount || maxAmount || poolId) && (
+              <button
+                onClick={clearAllFilters}
+                className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+              >
+                Clear All Filters
+              </button>
+            )}
+          </div>
         </div>
       )}
     </DashboardLayout>
