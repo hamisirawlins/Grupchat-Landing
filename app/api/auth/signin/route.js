@@ -12,7 +12,7 @@ export async function POST(request) {
     }
 
     // Forward the request to the backend gateway
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
     const backendResponse = await fetch(`${backendUrl}/v1/auth/signin`, {
       method: 'POST',
       headers: {

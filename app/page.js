@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { Analytics } from '@vercel/analytics/next';
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);

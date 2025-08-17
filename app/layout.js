@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "../contexts/AuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { Analytics } from '@vercel/analytics/next';
 
 const geistSans = Geist({
@@ -48,9 +48,9 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className="bg-gradient-to-br from-slate-50 via-sky-50 to-slate-100">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white`}
       >
         <AuthProvider>
           {children}
