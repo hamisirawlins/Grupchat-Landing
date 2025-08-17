@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { dashboardAPI, handleApiError } from '@/lib/api';
 import { 
@@ -19,7 +19,7 @@ import {
   Save
 } from 'lucide-react';
 
-export default function EditPoolPage() {
+function EditPoolPageContent() {
   const { user } = useAuth();
   const router = useRouter();
   const params = useParams();
@@ -515,5 +515,13 @@ export default function EditPoolPage() {
         </form>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function EditPoolPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <EditPoolPageContent />
+    </Suspense>
   );
 }

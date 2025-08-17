@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { dashboardAPI, handleApiError } from '@/lib/api';
 import { 
@@ -36,7 +36,7 @@ import {
   ArrowUpRight as ArrowUpRightIcon
 } from 'lucide-react';
 
-export default function PoolDetailPage() {
+function PoolDetailPageContent() {
   const { user } = useAuth();
   const router = useRouter();
   const params = useParams();
@@ -2050,5 +2050,20 @@ export default function PoolDetailPage() {
         </div>
       )}
     </DashboardLayout>
+  );
+}
+
+export default function PoolDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading pool details...</p>
+        </div>
+      </div>
+    }>
+      <PoolDetailPageContent />
+    </Suspense>
   );
 }

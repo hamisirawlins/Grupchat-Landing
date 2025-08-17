@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { 
   LogOut, 
   User, 
@@ -15,7 +15,7 @@ import {
   X
 } from 'lucide-react';
 
-export default function DashboardLayout({ children, title, subtitle }) {
+function DashboardLayoutContent({ children, title, subtitle }) {
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -258,5 +258,20 @@ export default function DashboardLayout({ children, title, subtitle }) {
         </div>
       )}
     </div>
+  );
+}
+
+export default function DashboardLayout({ children, title, subtitle }) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    }>
+      <DashboardLayoutContent children={children} title={title} subtitle={subtitle} />
+    </Suspense>
   );
 }
