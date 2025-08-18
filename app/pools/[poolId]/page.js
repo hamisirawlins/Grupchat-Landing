@@ -71,6 +71,7 @@ function PoolDetailPageContent() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('stk'); // 'stk' or 'paybill'
+  const [useProfilePhone, setUseProfilePhone] = useState(true); // Toggle for using profile phone vs manual input
 
   // Withdrawal form state
   const [withdrawalForm, setWithdrawalForm] = useState({
@@ -84,11 +85,32 @@ function PoolDetailPageContent() {
   const [withdrawalLoading, setWithdrawalLoading] = useState(false);
   const [withdrawalError, setWithdrawalError] = useState('');
 
+  // User profile state for phone number access
+  const [userProfile, setUserProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  // Load user profile for phone number access
+  const loadUserProfile = async () => {
+    try {
+      setProfileLoading(true);
+      const response = await dashboardAPI.getUserProfile();
+      if (response.success) {
+        setUserProfile(response.data.user);
+        console.log('User profile loaded:', response.data.user); // Debug log
+      }
+    } catch (error) {
+      console.error('Failed to load user profile:', error);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!user) {
       router.push('/');
     } else {
       loadPoolData();
+      loadUserProfile(); // Load user profile for phone number access
     }
   }, [user, router, poolId]);
 
@@ -233,9 +255,15 @@ function PoolDetailPageContent() {
       }
 
       // For STK push, phone is required
-      if (paymentMethod === 'stk' && !depositForm.phone) {
-        setDepositError('Phone number is required for STK push');
-        return;
+      if (paymentMethod === 'stk') {
+        if (useProfilePhone && !userProfile?.phone) {
+          setDepositError('No phone number in profile. Please add one or toggle to manual input.');
+          return;
+        }
+        if (!useProfilePhone && !depositForm.phone) {
+          setDepositError('Phone number is required for STK push');
+          return;
+        }
       }
 
       const amount = parseFloat(depositForm.amount);
@@ -253,8 +281,11 @@ function PoolDetailPageContent() {
       
       // Only process phone for STK push
       if (paymentMethod === 'stk') {
+        // Use profile phone if toggle is enabled, otherwise use form input
+        const phoneToProcess = useProfilePhone ? userProfile.phone : depositForm.phone;
+        
         // Preprocess phone number
-        processedPhone = preprocessPhoneNumber(depositForm.phone);
+        processedPhone = preprocessPhoneNumber(phoneToProcess);
         
         // Validate phone number format (basic validation)
         if (!processedPhone.match(/^254[17]\d{8}$/)) {
@@ -268,6 +299,7 @@ function PoolDetailPageContent() {
         // Show success modal with paybill instructions
         setShowDepositModal(false);
         setDepositForm({ amount: '', phone: '', description: '' });
+        setUseProfilePhone(true);
         
         setSuccessData({
           amount: amount,
@@ -292,6 +324,7 @@ function PoolDetailPageContent() {
       // Success - close modal and show success dialog
       setShowDepositModal(false);
       setDepositForm({ amount: '', phone: '', description: '' });
+      setUseProfilePhone(true);
       
       // Show success modal with deposit details
       setSuccessData({
@@ -1147,6 +1180,7 @@ function PoolDetailPageContent() {
                     setDepositForm({ amount: '', phone: '', description: '' });
                     setDepositError('');
                     setPaymentMethod('stk');
+                    setUseProfilePhone(true);
                   }}
                   className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
                 >
@@ -1241,19 +1275,64 @@ function PoolDetailPageContent() {
                                   {/* Phone Number Input - Only for STK Push */}
                     {paymentMethod === 'stk' && (
                       <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          M-Pesa Phone Number *
-                        </label>
-                        <input
-                          type="tel"
-                          value={depositForm.phone}
-                          onChange={(e) => setDepositForm({...depositForm, phone: e.target.value})}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
-                          placeholder="0715234234 or 254715234234"
-                          required
-                        />
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="block text-sm font-medium text-gray-700">
+                            M-Pesa Phone Number *
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">Use profile phone</span>
+                            <button
+                              type="button"
+                              onClick={() => setUseProfilePhone(!useProfilePhone)}
+                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                useProfilePhone ? 'bg-blue-600' : 'bg-gray-200'
+                              }`}
+                            >
+                              <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                  useProfilePhone ? 'translate-x-5' : 'translate-x-1'
+                                }`}
+                              />
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {useProfilePhone ? (
+                          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                            <div className="flex items-center gap-2">
+                              <Smartphone className="w-4 h-4 text-blue-600" />
+                              <span className="text-sm font-medium text-blue-900">
+                                {userProfile?.phone || 'No phone number in profile'}
+                              </span>
+                            </div>
+                            {!userProfile?.phone && (
+                              <p className="text-xs text-blue-600 mt-1">
+                                Please add a phone number to your profile or toggle to manual input
+                              </p>
+                            )}
+                            {/* Debug info */}
+                            {process.env.NODE_ENV === 'development' && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                Debug: userProfile.phone = {userProfile?.phone || 'undefined'}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <input
+                            type="tel"
+                            value={depositForm.phone}
+                            onChange={(e) => setDepositForm({...depositForm, phone: e.target.value})}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
+                            placeholder="0715234234 or 254715234234"
+                            required
+                          />
+                        )}
+                        
                         <p className="text-xs text-gray-500 mt-1">
-                          Enter your phone number in any format (0715234234, 715234234, or 254715234234)
+                          {useProfilePhone 
+                            ? 'Using phone number from your profile'
+                            : 'Enter your phone number in any format (0715234234, 715234234, or 254715234234)'
+                          }
                         </p>
                       </div>
                     )}
@@ -1334,6 +1413,7 @@ function PoolDetailPageContent() {
                     setDepositForm({ amount: '', phone: '', description: '' });
                     setDepositError('');
                     setPaymentMethod('stk');
+                    setUseProfilePhone(true);
                   }}
                   className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
                   disabled={depositLoading}
@@ -1736,7 +1816,7 @@ function PoolDetailPageContent() {
                   <Info className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
                   <div className="text-xs text-yellow-700">
                     <p className="font-medium mb-1">Platform Fee Notice</p>
-                    <p>A platform fee may be deducted from your withdrawal amount. The exact amount will be shown before final confirmation.</p>
+                    <p>A platform fee may be deducted from your withdrawal amount. The exact amount will be shown before confirmation.</p>
                   </div>
                 </div>
               </div>

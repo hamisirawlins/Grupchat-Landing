@@ -2,7 +2,8 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
+import { dashboardAPI } from '@/lib/api';
 import { 
   LogOut, 
   User, 
@@ -26,16 +27,70 @@ function DashboardLayoutContent({ children, title, subtitle }) {
     phone: user?.phone || ''
   });
 
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState(null);
+  const [profileSuccess, setProfileSuccess] = useState(false);
+  const [profileDataLoading, setProfileDataLoading] = useState(false);
+
+
+
   const handleLogout = async () => {
     await logout();
     router.push('/');
+  };
+
+  const loadProfileData = async () => {
+    try {
+      setProfileDataLoading(true);
+      setProfileError(null);
+      const response = await dashboardAPI.getUserProfile();
+      if (response.success) {
+        const userData = response.data.user;
+        setProfileData({
+          displayName: userData.displayName || '',
+          phone: userData.phone || ''
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load profile data:', error);
+      setProfileError('Failed to load profile data');
+    } finally {
+      setProfileDataLoading(false);
+    }
+  };
+
+  const handleProfileUpdate = async () => {
+    try {
+      setProfileLoading(true);
+      setProfileError(null);
+      
+      const response = await dashboardAPI.updateProfile({
+        displayName: profileData.displayName,
+        phone: profileData.phone
+      });
+      
+      if (response.success) {
+        setProfileSuccess(true);
+        setTimeout(() => {
+          setProfileSuccess(false);
+          setShowProfileModal(false);
+        }, 1500);
+      } else {
+        setProfileError(response.message || 'Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      setProfileError('Failed to update profile');
+    } finally {
+      setProfileLoading(false);
+    }
   };
 
   const sidebarItems = [
     { id: 'dashboard', label: 'Homepage', icon: Home, path: '/dashboard' },
     { id: 'pools', label: 'Pools', icon: FolderOpen, path: '/pools' },
     { id: 'transactions', label: 'Transactions', icon: BarChart3, path: '/transactions' },
-    { id: 'notifications', label: 'Notifications', icon: Bell, badge: 3, path: '/notifications' },
+            { id: 'notifications', label: 'Notifications', icon: Bell, path: '/notifications' },
     { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' }
   ];
 
@@ -74,8 +129,12 @@ function DashboardLayoutContent({ children, title, subtitle }) {
         <div className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">G</span>
+              <div className="w-8 h-8 flex items-center justify-center">
+                <img 
+                  src="/logo.png" 
+                  alt="GrupChat Logo" 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className="text-xl font-semibold text-gray-900">GrupChat</span>
             </div>
@@ -113,13 +172,7 @@ function DashboardLayoutContent({ children, title, subtitle }) {
                   <item.icon className="w-5 h-5" />
                   <span className="font-medium">{item.label}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  {item.badge && (
-                    <span className="bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-medium">
-                      {item.badge}
-                    </span>
-                  )}
-                </div>
+
               </button>
             </div>
           ))}
@@ -129,7 +182,10 @@ function DashboardLayoutContent({ children, title, subtitle }) {
         <div className="p-4 border-t border-gray-200 bg-white">
           <div className="flex items-center justify-between">
             <button 
-              onClick={() => setShowProfileModal(true)}
+              onClick={() => {
+                setShowProfileModal(true);
+                loadProfileData();
+              }}
               className="flex items-center gap-3 flex-1 p-3 text-left hover:bg-gray-50 rounded-lg transition-colors"
             >
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
@@ -168,8 +224,12 @@ function DashboardLayoutContent({ children, title, subtitle }) {
               >
                 <Menu className="w-5 h-5" />
               </button>
-              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 lg:w-6 lg:h-6 text-gray-600" />
+              <div className="w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center">
+                <img 
+                  src="/logo.png" 
+                  alt="GrupChat Logo" 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-lg lg:text-xl font-semibold text-gray-900">
@@ -197,7 +257,11 @@ function DashboardLayoutContent({ children, title, subtitle }) {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">Edit Profile</h2>
               <button
-                onClick={() => setShowProfileModal(false)}
+                onClick={() => {
+                  setShowProfileModal(false);
+                  setProfileError(null);
+                  setProfileSuccess(false);
+                }}
                 className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -205,55 +269,72 @@ function DashboardLayoutContent({ children, title, subtitle }) {
             </div>
             
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Display Name</label>
-                <input
-                  type="text"
-                  value={profileData.displayName}
-                  onChange={(e) => setProfileData({...profileData, displayName: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                <input
-                  type="tel"
-                  value={profileData.phone}
-                  onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <input
-                  type="email"
-                  value={user?.email || ''}
-                  disabled
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-                />
-                <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
-              </div>
+              {profileDataLoading ? (
+                <div className="text-center py-8">
+                  <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading profile data...</p>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Display Name</label>
+                    <input
+                      type="text"
+                      value={profileData.displayName}
+                      onChange={(e) => setProfileData({...profileData, displayName: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    <input
+                      type="tel"
+                      value={profileData.phone}
+                      onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input
+                      type="email"
+                      value={user?.email || ''}
+                      disabled
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                  </div>
+                </>
+              )}
             </div>
             
             <div className="flex justify-end gap-3 mt-6">
               <button
-                onClick={() => setShowProfileModal(false)}
+                onClick={() => {
+                  setShowProfileModal(false);
+                  setProfileError(null);
+                  setProfileSuccess(false);
+                }}
                 className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  // TODO: Implement profile update logic
-                  setShowProfileModal(false);
-                }}
+                onClick={handleProfileUpdate}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                disabled={profileLoading || profileDataLoading}
               >
-                Save Changes
+                {profileLoading ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
+            {profileSuccess && (
+              <div className="mt-4 text-green-600 text-center">Profile updated successfully!</div>
+            )}
+            {profileError && (
+              <div className="mt-4 text-red-600 text-center">{profileError}</div>
+            )}
           </div>
         </div>
       )}

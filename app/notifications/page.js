@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
+import { dashboardAPI, handleApiError } from '@/lib/api';
 import { 
   Bell,
   Check,
@@ -18,7 +19,8 @@ import {
   CheckCircle,
   Clock,
   Filter,
-  MoreHorizontal
+  MoreHorizontal,
+  RefreshCw
 } from 'lucide-react';
 
 export default function NotificationsPage() {
@@ -26,117 +28,158 @@ export default function NotificationsPage() {
   const router = useRouter();
   const [filter, setFilter] = useState('all');
   const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [notificationSettings, setNotificationSettings] = useState({
+    in_app: true,
+    fcm: true,
+    email: true
+  });
+  const [showSettings, setShowSettings] = useState(false);
+  const [markingAsRead, setMarkingAsRead] = useState(new Set());
+  const [markingAllAsRead, setMarkingAllAsRead] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     if (!user) {
       router.push('/');
+      return;
     }
+    loadNotifications();
+    loadNotificationSettings();
   }, [user, router]);
 
-  // Mock notifications data
-  const allNotifications = [
-    {
-      id: "notif_001",
-      type: "pool_invite",
-      title: "Pool Invitation",
-      message: "You've been invited to join 'Team Vacation Fund' pool by John Doe",
-      data: { poolId: "550e8400-e29b-41d4-a716-446655440001", inviterName: "John Doe" },
-      readAt: null,
-      createdAt: "2024-10-15T10:30:00Z",
-      actionRequired: true
-    },
-    {
-      id: "notif_002",
-      type: "deposit",
-      title: "Deposit Successful",
-      message: "Your contribution of KSh 5,000 to 'Office Equipment' has been processed successfully",
-      data: { poolId: "550e8400-e29b-41d4-a716-446655440002", amount: 5000 },
-      readAt: "2024-10-15T11:00:00Z",
-      createdAt: "2024-10-15T09:15:00Z",
-      actionRequired: false
-    },
-    {
-      id: "notif_003",
-      type: "withdrawal",
-      title: "Withdrawal Request",
-      message: "Sarah requested a withdrawal of KSh 15,000 from 'Emergency Fund'. Please review.",
-      data: { poolId: "550e8400-e29b-41d4-a716-446655440003", amount: 15000, requesterName: "Sarah" },
-      readAt: null,
-      createdAt: "2024-10-14T16:20:00Z",
-      actionRequired: true
-    },
-    {
-      id: "notif_004",
-      type: "approval_request",
-      title: "Approval Required",
-      message: "Your approval is needed for a withdrawal request in 'Team Vacation Fund'",
-      data: { poolId: "550e8400-e29b-41d4-a716-446655440001", transactionId: "txn_003" },
-      readAt: null,
-      createdAt: "2024-10-14T14:45:00Z",
-      actionRequired: true
-    },
-    {
-      id: "notif_005",
-      type: "pool_milestone",
-      title: "Pool Milestone Reached",
-      message: "'Emergency Fund' has reached 90% of its target amount!",
-      data: { poolId: "550e8400-e29b-41d4-a716-446655440003", percentage: 90 },
-      readAt: "2024-10-14T13:00:00Z",
-      createdAt: "2024-10-14T12:30:00Z",
-      actionRequired: false
-    },
-    {
-      id: "notif_006",
-      type: "payment_failed",
-      title: "Payment Failed",
-      message: "Your contribution of KSh 3,000 to 'Conference Fund' could not be processed. Please try again.",
-      data: { poolId: "550e8400-e29b-41d4-a716-446655440004", amount: 3000 },
-      readAt: null,
-      createdAt: "2024-10-13T18:20:00Z",
-      actionRequired: true
-    },
-    {
-      id: "notif_007",
-      type: "pool_complete",
-      title: "Pool Completed",
-      message: "'Conference Fund' has reached its target! Congratulations to all contributors.",
-      data: { poolId: "550e8400-e29b-41d4-a716-446655440004" },
-      readAt: "2024-10-13T15:30:00Z",
-      createdAt: "2024-10-13T15:15:00Z",
-      actionRequired: false
+  const loadNotifications = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      setSuccessMessage(null);
+      
+      const response = await dashboardAPI.getNotifications({ limit: 100 });
+      
+      if (response.success) {
+        // Transform backend data to frontend format
+        // Handle nested data structure: response.data.data contains the actual notifications
+        const notificationsData = response.data.data || response.data || [];
+        
+        // Ensure notificationsData is an array
+        if (!Array.isArray(notificationsData)) {
+          console.error('Notifications data is not an array:', notificationsData);
+          setError('Invalid notifications data format');
+          return;
+        }
+        
+        const transformedNotifications = notificationsData.map(notification => ({
+          id: notification.id,
+          type: notification.type || 'general',
+          title: notification.title || 'Notification',
+          message: notification.message || notification.description || 'You have a new notification',
+          data: notification.data || {},
+          readAt: notification.read_at,
+          createdAt: notification.created_at
+        }));
+        
+        setNotifications(transformedNotifications);
+      } else {
+        setError(response.message || 'Failed to load notifications');
+      }
+    } catch (error) {
+      console.error('Failed to load notifications:', error);
+      setError(handleApiError(error, 'Failed to load notifications'));
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  useEffect(() => {
-    setNotifications(allNotifications);
-  }, []);
+  const loadNotificationSettings = async () => {
+    try {
+      const response = await dashboardAPI.getNotificationSettings();
+      if (response.success) {
+        setNotificationSettings(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load notification settings:', error);
+      // Don't show error for settings, use defaults
+    }
+  };
 
   const filteredNotifications = notifications.filter(notification => {
     if (filter === 'unread') return !notification.readAt;
-    if (filter === 'action') return notification.actionRequired;
     return true;
   });
 
   const unreadCount = notifications.filter(n => !n.readAt).length;
-  const actionCount = notifications.filter(n => n.actionRequired).length;
-
-  const markAsRead = (notificationId) => {
-    setNotifications(prev => prev.map(notif => 
-      notif.id === notificationId 
-        ? { ...notif, readAt: new Date().toISOString() }
-        : notif
-    ));
+  
+  const markAsRead = async (notificationId) => {
+    try {
+      setMarkingAsRead(prev => new Set(prev).add(notificationId));
+      setError(null);
+      setSuccessMessage(null);
+      
+      const response = await dashboardAPI.markNotificationAsRead(notificationId);
+      
+      if (response.success) {
+        // Update local state
+        setNotifications(prev => prev.map(notif => 
+          notif.id === notificationId 
+            ? { ...notif, readAt: new Date().toISOString() }
+            : notif
+        ));
+        setSuccessMessage('Notification marked as read');
+        setTimeout(() => setSuccessMessage(null), 3000);
+      } else {
+        setError(response.message || 'Failed to mark notification as read');
+      }
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+      setError(handleApiError(error, 'Failed to mark notification as read'));
+    } finally {
+      setMarkingAsRead(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(notificationId);
+        return newSet;
+      });
+    }
   };
 
-  const markAllAsRead = () => {
-    const now = new Date().toISOString();
-    setNotifications(prev => prev.map(notif => 
-      !notif.readAt ? { ...notif, readAt: now } : notif
-    ));
+  const markAllAsRead = async () => {
+    try {
+      setMarkingAllAsRead(true);
+      setError(null);
+      setSuccessMessage(null);
+      
+      const response = await dashboardAPI.markAllNotificationsAsRead();
+      
+      if (response.success) {
+        const now = new Date().toISOString();
+        setNotifications(prev => prev.map(notif => 
+          !notif.readAt ? { ...notif, readAt: now } : notif
+        ));
+        setSuccessMessage(`Marked ${response.data?.updatedCount || 'all'} notifications as read`);
+        setTimeout(() => setSuccessMessage(null), 3000);
+      } else {
+        setError(response.message || 'Failed to mark all notifications as read');
+      }
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+      setError(handleApiError(error, 'Failed to mark all notifications as read'));
+    } finally {
+      setMarkingAllAsRead(false);
+    }
   };
 
-  const deleteNotification = (notificationId) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
+  const updateSettings = async (newSettings) => {
+    try {
+      const response = await dashboardAPI.updateNotificationSettings(newSettings);
+      
+      if (response.success) {
+        setNotificationSettings(newSettings);
+        setShowSettings(false);
+      }
+    } catch (error) {
+      console.error('Failed to update notification settings:', error);
+      // Show error toast or handle gracefully
+    }
   };
 
   const getNotificationIcon = (type) => {
@@ -147,7 +190,18 @@ export default function NotificationsPage() {
       approval_request: AlertCircle,
       pool_milestone: CheckCircle,
       payment_failed: AlertCircle,
-      pool_complete: CheckCircle
+      pool_complete: CheckCircle,
+      invitation: Users,
+      transaction: ArrowDownLeft,
+      membership: Users,
+      general: Bell,
+      // New backend notification types
+      deposit_success: ArrowDownLeft,
+      deposit_failed: AlertCircle,
+      withdrawal_success: ArrowUpRight,
+      withdrawal_failed: AlertCircle,
+      payment_success: CheckCircle,
+      payment_failed: AlertCircle
     };
     return iconMap[type] || Bell;
   };
@@ -160,7 +214,18 @@ export default function NotificationsPage() {
       approval_request: 'bg-orange-100 text-orange-600',
       pool_milestone: 'bg-emerald-100 text-emerald-600',
       payment_failed: 'bg-red-100 text-red-600',
-      pool_complete: 'bg-green-100 text-green-600'
+      pool_complete: 'bg-green-100 text-green-600',
+      invitation: 'bg-blue-100 text-blue-600',
+      transaction: 'bg-green-100 text-green-600',
+      membership: 'bg-purple-100 text-purple-600',
+      general: 'bg-gray-100 text-gray-600',
+      // New backend notification types
+      deposit_success: 'bg-green-100 text-green-600',
+      deposit_failed: 'bg-red-100 text-red-600',
+      withdrawal_success: 'bg-purple-100 text-purple-600',
+      withdrawal_failed: 'bg-red-100 text-red-600',
+      payment_success: 'bg-green-100 text-green-600',
+      payment_failed: 'bg-red-100 text-red-600'
     };
     return colorMap[type] || 'bg-gray-100 text-gray-600';
   };
@@ -187,19 +252,17 @@ export default function NotificationsPage() {
                 {!notification.readAt && (
                   <button
                     onClick={() => markAsRead(notification.id)}
-                    className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                    disabled={markingAsRead.has(notification.id)}
+                    className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Mark as read"
                   >
-                    <Check className="w-4 h-4" />
+                    {markingAsRead.has(notification.id) ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Check className="w-4 h-4" />
+                    )}
                   </button>
                 )}
-                <button
-                  onClick={() => deleteNotification(notification.id)}
-                  className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                  title="Delete notification"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
               </div>
             </div>
             
@@ -217,10 +280,36 @@ export default function NotificationsPage() {
                 })}
               </p>
               
-              {notification.actionRequired && (
+              {/* Transaction-specific actions */}
+              {notification.type === 'deposit_failed' && (
                 <div className="flex items-center gap-2">
-                  <button className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors">
-                    Take Action
+                  <button 
+                    onClick={() => router.push(`/pools/${notification.data.poolId}`)}
+                    className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              )}
+              
+              {notification.type === 'deposit_success' && (
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => router.push(`/pools/${notification.data.poolId}`)}
+                    className="bg-green-600 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors"
+                  >
+                    View Pool
+                  </button>
+                </div>
+              )}
+              
+              {notification.type === 'withdrawal_success' && (
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => router.push(`/pools/${notification.data.poolId}`)}
+                    className="bg-purple-600 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors"
+                  >
+                    View Pool
                   </button>
                 </div>
               )}
@@ -235,6 +324,41 @@ export default function NotificationsPage() {
     return null;
   }
 
+  if (loading) {
+    return (
+      <DashboardLayout 
+        title="Notifications"
+        subtitle="Stay updated with your pool activities"
+      >
+        <div className="text-center py-12">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading notifications...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout 
+        title="Notifications"
+        subtitle="Stay updated with your pool activities"
+      >
+        <div className="text-center py-12">
+          <AlertCircle className="w-16 h-16 text-red-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to load notifications</h3>
+          <p className="text-red-600 mb-6">{error}</p>
+          <button
+            onClick={loadNotifications}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout 
       title="Notifications"
@@ -246,19 +370,128 @@ export default function NotificationsPage() {
           {unreadCount > 0 && (
             <button
               onClick={markAllAsRead}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm"
+              disabled={markingAllAsRead}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              Mark All Read
+              {markingAllAsRead ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Marking...
+                </>
+              ) : (
+                'Mark All Read'
+              )}
             </button>
           )}
-          <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+          >
             <Settings className="w-5 h-5" />
+          </button>
+          <button
+            onClick={loadNotifications}
+            disabled={loading}
+            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 disabled:opacity-50 transition-colors"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-5 h-5 text-red-600" />
+            <p className="text-red-800">{error}</p>
+            <button
+              onClick={() => setError(null)}
+              className="ml-auto text-red-600 hover:text-red-800"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Success Message Display */}
+      {successMessage && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-green-600" />
+            <p className="text-green-800">{successMessage}</p>
+            <button
+              onClick={() => setSuccessMessage(null)}
+              className="ml-auto text-green-600 hover:text-green-800"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Notification Settings Modal */}
+      {showSettings && (
+        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Notification Settings</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">In-App Notifications</p>
+                <p className="text-sm text-gray-500">Receive notifications within the app</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={notificationSettings.in_app}
+                  onChange={(e) => updateSettings({ ...notificationSettings, in_app: e.target.checked })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">Push Notifications</p>
+                <p className="text-sm text-gray-500">Receive push notifications on your device</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={notificationSettings.fcm}
+                  onChange={(e) => updateSettings({ ...notificationSettings, fcm: e.target.checked })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">Email Notifications</p>
+                <p className="text-sm text-gray-500">Receive notifications via email</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={notificationSettings.email}
+                  onChange={(e) => updateSettings({ ...notificationSettings, email: e.target.checked })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div className="bg-white rounded-xl p-4 border border-gray-100">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -278,17 +511,6 @@ export default function NotificationsPage() {
             <div>
               <p className="text-sm text-gray-500">Unread</p>
               <p className="text-xl font-bold text-orange-600">{unreadCount}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-              <Clock className="w-5 h-5 text-red-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Action Required</p>
-              <p className="text-xl font-bold text-red-600">{actionCount}</p>
             </div>
           </div>
         </div>
@@ -316,16 +538,6 @@ export default function NotificationsPage() {
         >
           Unread ({unreadCount})
         </button>
-        <button
-          onClick={() => setFilter('action')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            filter === 'action' 
-              ? 'bg-blue-600 text-white' 
-              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-          }`}
-        >
-          Action Required ({actionCount})
-        </button>
       </div>
 
       {/* Notifications List */}
@@ -340,15 +552,13 @@ export default function NotificationsPage() {
           <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No notifications found</h3>
           <p className="text-gray-500 mb-6">
-            {filter === 'unread' ? 'All notifications have been read' :
-             filter === 'action' ? 'No actions required at this time' :
-             'Your notifications will appear here'}
+            {filter === 'unread' ? 'All notifications have been read' : 'Your notifications will appear here'}
           </p>
           <button
             onClick={() => router.push('/pools')}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
           >
-            View Pools
+            View Pool
           </button>
         </div>
       )}

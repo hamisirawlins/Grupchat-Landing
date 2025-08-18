@@ -107,7 +107,7 @@ export default function Home() {
               <img 
                 src="/logo.png" 
                 alt="GrupChat Logo" 
-                className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                className="w-12 h-12 sm:w-12 sm:h-12 object-contain"
               />
               <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                 GrupChat

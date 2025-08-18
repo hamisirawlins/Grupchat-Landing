@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
+import { dashboardAPI, handleApiError } from '@/lib/api';
 import { 
   Settings,
   User,
@@ -33,25 +34,22 @@ export default function SettingsPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Settings state
   const [profileSettings, setProfileSettings] = useState({
-    displayName: user?.displayName || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
+    displayName: '',
+    email: '',
+    phone: '',
     language: 'en',
     timezone: 'Africa/Nairobi'
   });
 
   const [notificationSettings, setNotificationSettings] = useState({
-    emailNotifications: true,
-    pushNotifications: true,
-    smsNotifications: false,
-    poolInvites: true,
-    deposits: true,
-    withdrawals: true,
-    milestones: true,
-    marketingEmails: false
+    in_app: true,
+    fcm: true,
+    email: true
   });
 
   const [securitySettings, setSecuritySettings] = useState({
@@ -71,63 +69,79 @@ export default function SettingsPage() {
     contributionFrequency: 'monthly'
   });
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/');
+  // Load settings function
+  const loadSettings = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Load profile settings
+      const profileResponse = await dashboardAPI.getUserProfile();
+      if (profileResponse.success) {
+        const userData = profileResponse.data.user;
+        setProfileSettings(prev => ({
+          ...prev,
+          displayName: userData.displayName || '',
+          email: userData.email || '',
+          phone: userData.phone || ''
+        }));
+      }
+
+      // Load notification settings
+      const notificationResponse = await dashboardAPI.getNotificationSettings();
+      if (notificationResponse.success) {
+        setNotificationSettings(notificationResponse.data);
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Failed to load settings:', error);
+      setError('Failed to load settings');
+      setLoading(false);
     }
-  }, [user, router]);
+  };
 
-  if (!user) {
-    return null;
-  }
-
+  // Memoized functions - moved to top level to fix hooks order
   const handleSave = async (settingsType) => {
     setSaveStatus('saving');
     
-    // Simulate API call
-    setTimeout(() => {
-      setSaveStatus('success');
+    try {
+      if (settingsType === 'profile') {
+        const response = await dashboardAPI.updateProfile({
+          displayName: profileSettings.displayName,
+          phone: profileSettings.phone
+        });
+        
+        if (response.success) {
+          setSaveStatus('success');
+          setTimeout(() => setSaveStatus(''), 3000);
+        } else {
+          setSaveStatus('error');
+          setTimeout(() => setSaveStatus(''), 3000);
+        }
+      } else if (settingsType === 'notifications') {
+        const response = await dashboardAPI.updateNotificationSettings(notificationSettings);
+        
+        if (response.success) {
+          setSaveStatus('success');
+          setTimeout(() => setSaveStatus(''), 3000);
+        } else {
+          setSaveStatus('error');
+          setTimeout(() => setSaveStatus(''), 3000);
+        }
+      } else if (settingsType === 'payment') {
+        // For payment settings, simulate API call for now
+        setTimeout(() => {
+          setSaveStatus('success');
+          setTimeout(() => setSaveStatus(''), 3000);
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Failed to save settings:', error);
+      setSaveStatus('error');
       setTimeout(() => setSaveStatus(''), 3000);
-    }, 1000);
+    }
   };
-
-  const tabs = [
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'security', label: 'Security', icon: Shield },
-    { id: 'payment', label: 'Payment', icon: CreditCard }
-  ];
-
-  const SaveButton = ({ onClick, disabled = false }) => (
-    <button
-      onClick={onClick}
-      disabled={disabled || saveStatus === 'saving'}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-        saveStatus === 'success' 
-          ? 'bg-green-600 text-white' 
-          : saveStatus === 'saving'
-          ? 'bg-gray-400 text-white cursor-not-allowed'
-          : 'bg-blue-600 text-white hover:bg-blue-700'
-      }`}
-    >
-      {saveStatus === 'success' ? (
-        <>
-          <CheckCircle className="w-4 h-4" />
-          Saved!
-        </>
-      ) : saveStatus === 'saving' ? (
-        <>
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          Saving...
-        </>
-      ) : (
-        <>
-          <Save className="w-4 h-4" />
-          Save Changes
-        </>
-      )}
-    </button>
-  );
 
   const ProfileTab = () => (
     <div className="space-y-6">
@@ -206,17 +220,17 @@ export default function SettingsPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-3">
-              <Mail className="w-5 h-5 text-gray-600" />
+              <Volume2 className="w-5 h-5 text-gray-600" />
               <div>
-                <p className="font-medium text-gray-900">Email Notifications</p>
-                <p className="text-sm text-gray-500">Receive notifications via email</p>
+                <p className="font-medium text-gray-900">In-App Notifications</p>
+                <p className="text-sm text-gray-500">Receive notifications within the app</p>
               </div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={notificationSettings.emailNotifications}
-                onChange={(e) => setNotificationSettings({...notificationSettings, emailNotifications: e.target.checked})}
+                checked={notificationSettings.in_app}
+                onChange={(e) => setNotificationSettings({...notificationSettings, in_app: e.target.checked})}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -234,8 +248,8 @@ export default function SettingsPage() {
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={notificationSettings.pushNotifications}
-                onChange={(e) => setNotificationSettings({...notificationSettings, pushNotifications: e.target.checked})}
+                checked={notificationSettings.fcm}
+                onChange={(e) => setNotificationSettings({...notificationSettings, fcm: e.target.checked})}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -244,154 +258,27 @@ export default function SettingsPage() {
 
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-3">
-              <Volume2 className="w-5 h-5 text-gray-600" />
+              <Mail className="w-5 h-5 text-gray-600" />
               <div>
-                <p className="font-medium text-gray-900">SMS Notifications</p>
-                <p className="text-sm text-gray-500">Receive important alerts via SMS</p>
+                <p className="font-medium text-gray-900">Email Notifications</p>
+                <p className="text-sm text-gray-500">Receive notifications via email</p>
               </div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                checked={notificationSettings.smsNotifications}
-                onChange={(e) => setNotificationSettings({...notificationSettings, smsNotifications: e.target.checked})}
+                checked={notificationSettings.email}
+                onChange={(e) => setNotificationSettings({...notificationSettings, email: e.target.checked})}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
             </label>
           </div>
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Notification Types</h3>
-        <div className="space-y-3">
-          {[
-            { key: 'poolInvites', label: 'Pool Invitations', desc: 'When someone invites you to join a pool' },
-            { key: 'deposits', label: 'Deposit Confirmations', desc: 'When your contributions are processed' },
-            { key: 'withdrawals', label: 'Withdrawal Requests', desc: 'When withdrawal requests need approval' },
-            { key: 'milestones', label: 'Pool Milestones', desc: 'When pools reach target percentages' },
-            { key: 'marketingEmails', label: 'Marketing Emails', desc: 'Product updates and promotional content' }
-          ].map((item) => (
-            <div key={item.key} className="flex items-center justify-between py-3 border-b border-gray-100">
-              <div>
-                <p className="font-medium text-gray-900">{item.label}</p>
-                <p className="text-sm text-gray-500">{item.desc}</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={notificationSettings[item.key]}
-                  onChange={(e) => setNotificationSettings({...notificationSettings, [item.key]: e.target.checked})}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-          ))}
         </div>
       </div>
 
       <div className="flex justify-end">
         <SaveButton onClick={() => handleSave('notifications')} />
-      </div>
-    </div>
-  );
-
-  const SecurityTab = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Authentication</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div>
-              <p className="font-medium text-gray-900">Two-Factor Authentication</p>
-              <p className="text-sm text-gray-500">Add an extra layer of security to your account</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={securitySettings.twoFactorAuth}
-                onChange={(e) => setSecuritySettings({...securitySettings, twoFactorAuth: e.target.checked})}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div>
-              <p className="font-medium text-gray-900">Login Alerts</p>
-              <p className="text-sm text-gray-500">Get notified of new device logins</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={securitySettings.loginAlerts}
-                onChange={(e) => setSecuritySettings({...securitySettings, loginAlerts: e.target.checked})}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Change Password</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
-            <div className="relative">
-              <input
-                type={showCurrentPassword ? "text" : "password"}
-                value={securitySettings.currentPassword}
-                onChange={(e) => setSecuritySettings({...securitySettings, currentPassword: e.target.value})}
-                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <button
-                type="button"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              >
-                {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-            <div className="relative">
-              <input
-                type={showNewPassword ? "text" : "password"}
-                value={securitySettings.newPassword}
-                onChange={(e) => setSecuritySettings({...securitySettings, newPassword: e.target.value})}
-                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <button
-                type="button"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              >
-                {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
-            <input
-              type="password"
-              value={securitySettings.confirmPassword}
-              onChange={(e) => setSecuritySettings({...securitySettings, confirmPassword: e.target.value})}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="flex justify-end">
-        <SaveButton onClick={() => handleSave('security')} />
       </div>
     </div>
   );
@@ -475,11 +362,99 @@ export default function SettingsPage() {
     </div>
   );
 
+  // Load settings on component mount
+  useEffect(() => {
+    if (!user) {
+      router.push('/');
+      return;
+    }
+    
+    loadSettings();
+  }, [user, router]);
+
+  if (!user) {
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <DashboardLayout 
+        title="Settings"
+        subtitle="Manage your account preferences"
+      >
+        <div className="text-center py-12">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading settings...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout 
+        title="Settings"
+        subtitle="Manage your account preferences"
+      >
+        <div className="text-center py-12">
+          <AlertCircle className="w-16 h-16 text-red-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to load settings</h3>
+          <p className="text-red-600 mb-6">{error}</p>
+          <button
+            onClick={() => {
+              setError(null);
+              loadSettings();
+            }}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const tabs = [
+    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'payment', label: 'Payment', icon: CreditCard }
+  ];
+
+  const SaveButton = ({ onClick, disabled = false }) => (
+    <button
+      onClick={onClick}
+      disabled={disabled || saveStatus === 'saving'}
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+        saveStatus === 'success' 
+          ? 'bg-green-600 text-white' 
+          : saveStatus === 'saving'
+          ? 'bg-gray-400 text-white cursor-not-allowed'
+          : 'bg-blue-600 text-white hover:bg-blue-700'
+      }`}
+    >
+      {saveStatus === 'success' ? (
+        <>
+          <CheckCircle className="w-4 h-4" />
+          Saved!
+        </>
+      ) : saveStatus === 'saving' ? (
+        <>
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          Saving...
+        </>
+      ) : (
+        <>
+          <Save className="w-4 h-4" />
+          Save Changes
+        </>
+      )}
+    </button>
+  );
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'profile': return <ProfileTab />;
       case 'notifications': return <NotificationsTab />;
-      case 'security': return <SecurityTab />;
       case 'payment': return <PaymentTab />;
       default: return <ProfileTab />;
     }
@@ -490,37 +465,33 @@ export default function SettingsPage() {
       title="Settings"
       subtitle="Manage your account preferences and settings"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
-        {/* Sidebar */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl border border-gray-100 p-4">
-            <nav className="space-y-2">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                      activeTab === tab.id 
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{tab.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
+      <div className="max-w-4xl mx-auto">
+        {/* Horizontal Scrolling Tabs */}
+        <div className="bg-white rounded-xl border border-gray-100 p-1 mb-6">
+          <div className="flex overflow-x-auto scrollbar-hide">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                    activeTab === tab.id 
+                      ? 'bg-blue-600 text-white shadow-md' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* Content */}
-        <div className="lg:col-span-3">
-          <div className="bg-white rounded-xl border border-gray-100 p-6 lg:p-8">
-            {renderTabContent()}
-          </div>
+        <div className="bg-white rounded-xl border border-gray-100 p-6 lg:p-8">
+          {renderTabContent()}
         </div>
       </div>
     </DashboardLayout>
