@@ -341,8 +341,9 @@ export default function PoolsPage() {
   if (loading) {
     return (
       <DashboardLayout title="Pools" subtitle="Manage your pools and contributions">
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="text-center py-12">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading pools...</p>
         </div>
       </DashboardLayout>
     );
