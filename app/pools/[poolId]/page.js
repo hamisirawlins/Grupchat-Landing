@@ -96,7 +96,6 @@ function PoolDetailPageContent() {
       const response = await dashboardAPI.getUserProfile();
       if (response.success) {
         setUserProfile(response.data.user);
-        console.log('User profile loaded:', response.data.user); // Debug log
       }
     } catch (error) {
       console.error('Failed to load user profile:', error);
@@ -139,7 +138,7 @@ function PoolDetailPageContent() {
         createdAt: pool.createdAt,
         role: membership ? membership.role : 'member',
         creator: pool.creatorId || 'Unknown',
-        // Add the missing data for enhanced insights
+        paybillIdentifier: pool.paybillIdentifier,
         members,
         transactions,
         insights
@@ -1249,144 +1248,161 @@ function PoolDetailPageContent() {
                       </div>
                     </div>
 
-              {/* Amount Input */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Amount (KSh) *
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
-                    KSh
-                  </span>
-                  <input
-                    type="number"
-                    value={depositForm.amount}
-                    onChange={(e) => setDepositForm({...depositForm, amount: e.target.value})}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
-                    placeholder="Enter amount"
-                    min="10"
-                    step="1"
-                    required
-                  />
+              {/* Amount Input - Only for STK Push */}
+              {paymentMethod === 'stk' && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Amount (KSh) *
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+                      KSh
+                    </span>
+                    <input
+                      type="number"
+                      value={depositForm.amount}
+                      onChange={(e) => setDepositForm({...depositForm, amount: e.target.value})}
+                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
+                      placeholder="Enter amount"
+                      min="10"
+                      step="1"
+                      required
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Minimum amount: KSh 10</p>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Minimum amount: KSh 10</p>
-              </div>
+              )}
 
-                                  {/* Phone Number Input - Only for STK Push */}
-                    {paymentMethod === 'stk' && (
-                      <div className="mb-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <label className="block text-sm font-medium text-gray-700">
-                            M-Pesa Phone Number *
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500">Use profile phone</span>
-                            <button
-                              type="button"
-                              onClick={() => setUseProfilePhone(!useProfilePhone)}
-                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                                useProfilePhone ? 'bg-blue-600' : 'bg-gray-200'
-                              }`}
-                            >
-                              <span
-                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                  useProfilePhone ? 'translate-x-5' : 'translate-x-1'
-                                }`}
-                              />
-                            </button>
-                          </div>
-                        </div>
-                        
-                        {useProfilePhone ? (
-                          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
-                            <div className="flex items-center gap-2">
-                              <Smartphone className="w-4 h-4 text-blue-600" />
-                              <span className="text-sm font-medium text-blue-900">
-                                {userProfile?.phone || 'No phone number in profile'}
-                              </span>
-                            </div>
-                            {!userProfile?.phone && (
-                              <p className="text-xs text-blue-600 mt-1">
-                                Please add a phone number to your profile or toggle to manual input
-                              </p>
-                            )}
-                            {/* Debug info */}
-                            {process.env.NODE_ENV === 'development' && (
-                              <p className="text-xs text-gray-500 mt-1">
-                                Debug: userProfile.phone = {userProfile?.phone || 'undefined'}
-                              </p>
-                            )}
-                          </div>
-                        ) : (
-                          <input
-                            type="tel"
-                            value={depositForm.phone}
-                            onChange={(e) => setDepositForm({...depositForm, phone: e.target.value})}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
-                            placeholder="0715234234 or 254715234234"
-                            required
-                          />
-                        )}
-                        
-                        <p className="text-xs text-gray-500 mt-1">
-                          {useProfilePhone 
-                            ? 'Using phone number from your profile'
-                            : 'Enter your phone number in any format (0715234234, 715234234, or 254715234234)'
-                          }
-                        </p>
+              {/* Phone Number Input - Only for STK Push */}
+              {paymentMethod === 'stk' && (
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      M-Pesa Phone Number *
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">Use profile phone</span>
+                      <button
+                        type="button"
+                        onClick={() => setUseProfilePhone(!useProfilePhone)}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                          useProfilePhone ? 'bg-blue-600' : 'bg-gray-200'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            useProfilePhone ? 'translate-x-5' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {useProfilePhone ? (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                      <div className="flex items-center gap-2">
+                        <Smartphone className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-900">
+                          {userProfile?.phone || 'No phone number in profile'}
+                        </span>
                       </div>
-                    )}
+                      {!userProfile?.phone && (
+                        <p className="text-xs text-blue-600 mt-1">
+                          Please add a phone number to your profile or toggle to manual input
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <input
+                      type="tel"
+                      value={depositForm.phone}
+                      onChange={(e) => setDepositForm({...depositForm, phone: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
+                      placeholder="0715234234 or 254715234234"
+                      required
+                    />
+                  )}
+                  
+                  <p className="text-xs text-gray-500 mt-1">
+                    {useProfilePhone 
+                      ? 'Using phone number from your profile'
+                      : 'Enter your phone number in any format (0715234234, 715234234, or 254715234234)'
+                    }
+                  </p>
+                </div>
+              )}
 
-                    {/* Paybill Instructions */}
-                    {paymentMethod === 'paybill' && (
-                      <div className="mb-6">
-                        <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                          <div className="flex items-start gap-3">
-                            <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <h4 className="font-medium text-blue-900 text-sm mb-2">Paybill Payment Instructions</h4>
-                              <div className="space-y-2 text-xs text-blue-700">
-                                <p>1. Go to M-Pesa on your phone</p>
-                                <p>2. Select "Lipa na M-Pesa" → "Pay Bill"</p>
-                                <p>3. Enter the following details:</p>
-                                <div className="bg-white rounded-lg p-3 mt-2 border border-blue-200">
-                                  <div className="flex justify-between items-center mb-2">
-                                    <span className="font-medium text-blue-900">Paybill Number:</span>
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-mono text-blue-900">4141545</span>
-                                      <button
-                                        type="button"
-                                        onClick={() => navigator.clipboard.writeText('4141545')}
-                                        className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                                        title="Copy paybill number"
-                                      >
-                                        <Copy className="w-3 h-3" />
-                                      </button>
-                                    </div>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                    <span className="font-medium text-blue-900">Account Number:</span>
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-mono text-blue-900 text-xs">{poolData.poolId || 'POOL_ID'}</span>
-                                      <button
-                                        type="button"
-                                        onClick={() => navigator.clipboard.writeText(poolData.poolId || '')}
-                                        className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                                        title="Copy account number"
-                                      >
-                                        <Copy className="w-3 h-3" />
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                                <p>4. Enter the amount: <strong>KSh {depositForm.amount || '___'}</strong></p>
-                                <p>5. Enter your M-Pesa PIN to complete</p>
+              {/* Paybill Instructions */}
+              {paymentMethod === 'paybill' && (
+                <div className="mb-6">
+                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                    <div className="flex items-start gap-3">
+                      <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-medium text-blue-900 text-sm mb-2">Paybill Payment Instructions</h4>
+                        <div className="space-y-2 text-xs text-blue-700">
+                          <p>1. Go to M-Pesa on your phone</p>
+                          <p>2. Select "Lipa na M-Pesa" → "Pay Bill"</p>
+                          <p>3. Enter the following details:</p>
+                          <div className="bg-white rounded-lg p-3 mt-2 border border-blue-200">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="font-medium text-blue-900">Paybill Number:</span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-blue-900">4141545</span>
+                                <button
+                                  type="button"
+                                  onClick={() => navigator.clipboard.writeText('4141545')}
+                                  className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                                  title="Copy paybill number"
+                                >
+                                  <Copy className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="font-medium text-blue-900">Account Number:</span>
+                              <div className="flex items-center gap-2">
+                                {poolData.paybillIdentifier ? (
+                                  <>
+                                    <span className="font-mono text-blue-900 text-sm font-semibold">
+                                      {poolData.paybillIdentifier}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => navigator.clipboard.writeText(poolData.paybillIdentifier)}
+                                      className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                                      title="Copy account number"
+                                    >
+                                      <Copy className="w-3 h-3" />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <span className="text-blue-600 text-sm italic">
+                                    Error generating pool identifier...
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>
+                          <p>4. Enter the amount you want to deposit</p>
+                          <p>5. Enter your M-Pesa PIN to complete</p>
+                          
+                          {/* Additional Information */}
+                          <div className="mt-3 p-2 bg-blue-100 rounded-lg border border-blue-200">
+                            <p className="text-xs text-blue-800 font-medium mb-1">💡 Important Notes:</p>
+                            <ul className="text-xs text-blue-700 space-y-1">
+                              <li>• Use the Account Number above to identify this specific pool</li>
+                              <li>• You can enter any amount you want to contribute</li>
+                              <li>• Payment will be automatically added to this pool</li>
+                              <li>• You'll receive a confirmation SMS from M-Pesa</li>
+                            </ul>
+                          </div>
                         </div>
                       </div>
-                    )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Description Input (Optional) - Only for STK Push */}
               {paymentMethod === 'stk' && (
@@ -1421,7 +1437,8 @@ function PoolDetailPageContent() {
                   Cancel
                 </button>
                 <button
-                  type="submit"
+                  type={paymentMethod === 'paybill' ? 'button' : 'submit'}
+                  onClick={paymentMethod === 'paybill' ? () => setShowDepositModal(false) : undefined}
                   disabled={depositLoading}
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
@@ -1431,7 +1448,7 @@ function PoolDetailPageContent() {
                       Processing...
                     </div>
                   ) : paymentMethod === 'paybill' ? (
-                    'Get Payment Instructions'
+                    'Close'
                   ) : (
                     'Send M-Pesa Request'
                   )}

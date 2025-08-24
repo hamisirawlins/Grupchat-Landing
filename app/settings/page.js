@@ -6,68 +6,45 @@ import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { dashboardAPI, handleApiError } from '@/lib/api';
 import { 
-  Settings,
   User,
   Bell,
-  Shield,
-  CreditCard,
   Smartphone,
   Mail,
-  Lock,
-  Globe,
-  Moon,
-  Sun,
   Volume2,
-  ArrowLeft,
   Save,
-  Eye,
-  EyeOff,
   CheckCircle,
   AlertCircle,
+  ArrowLeft,
+  Eye,
+  EyeOff,
   Info
 } from 'lucide-react';
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('profile');
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [saveStatus, setSaveStatus] = useState('');
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
-  // Settings state
-  const [profileSettings, setProfileSettings] = useState({
+  // Form state
+  const [formData, setFormData] = useState({
+    // Profile section
     displayName: '',
-    email: '',
     phone: '',
     language: 'en',
-    timezone: 'Africa/Nairobi'
-  });
+    timezone: 'Africa/Nairobi',
 
-  const [notificationSettings, setNotificationSettings] = useState({
+    // Notification section
     in_app: true,
     fcm: true,
     email: true
   });
 
-  const [securitySettings, setSecuritySettings] = useState({
-    twoFactorAuth: false,
-    loginAlerts: true,
-    sessionTimeout: '30',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-
-  const [paymentSettings, setPaymentSettings] = useState({
-    defaultPaymentMethod: 'mpesa',
-    mpesaNumber: '+254712345678',
-    autoContribution: false,
-    contributionAmount: '5000',
-    contributionFrequency: 'monthly'
-  });
+  // Phone number formatting state
+  const [phoneDisplay, setPhoneDisplay] = useState('');
+  const [phoneError, setPhoneError] = useState('');
 
   // Load settings function
   const loadSettings = async () => {
@@ -79,18 +56,29 @@ export default function SettingsPage() {
       const profileResponse = await dashboardAPI.getUserProfile();
       if (profileResponse.success) {
         const userData = profileResponse.data.user;
-        setProfileSettings(prev => ({
+        const phone = userData.phone || '';
+        
+        setFormData(prev => ({
           ...prev,
           displayName: userData.displayName || '',
-          email: userData.email || '',
-          phone: userData.phone || ''
+          phone: phone
         }));
+        
+        // Format phone for display (remove + and show local format)
+        if (phone) {
+          setPhoneDisplay(formatPhoneForDisplay(phone));
+        }
       }
 
       // Load notification settings
       const notificationResponse = await dashboardAPI.getNotificationSettings();
       if (notificationResponse.success) {
-        setNotificationSettings(notificationResponse.data);
+        setFormData(prev => ({
+          ...prev,
+          in_app: notificationResponse.data.in_app ?? true,
+          fcm: notificationResponse.data.fcm ?? true,
+          email: notificationResponse.data.email ?? true
+        }));
       }
 
       setLoading(false);
@@ -101,266 +89,146 @@ export default function SettingsPage() {
     }
   };
 
-  // Memoized functions - moved to top level to fix hooks order
-  const handleSave = async (settingsType) => {
-    setSaveStatus('saving');
+  // Phone number formatting functions
+  const formatPhoneForDisplay = (internationalPhone) => {
+    if (!internationalPhone) return '';
     
-    try {
-      if (settingsType === 'profile') {
-        const response = await dashboardAPI.updateProfile({
-          displayName: profileSettings.displayName,
-          phone: profileSettings.phone
-        });
-        
-        if (response.success) {
-          setSaveStatus('success');
-          setTimeout(() => setSaveStatus(''), 3000);
-        } else {
-          setSaveStatus('error');
-          setTimeout(() => setSaveStatus(''), 3000);
-        }
-      } else if (settingsType === 'notifications') {
-        const response = await dashboardAPI.updateNotificationSettings(notificationSettings);
-        
-        if (response.success) {
-          setSaveStatus('success');
-          setTimeout(() => setSaveStatus(''), 3000);
-        } else {
-          setSaveStatus('error');
-          setTimeout(() => setSaveStatus(''), 3000);
-        }
-      } else if (settingsType === 'payment') {
-        // For payment settings, simulate API call for now
-        setTimeout(() => {
-          setSaveStatus('success');
-          setTimeout(() => setSaveStatus(''), 3000);
-        }, 1000);
-      }
-    } catch (error) {
-      console.error('Failed to save settings:', error);
-      setSaveStatus('error');
-      setTimeout(() => setSaveStatus(''), 3000);
+    // Remove + and convert to local format
+    const cleanPhone = internationalPhone.replace('+', '');
+    
+    // Handle Kenya numbers (254)
+    if (cleanPhone.startsWith('254')) {
+      return '0' + cleanPhone.substring(3);
     }
+    
+    // Handle other countries (add more as needed)
+    if (cleanPhone.startsWith('1')) { // US/Canada
+      return cleanPhone;
+    }
+    
+    return cleanPhone;
   };
 
-  const ProfileTab = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Personal Information</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Display Name</label>
-            <input
-              type="text"
-              value={profileSettings.displayName}
-              onChange={(e) => setProfileSettings({...profileSettings, displayName: e.target.value})}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-            <input
-              type="tel"
-              value={profileSettings.phone}
-              onChange={(e) => setProfileSettings({...profileSettings, phone: e.target.value})}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-            <input
-              type="email"
-              value={profileSettings.email}
-              disabled
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-            />
-            <p className="text-xs text-gray-500 mt-1">Email cannot be changed for security reasons</p>
-          </div>
-        </div>
-      </div>
+  const formatPhoneForAPI = (localPhone) => {
+    if (!localPhone) return '';
+    
+    // Convert local format to international
+    let internationalPhone = localPhone;
+    
+    // Handle Kenya numbers (0 -> +254)
+    if (localPhone.startsWith('0')) {
+      internationalPhone = '+254' + localPhone.substring(1);
+    } else if (localPhone.startsWith('254')) {
+      internationalPhone = '+' + localPhone;
+    } else if (!localPhone.startsWith('+')) {
+      // Assume it's a local number, add +254 for Kenya
+      internationalPhone = '+254' + localPhone;
+    }
+    
+    return internationalPhone;
+  };
 
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Preferences</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
-            <select
-              value={profileSettings.language}
-              onChange={(e) => setProfileSettings({...profileSettings, language: e.target.value})}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            >
-              <option value="en">English</option>
-              <option value="sw">Kiswahili</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Timezone</label>
-            <select
-              value={profileSettings.timezone}
-              onChange={(e) => setProfileSettings({...profileSettings, timezone: e.target.value})}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            >
-              <option value="Africa/Nairobi">Africa/Nairobi (EAT)</option>
-              <option value="UTC">UTC</option>
-            </select>
-          </div>
-        </div>
-      </div>
+  const validatePhone = (phone) => {
+    if (!phone) return 'Phone number is required';
+    
+    const digits = phone.replace(/\D/g, '');
+    
+    // Kenya mobile number validation
+    if (digits.startsWith('254')) {
+      // International format: +254712345678
+      if (digits.length !== 12) {
+        return 'Kenya international number must be 12 digits (254 + 9 digits)';
+      }
+      // Validate that the part after 254 is a valid mobile prefix
+      const mobilePart = digits.substring(3);
+      if (!/^[17]\d{8}$/.test(mobilePart)) {
+        return 'Invalid Kenya mobile number format after 254';
+      }
+    } else if (digits.startsWith('07') || digits.startsWith('01')) {
+      // Local format: 0712345678 or 0112345678
+      if (digits.length !== 10) {
+        return 'Kenya local number must be 10 digits (07XX XXX XXX)';
+      }
+      // Validate mobile prefixes (07) and landline prefixes (01)
+      if (digits.startsWith('07')) {
+        // Mobile: 07XX XXX XXX
+        if (!/^07[17]\d{7}$/.test(digits)) {
+          return 'Invalid Kenya mobile number format (07XX XXX XXX)';
+        }
+      } else if (digits.startsWith('01')) {
+        // Landline: 01XX XXX XXX
+        if (!/^01\d{8}$/.test(digits)) {
+          return 'Invalid Kenya landline number format (01XX XXX XXX)';
+        }
+      }
+    } else {
+      return 'Please enter a valid Kenya phone number starting with 07, 01, or +254';
+    }
+    
+    if (/^0+$/.test(digits)) {
+      return 'Phone number cannot be all zeros';
+    }
+    
+    return '';
+  };
 
-      <div className="flex justify-end">
-        <SaveButton onClick={() => handleSave('profile')} />
-      </div>
-    </div>
-  );
+  const handlePhoneChange = (value) => {
+    setFormData(prev => ({ ...prev, phone: value }));
+    setPhoneDisplay(value);
+    
+    const error = validatePhone(value);
+    setPhoneError(error);
+  };
 
-  const NotificationsTab = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Notification Channels</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Volume2 className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="font-medium text-gray-900">In-App Notifications</p>
-                <p className="text-sm text-gray-500">Receive notifications within the app</p>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={notificationSettings.in_app}
-                onChange={(e) => setNotificationSettings({...notificationSettings, in_app: e.target.checked})}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
+  // Save settings function
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccessMessage('');
 
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Smartphone className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="font-medium text-gray-900">Push Notifications</p>
-                <p className="text-sm text-gray-500">Receive notifications on your device</p>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={notificationSettings.fcm}
-                onChange={(e) => setNotificationSettings({...notificationSettings, fcm: e.target.checked})}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
+      // Validate phone number
+      const phoneError = validatePhone(formData.phone);
+      if (phoneError) {
+        setError(phoneError);
+        setSaving(false);
+        return;
+      }
 
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Mail className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="font-medium text-gray-900">Email Notifications</p>
-                <p className="text-sm text-gray-500">Receive notifications via email</p>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={notificationSettings.email}
-                onChange={(e) => setNotificationSettings({...notificationSettings, email: e.target.checked})}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-        </div>
-      </div>
+      // Format phone for API
+      const internationalPhone = formatPhoneForAPI(formData.phone);
 
-      <div className="flex justify-end">
-        <SaveButton onClick={() => handleSave('notifications')} />
-      </div>
-    </div>
-  );
+      // Save profile settings
+      const profileResponse = await dashboardAPI.updateProfile({
+        displayName: formData.displayName,
+        phone: internationalPhone
+      });
 
-  const PaymentTab = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Methods</h3>
-        <div className="space-y-4">
-          <div className="p-4 border border-gray-300 rounded-lg">
-            <div className="flex items-center gap-3 mb-3">
-              <Smartphone className="w-6 h-6 text-green-600" />
-              <div>
-                <p className="font-medium text-gray-900">M-Pesa</p>
-                <p className="text-sm text-gray-500">Mobile money payments</p>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-              <input
-                type="tel"
-                value={paymentSettings.mpesaNumber}
-                onChange={(e) => setPaymentSettings({...paymentSettings, mpesaNumber: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      if (!profileResponse.success) {
+        throw new Error(profileResponse.message || 'Failed to update profile');
+      }
 
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Auto Contribution</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div>
-              <p className="font-medium text-gray-900">Enable Auto Contribution</p>
-              <p className="text-sm text-gray-500">Automatically contribute to your pools</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={paymentSettings.autoContribution}
-                onChange={(e) => setPaymentSettings({...paymentSettings, autoContribution: e.target.checked})}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
+      // Save notification settings
+      const notificationResponse = await dashboardAPI.updateNotificationSettings({
+        in_app: formData.in_app,
+        fcm: formData.fcm,
+        email: formData.email
+      });
 
-          {paymentSettings.autoContribution && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Amount (KSh)</label>
-                <input
-                  type="number"
-                  value={paymentSettings.contributionAmount}
-                  onChange={(e) => setPaymentSettings({...paymentSettings, contributionAmount: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Frequency</label>
-                <select
-                  value={paymentSettings.contributionFrequency}
-                  onChange={(e) => setPaymentSettings({...paymentSettings, contributionFrequency: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                >
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="quarterly">Quarterly</option>
-                </select>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      if (!notificationResponse.success) {
+        throw new Error(notificationResponse.message || 'Failed to update notifications');
+      }
 
-      <div className="flex justify-end">
-        <SaveButton onClick={() => handleSave('payment')} />
-      </div>
-    </div>
-  );
+      setSuccessMessage('Settings saved successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      
+    } catch (error) {
+      console.error('Failed to save settings:', error);
+      setError(handleApiError(error, 'Failed to save settings'));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Load settings on component mount
   useEffect(() => {
@@ -390,109 +258,189 @@ export default function SettingsPage() {
     );
   }
 
-  if (error) {
     return (
       <DashboardLayout 
         title="Settings"
-        subtitle="Manage your account preferences"
-      >
-        <div className="text-center py-12">
-          <AlertCircle className="w-16 h-16 text-red-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to load settings</h3>
-          <p className="text-red-600 mb-6">{error}</p>
-          <button
-            onClick={() => {
-              setError(null);
-              loadSettings();
-            }}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-          >
-            Try Again
-          </button>
+      subtitle="Manage your account preferences and settings"
+    >
+      <div className="max-w-6xl mx-auto px-4">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-red-500" />
+              <p className="text-red-700">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-500" />
+              <p className="text-green-700">{successMessage}</p>
+            </div>
         </div>
-      </DashboardLayout>
-    );
-  }
+        )}
 
-  const tabs = [
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'payment', label: 'Payment', icon: CreditCard }
-  ];
+        <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-8 w-full lg:w-3/4 lg:mx-auto">
+          
+          {/* Profile Section */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <User className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Profile Information</h3>
+                <p className="text-sm text-gray-500">Update your personal details and payment number</p>
+              </div>
+            </div>
 
-  const SaveButton = ({ onClick, disabled = false }) => (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Display Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.displayName}
+                  onChange={(e) => setFormData({...formData, displayName: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter your display name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
+                <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Smartphone className="w-5 h-5 text-purple-600" />
+                    <div>
+                      <p className="font-medium text-purple-900">M-Pesa Payment Number</p>
+                       </div>
+                  </div>
+                  
+                  <input
+                    type="tel"
+                    value={phoneDisplay}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                      phoneError ? 'border-red-300' : 'border-purple-300'
+                    }`}
+                    placeholder="e.g., 0712345678"
+                  />
+                  {phoneError && (
+                    <p className="text-sm text-red-600 mt-1">{phoneError}</p>
+                  )}
+                  <p className="text-xs text-purple-600 mt-1">
+                    e.g., 0712345678
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Notifications Section */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <Bell className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+                <p className="text-sm text-gray-500">Choose how you want to be notified</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Volume2 className="w-5 h-5 text-gray-600" />
+                  <div>
+                    <p className="font-medium text-gray-900">In-App Notifications</p>
+                    <p className="text-sm text-gray-500">Receive notifications within the app</p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.in_app}
+                    onChange={(e) => setFormData({...formData, in_app: e.target.checked})}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Smartphone className="w-5 h-5 text-gray-600" />
+                  <div>
+                    <p className="font-medium text-gray-900">Push Notifications</p>
+                    <p className="text-sm text-gray-500">Receive notifications on your device</p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.fcm}
+                    onChange={(e) => setFormData({...formData, fcm: e.target.checked})}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <Mail className="w-5 h-5 text-gray-600" />
+                  <div>
+                    <p className="font-medium text-gray-900">Email Notifications</p>
+                    <p className="text-sm text-gray-500">Receive notifications via email</p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.checked})}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <div className="sticky bottom-4 bg-white border-t border-gray-200 pt-4">
     <button
-      onClick={onClick}
-      disabled={disabled || saveStatus === 'saving'}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-        saveStatus === 'success' 
-          ? 'bg-green-600 text-white' 
-          : saveStatus === 'saving'
+              type="submit"
+              disabled={saving || phoneError}
+              className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+                saving || phoneError
           ? 'bg-gray-400 text-white cursor-not-allowed'
           : 'bg-blue-600 text-white hover:bg-blue-700'
       }`}
     >
-      {saveStatus === 'success' ? (
-        <>
-          <CheckCircle className="w-4 h-4" />
-          Saved!
-        </>
-      ) : saveStatus === 'saving' ? (
-        <>
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              {saving ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
           Saving...
         </>
       ) : (
         <>
-          <Save className="w-4 h-4" />
-          Save Changes
+                  <Save className="w-5 h-5" />
+                  Save All Changes
         </>
       )}
     </button>
-  );
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'profile': return <ProfileTab />;
-      case 'notifications': return <NotificationsTab />;
-      case 'payment': return <PaymentTab />;
-      default: return <ProfileTab />;
-    }
-  };
-
-  return (
-    <DashboardLayout 
-      title="Settings"
-      subtitle="Manage your account preferences and settings"
-    >
-      <div className="max-w-4xl mx-auto">
-        {/* Horizontal Scrolling Tabs */}
-        <div className="bg-white rounded-xl border border-gray-100 p-1 mb-6">
-          <div className="flex overflow-x-auto scrollbar-hide">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                    activeTab === tab.id 
-                      ? 'bg-blue-600 text-white shadow-md' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {tab.label}
-                </button>
-              );
-            })}
           </div>
-        </div>
-
-        {/* Content */}
-        <div className="bg-white rounded-xl border border-gray-100 p-6 lg:p-8">
-          {renderTabContent()}
-        </div>
+        </form>
       </div>
     </DashboardLayout>
   );
