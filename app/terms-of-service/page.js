@@ -117,7 +117,7 @@ export default function TermsOfService() {
                     <li>Creating and managing group funding pools</li>
                     <li>Facilitating M-Pesa transactions</li>
                     <li>Tracking contributions and progress toward goals</li>
-                    <li>Providing transparency in group financial activities</li>
+                    <li>Providing transparency in group activities</li>
                   </ul>
                 </section>
 
@@ -160,15 +160,15 @@ export default function TermsOfService() {
                 </section>
 
                 <section>
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">5. Financial Transactions</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">5. Transactions</h2>
                   <p className="leading-relaxed mb-4">
-                    GrupChat facilitates financial transactions through M-Pesa integration. By using our service, you understand and agree that:
+                    GrupChat facilitates transactions through M-Pesa integration. By using our service, you understand and agree that:
                   </p>
                   <ul className="list-disc ml-6 space-y-3">
                     <li>All transactions are subject to M-Pesa terms and conditions</li>
                     <li>Transaction fees may apply as disclosed in the app</li>
                     <li>We are not responsible for M-Pesa system failures or delays</li>
-                    <li>You are responsible for ensuring sufficient funds for contributions</li>
+                    <li>You are responsible for ensuring sufficient funds for withdrawals</li>
                     <li>Disputed transactions should be reported immediately through our support channels</li>
                   </ul>
                 </section>

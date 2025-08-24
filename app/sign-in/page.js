@@ -267,7 +267,7 @@ export default function SignIn() {
                   Welcome Back
                 </h1>
                 <p className="text-gray-600 text-base sm:text-lg">
-                  Sign in to continue your financial journey
+                  Sign in to continue your journey
                 </p>
               </motion.div>
 

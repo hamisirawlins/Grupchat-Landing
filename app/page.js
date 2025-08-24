@@ -716,7 +716,7 @@ export default function Home() {
              transition={{ duration: 0.8, delay: 0.2 }}
              viewport={{ once: true }}
            >
-             The smart way to achieve your group financial goals
+             The smart way to achieve your group goals
            </motion.p>
          </motion.div>
 
@@ -1318,7 +1318,7 @@ export default function Home() {
                transition={{ duration: 0.8, delay: 0.2 }}
                viewport={{ once: true }}
              >
-               Download GrupChat today and start achieving your group financial goals with friends and family
+               Download GrupChat today and start achieving your group goals with friends and family
              </motion.p>
            </motion.div>
 

@@ -317,7 +317,7 @@ function JoinPageContent() {
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span>Collaborative financial goals</span>
+                  <span>Collaborative goals</span>
                 </div>
               </div>
             </div>
