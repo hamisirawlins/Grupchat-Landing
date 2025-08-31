@@ -29,7 +29,8 @@ import {
   Clock,
   BarChart,
   Menu,
-  X
+  X,
+  UserCircle
 } from 'lucide-react';
 
 // Import our beautiful chart components
@@ -105,7 +106,7 @@ export default function Dashboard() {
         type: pool.type || 'general',
         members: pool.memberships?.map(m => ({
           name: m.users?.display_name || 'Unknown',
-          avatar: `https://images.unsplash.com/photo-${1507003211169 + Math.random()}?w=40&h=40&fit=crop&crop=face`
+          avatar: null // Will use icon instead
         })) || []
       })));
 
@@ -125,7 +126,7 @@ export default function Dashboard() {
         },
         topPerformers: topContributors.map((contributor, index) => ({
           ...contributor,
-          avatar: `https://images.unsplash.com/photo-${1507003211169 + index}?w=80&h=80&fit=crop&crop=face`
+          avatar: null // Will use icon instead
         }))
       };
 
@@ -252,12 +253,12 @@ export default function Dashboard() {
         </div>
         <div className="flex -space-x-2 ml-3 flex-shrink-0">
           {pool.members.slice(0, 3).map((member, i) => (
-            <img 
+            <div 
               key={i} 
-              src={member.avatar} 
-              alt="" 
-              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-white object-cover"
-            />
+              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-white bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center"
+            >
+              <UserCircle className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+            </div>
           ))}
           {pool.memberCount > pool.members.length && (
             <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-300 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium text-gray-600">
@@ -572,11 +573,9 @@ export default function Dashboard() {
                 <div className="grid grid-cols-2 gap-6">
                   {chartData.topPerformers.map((performer) => (
                     <div key={performer.rank} className="text-center">
-                      <img 
-                        src={performer.avatar} 
-                        alt={performer.name}
-                        className="w-16 h-16 rounded-full mx-auto mb-3 object-cover"
-                      />
+                      <div className="w-16 h-16 rounded-full mx-auto mb-3 bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center border-2 border-purple-200">
+                        <UserCircle className="w-8 h-8 text-purple-600" />
+                      </div>
                       <p className="text-sm font-medium text-gray-900">{performer.position}</p>
                       <p className="text-xs text-gray-500">{performer.name}</p>
                     </div>
