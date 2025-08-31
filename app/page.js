@@ -203,7 +203,7 @@ export default function Home() {
               <img 
                 src="/logo.png" 
                 alt="GrupChat Logo" 
-                className="w-12 h-12 sm:w-12 sm:h-12 object-contain"
+                className="w-16 h-16 sm:w-18 sm:h-18 object-contain"
               />
               <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                 GrupChat
@@ -596,7 +596,7 @@ export default function Home() {
                  Real-time Progress Tracking
                </h3>
                <p className="text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
-                 Monitor contributions, track progress, and get instant notifications when goals are reached.
+                 Monitor contributions, track progress, and get instant notifications and pool updates.
                </p>
               </div>
            </motion.div>
@@ -706,7 +706,7 @@ export default function Home() {
                            transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
                          >
                            <div className="flex justify-between items-center mb-2">
-                             <div className="text-white text-sm font-medium">Mom's Gift</div>
+                             <div className="text-white text-sm font-medium">Shaniqwa's Gift</div>
                              <div className="text-yellow-400 text-xs">45%</div>
               </div>
                            <div className="w-full bg-gray-600 rounded-full h-2">
@@ -845,7 +845,7 @@ export default function Home() {
                  Complete Transparency
                </h3>
                <p className="text-gray-600 group-hover:text-gray-700 transition-colors duration-300">
-                 Every transaction is recorded and visible to all group members. Free your Designated Treasurer from the burden!
+                 Every transaction is recorded and visible to all group members. Free your designated treasurer from the burden!
                </p>
              </div>
            </motion.div>
@@ -1107,7 +1107,7 @@ export default function Home() {
                      Create Your Pool
                    </h3>
                    <p className="text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
-                     Set up a new pool, name it, and set your target amount. Invite friends and family to join.
+                     Set up a new pool, name it, and set your target amount. Invite your crew to join it.
                    </p>
                  </motion.div>
             </div>
@@ -1183,7 +1183,7 @@ export default function Home() {
                      Start Pooling
                    </h3>
                    <p className="text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
-                     Make contributions anytime. Track progress and get notified when goals are reached.
+                     Make contributions anytime. Track progress and get notified with pool updates.
                    </p>
                  </motion.div>
             </div>
@@ -1296,7 +1296,7 @@ export default function Home() {
             //  },
              {
                question: "What happens if we don't reach our goal?",
-               answer: "You can keep depositing to the pool until the goal is reached. No restrictions."
+               answer: "You can keep depositing to the pool until the goal is reached. No restrictions. You can also withdraw depending on the pool settings and your role in the pool."
              },
              {
                question: "Can I withdraw my contribution before the goal is reached?",
@@ -1312,7 +1312,7 @@ export default function Home() {
              },
              {
                question: "Do all group members need to have the app?",
-               answer: "Yes, all group members need to download the GrupChat app to participate in pools. This ensures transparency and security for all transactions."
+               answer: "No, not all group members need to download the GrupChat apps to participate in pools. They can easily access the web app free of charge and still participate in pools. This ensures transparency and security within the pool and group."
              }
            ].map((faq, index) => (
              <motion.div
@@ -1522,7 +1522,7 @@ export default function Home() {
               <img 
                 src="/logo.png" 
                 alt="GrupChat Logo" 
-                className="w-10 h-10 object-contain"
+                className="w-16 h-16 object-contain"
               />
               <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
                 GrupChat

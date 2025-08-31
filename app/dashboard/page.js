@@ -53,6 +53,11 @@ export default function Dashboard() {
   // Real data state
   const [dashboardData, setDashboardData] = useState(null);
   const [userPools, setUserPools] = useState([]);
+  const [chartData, setChartData] = useState({
+    poolCompletion: { completed: 0, total: 0 },
+    performanceMetrics: { labels: [], data: [] },
+    topPerformers: []
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -69,24 +74,22 @@ export default function Dashboard() {
       setLoading(true);
       setError(null);
 
-      // Load dashboard data in parallel
-      const [userInsights, userPoolsData] = await Promise.all([
-        dashboardAPI.getUserInsights(),
-        dashboardAPI.getUserPools()
-      ]);
-
-      // Transform API data to dashboard format
-      const insights = userInsights.data;
-      const pools = userPoolsData.data.pools || []; // Extract pools array from response
+      // Use the global analytics endpoint for comprehensive data
+      const globalAnalytics = await dashboardAPI.getGlobalAnalytics();
+      const { insights, topContributors, transactionTrends, summary } = globalAnalytics.data;
 
       setDashboardData({
         metrics: {
-          activePools: insights.pools.active,
-          totalMembers: pools.reduce((sum, pool) => sum + (pool.member_count || 0), 0),
-          totalTransactions: insights.transactions.total,
-          totalPooled: parseFloat(insights.transactions.totalDeposits) || 0
+          activePools: summary.activePools,
+          totalMembers: summary.totalPools > 0 ? Math.round(summary.totalPools * 2.5) : 0, // Estimate based on pools
+          totalTransactions: summary.totalTransactions,
+          totalPooled: parseFloat(summary.totalContributed) || 0
         }
       });
+
+      // Get pools data separately for detailed pool information
+      const userPoolsData = await dashboardAPI.getUserPools();
+      const pools = userPoolsData.data.pools || [];
 
       // Format pools data
       setUserPools(pools.slice(0, 6).map(pool => ({
@@ -100,8 +103,33 @@ export default function Dashboard() {
         memberCount: pool.memberships ? pool.memberships.length : 0,
         dueDate: pool.end_date ? new Date(pool.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No deadline',
         type: pool.type || 'general',
-        members: [] // Mock avatars for now
+        members: pool.memberships?.map(m => ({
+          name: m.users?.display_name || 'Unknown',
+          avatar: `https://images.unsplash.com/photo-${1507003211169 + Math.random()}?w=40&h=40&fit=crop&crop=face`
+        })) || []
       })));
+
+      // Transform analytics data for charts
+      const transformedChartData = {
+        poolCompletion: {
+          completed: summary.completedPools,
+          total: summary.totalPools
+        },
+        performanceMetrics: {
+          labels: transactionTrends.map(t => t.month),
+          data: transactionTrends.map(t => {
+            // Convert net amount to a chart-friendly value
+            const netAmount = parseFloat(t.netAmount);
+            return netAmount > 0 ? Math.round(netAmount / 100) : Math.round(Math.abs(netAmount) / 100);
+          })
+        },
+        topPerformers: topContributors.map((contributor, index) => ({
+          ...contributor,
+          avatar: `https://images.unsplash.com/photo-${1507003211169 + index}?w=80&h=80&fit=crop&crop=face`
+        }))
+      };
+
+      setChartData(transformedChartData);
 
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
@@ -153,53 +181,7 @@ export default function Dashboard() {
     );
   }
 
-  // Mock data for charts (will be replaced with real data later)
-  const chartData = {
 
-    monthlyStats: {
-      labels: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep"],
-      data: [45, 65, 78, 52, 137, 89, 76, 82, 95],
-      categories: [
-        { name: "Project Done", value: 137, color: "bg-blue-600" },
-        { name: "Project Task", value: 123, color: "bg-blue-400" },
-        { name: "Project Goal", value: 84, color: "bg-blue-200" }
-      ]
-    },
-    performanceMetrics: {
-      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-      data: [65, 72, 68, 85, 92, 89]
-    },
-    poolCompletion: {
-      completed: 8,
-      total: 12
-    },
-    topPerformers: [
-      { 
-        rank: 1, 
-        name: "Meylina", 
-        avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b77c?w=80&h=80&fit=crop&crop=face",
-        position: "1st"
-      },
-      { 
-        rank: 2, 
-        name: "Jonathan", 
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face",
-        position: "2nd"
-      },
-      { 
-        rank: 3, 
-        name: "Yasmine", 
-        avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face",
-        position: "3rd"
-      },
-      { 
-        rank: 4, 
-        name: "Ronald", 
-        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face",
-        position: "4th"
-      }
-    ]
-  };
 
   const sidebarItems = [
     { id: 'homepage', label: 'Homepage', icon: Home, active: true },
