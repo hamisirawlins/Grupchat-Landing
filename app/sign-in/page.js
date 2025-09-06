@@ -146,8 +146,6 @@ export default function SignIn() {
             <div className="hidden lg:flex items-center space-x-8">
               <motion.a href="/#features" className="text-gray-700 hover:text-purple-600 transition-colors" whileHover={{ y: -2 }}>Features</motion.a>
               <motion.a href="/#how-it-works" className="text-gray-700 hover:text-purple-600 transition-colors" whileHover={{ y: -2 }}>How it Works</motion.a>
-              <motion.a href="/#pricing" className="text-gray-700 hover:text-purple-600 transition-colors" whileHover={{ y: -2 }}>Pricing</motion.a>
-              <motion.a href="/#about" className="text-gray-700 hover:text-purple-600 transition-colors" whileHover={{ y: -2 }}>About</motion.a>
             </div>
 
             {/* Desktop Auth Buttons */}
