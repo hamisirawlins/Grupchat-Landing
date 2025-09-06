@@ -235,8 +235,8 @@ export default function NotificationsPage() {
     const colorClass = getNotificationColor(notification.type);
 
     return (
-      <div className={`bg-white rounded-xl p-4 sm:p-6 border transition-all duration-300 hover:shadow-lg ${
-        notification.readAt ? 'border-gray-100' : 'border-blue-200 bg-blue-50/30'
+      <div className={`bg-white/80 backdrop-blur-xl rounded-xl p-4 sm:p-6 border transition-all duration-300 hover:shadow-lg ${
+        notification.readAt ? 'border-white/20' : 'border-purple-200/50 bg-purple-50/30'
       }`}>
         <div className="flex items-start gap-4">
           <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${colorClass}`}>
@@ -253,7 +253,7 @@ export default function NotificationsPage() {
                   <button
                     onClick={() => markAsRead(notification.id)}
                     disabled={markingAsRead.has(notification.id)}
-                    className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-1 text-purple-600 hover:bg-purple-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Mark as read"
                   >
                     {markingAsRead.has(notification.id) ? (
@@ -285,7 +285,7 @@ export default function NotificationsPage() {
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => router.push(`/pools/${notification.data.poolId}`)}
-                    className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors"
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-xl text-xs font-medium hover:shadow-lg transition-all duration-300"
                   >
                     Try Again
                   </button>
@@ -296,7 +296,7 @@ export default function NotificationsPage() {
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => router.push(`/pools/${notification.data.poolId}`)}
-                    className="bg-green-600 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-green-700 transition-colors"
+                    className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1 rounded-xl text-xs font-medium hover:shadow-lg transition-all duration-300"
                   >
                     View Pool
                   </button>
@@ -307,7 +307,7 @@ export default function NotificationsPage() {
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => router.push(`/pools/${notification.data.poolId}`)}
-                    className="bg-purple-600 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors"
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-xl text-xs font-medium hover:shadow-lg transition-all duration-300"
                   >
                     View Pool
                   </button>
@@ -331,7 +331,7 @@ export default function NotificationsPage() {
         subtitle="Stay updated with your pool activities"
       >
         <div className="text-center py-12">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading notifications...</p>
         </div>
       </DashboardLayout>
@@ -350,7 +350,7 @@ export default function NotificationsPage() {
           <p className="text-red-600 mb-6">{error}</p>
           <button
             onClick={loadNotifications}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:shadow-lg transition-all duration-300"
           >
             Try Again
           </button>
@@ -371,7 +371,7 @@ export default function NotificationsPage() {
             <button
               onClick={markAllAsRead}
               disabled={markingAllAsRead}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:shadow-lg transition-all duration-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {markingAllAsRead ? (
                 <>
@@ -436,7 +436,7 @@ export default function NotificationsPage() {
 
       {/* Notification Settings Modal */}
       {showSettings && (
-        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm mb-6">
+        <div className="bg-white/90 backdrop-blur-xl rounded-xl p-6 border border-white/20 shadow-sm mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Notification Settings</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -451,7 +451,7 @@ export default function NotificationsPage() {
                   onChange={(e) => updateSettings({ ...notificationSettings, in_app: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
               </label>
             </div>
             
@@ -467,7 +467,7 @@ export default function NotificationsPage() {
                   onChange={(e) => updateSettings({ ...notificationSettings, fcm: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
               </label>
             </div>
             
@@ -483,7 +483,7 @@ export default function NotificationsPage() {
                   onChange={(e) => updateSettings({ ...notificationSettings, email: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
               </label>
             </div>
           </div>
@@ -492,7 +492,7 @@ export default function NotificationsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 border border-gray-100">
+        <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 border border-white/20">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
               <Bell className="w-5 h-5 text-blue-600" />
@@ -503,7 +503,7 @@ export default function NotificationsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100">
+        <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 border border-white/20">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
               <AlertCircle className="w-5 h-5 text-orange-600" />
@@ -520,20 +520,20 @@ export default function NotificationsPage() {
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
             filter === 'all' 
-              ? 'bg-blue-600 text-white' 
-              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg' 
+              : 'bg-white/80 backdrop-blur-xl text-gray-700 border border-white/20 hover:bg-white/90'
           }`}
         >
           All ({notifications.length})
         </button>
         <button
           onClick={() => setFilter('unread')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
             filter === 'unread' 
-              ? 'bg-blue-600 text-white' 
-              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg' 
+              : 'bg-white/80 backdrop-blur-xl text-gray-700 border border-white/20 hover:bg-white/90'
           }`}
         >
           Unread ({unreadCount})
@@ -556,7 +556,7 @@ export default function NotificationsPage() {
           </p>
           <button
             onClick={() => router.push('/pools')}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:shadow-lg transition-all duration-300"
           >
             View Pool
           </button>

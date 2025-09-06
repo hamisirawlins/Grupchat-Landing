@@ -333,7 +333,7 @@ export default function Home() {
             className="text-lg sm:text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto mb-8 sm:mb-12 leading-relaxed px-4"
             variants={itemVariants}
           >
-            Transform your group conversations into group activities. 
+            Transform your group chats into group activities. 
             Pool funds with friends and family seamlessly, turning dreams into reality.
           </motion.p>
 
@@ -378,7 +378,7 @@ export default function Home() {
               whileHover={{ y: -10, scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <div className="text-4xl font-bold text-blue-600 mb-2">Ksh 250+</div>
+              <div className="text-4xl font-bold text-blue-600 mb-2">Ksh 250k+</div>
               <div className="text-gray-600">Pooled Successfully</div>
             </motion.div>
             
@@ -387,7 +387,7 @@ export default function Home() {
               whileHover={{ y: -10, scale: 1.05 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <div className="text-4xl font-bold text-indigo-600 mb-2">2+</div>
+              <div className="text-4xl font-bold text-indigo-600 mb-2">20+</div>
               <div className="text-gray-600">Dreams Realized</div>
             </motion.div>
           </motion.div>
@@ -512,7 +512,7 @@ export default function Home() {
              }}
              viewport={{ once: true }}
            >
-             <div className="absolute -top-4 left-8">
+             <div className="absolute top-2 left-8">
                <motion.div
                  className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-3 shadow-lg"
                  whileHover={{ scale: 1.1 }}
@@ -523,7 +523,7 @@ export default function Home() {
                  </svg>
                </motion.div>
             </div>
-             <div className="mt-4">
+             <div className="mt-8">
                <h3 className="text-xl font-semibold text-white group-hover:text-purple-300 transition-colors duration-300 mb-2">
                  Create Pools Instantly
                </h3>
@@ -545,7 +545,7 @@ export default function Home() {
              }}
              viewport={{ once: true }}
            >
-             <div className="absolute -top-4 left-8">
+             <div className="absolute top-2 left-8">
                <motion.div
                  className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-3 shadow-lg"
                  whileHover={{ scale: 1.1 }}
@@ -556,7 +556,7 @@ export default function Home() {
                 </svg>
                </motion.div>
               </div>
-             <div className="mt-4">
+             <div className="mt-8">
                <h3 className="text-xl font-semibold text-white group-hover:text-blue-300 transition-colors duration-300 mb-2">
                  Seamless M-Pesa Integration
                </h3>
@@ -578,7 +578,7 @@ export default function Home() {
              }}
              viewport={{ once: true }}
            >
-             <div className="absolute -top-4 left-8">
+             <div className="absolute top-2 left-8">
                <motion.div
                  className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-3 shadow-lg"
                  whileHover={{ scale: 1.1 }}
@@ -589,7 +589,7 @@ export default function Home() {
                 </svg>
                </motion.div>
              </div>
-             <div className="mt-4">
+             <div className="mt-8">
                <h3 className="text-xl font-semibold text-white group-hover:text-purple-300 transition-colors duration-300 mb-2">
                  Real-time Progress Tracking
                </h3>
@@ -625,7 +625,7 @@ export default function Home() {
                  </h3>
                  <ul className="space-y-4">
                    {[
-                     "Instant M-Pesa notifications for all transactions",
+                     "Instant notifications for all transactions",
                      "Easy tracking and reminders",
                      "Secure fund management with transparency"
                    ].map((item, index) => (

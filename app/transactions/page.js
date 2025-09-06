@@ -206,8 +206,8 @@ export default function TransactionsPage() {
   };
 
   const TransactionCard = ({ transaction }) => (
-    <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
-      <div className="flex items-start justify-between mb-4">
+    <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 sm:p-6 border border-white/20 hover:shadow-lg transition-all duration-300">
+      <div className="flex flex-col sm:flex-row items-start justify-between mb-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2">
             <div className="flex items-center gap-2">
@@ -220,7 +220,7 @@ export default function TransactionsPage() {
               )}
               <div>
                 <h3 
-                  className="font-semibold text-gray-900 truncate hover:text-blue-600 cursor-pointer transition-colors"
+                  className="font-semibold text-gray-900 truncate hover:text-purple-600 cursor-pointer transition-colors"
                   onClick={() => router.push(`/pools/${transaction.pool_id}`)}
                   title="Click to view pool details"
                 >
@@ -237,7 +237,7 @@ export default function TransactionsPage() {
             <StatusBadge status={transaction.status} />
           </div>
           <p className="text-sm text-gray-600 mb-2">{transaction.description || 'No description'}</p>
-          <div className="flex items-center gap-4 text-xs text-gray-500">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-500">
             {transaction.reference_id && (
               <span>Ref: {transaction.reference_id}</span>
             )}
@@ -251,7 +251,7 @@ export default function TransactionsPage() {
             )}
           </div>
         </div>
-        <div className="text-right ml-4">
+        <div className="text-right sm:ml-4 mt-2 sm:mt-0 w-full sm:w-auto">
           <p className={`text-lg font-bold ${
             transaction.type === 'deposit' ? 'text-green-600' :
             transaction.type === 'withdrawal' ? 'text-red-600' : 'text-gray-600'
@@ -313,7 +313,7 @@ export default function TransactionsPage() {
           <button 
             onClick={() => loadTransactions()}
             disabled={loading}
-            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors flex items-center gap-2"
+            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors flex items-center gap-2"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
@@ -340,7 +340,7 @@ export default function TransactionsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 border border-gray-100">
+        <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 border border-white/20">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
               <ArrowDownLeft className="w-5 h-5 text-green-600" />
@@ -351,7 +351,7 @@ export default function TransactionsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100">
+        <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 border border-white/20">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
               <ArrowUpRight className="w-5 h-5 text-red-600" />
@@ -362,7 +362,7 @@ export default function TransactionsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-100">
+        <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 border border-white/20">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-blue-600" />
@@ -378,8 +378,8 @@ export default function TransactionsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl p-4 border border-gray-100 mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 border border-white/20 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -387,7 +387,7 @@ export default function TransactionsPage() {
               placeholder="Search by pool name, description, or reference..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
 
           </div>
@@ -397,7 +397,7 @@ export default function TransactionsPage() {
               setFilterType(e.target.value);
               handleFilterChange();
             }}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
           >
             <option value="all">All Types</option>
             <option value="deposit">Deposits</option>
@@ -410,7 +410,7 @@ export default function TransactionsPage() {
               setFilterStatus(e.target.value);
               handleFilterChange();
             }}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
           >
             <option value="all">All Status</option>
             <option value="success">Success</option>
@@ -419,7 +419,7 @@ export default function TransactionsPage() {
           <select
             value={dateRange}
             onChange={(e) => handleDateRangeChange(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 bg-white"
+            className="px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-purple-500 bg-white"
           >
             <option value="all">All Time</option>
             <option value="7d">Last 7 days</option>
@@ -432,7 +432,7 @@ export default function TransactionsPage() {
         <div className="mt-4 pt-4 border-t border-gray-200">
           <button
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700 font-medium"
           >
             <Filter className="w-4 h-4" />
             {showAdvancedFilters ? 'Hide' : 'Show'} Advanced Filters
@@ -442,7 +442,7 @@ export default function TransactionsPage() {
         {/* Advanced Filters */}
         {showAdvancedFilters && (
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {/* Custom Date Range */}
               {dateRange === 'custom' && (
                 <>
@@ -452,7 +452,7 @@ export default function TransactionsPage() {
                       type="date"
                       value={startDate ? startDate.toISOString().split('T')[0] : ''}
                       onChange={(e) => setStartDate(new Date(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
                   <div>
@@ -461,14 +461,14 @@ export default function TransactionsPage() {
                       type="date"
                       value={endDate ? endDate.toISOString().split('T')[0] : ''}
                       onChange={(e) => setEndDate(new Date(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
-                  <div className="sm:col-span-2">
+                  <div className="sm:col-span-2 md:col-span-3 lg:col-span-2">
                     <button
                       onClick={handleCustomDateChange}
                       disabled={!startDate || !endDate}
-                      className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl text-sm font-medium hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Apply Custom Date Range
                     </button>
@@ -484,7 +484,7 @@ export default function TransactionsPage() {
                   placeholder="0"
                   value={minAmount}
                   onChange={(e) => setMinAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
               <div>
@@ -494,34 +494,34 @@ export default function TransactionsPage() {
                   placeholder="10000"
                   value={maxAmount}
                   onChange={(e) => setMaxAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
 
               {/* Pool Filter */}
-              <div className="sm:col-span-2">
+              <div className="sm:col-span-2 md:col-span-3 lg:col-span-2">
                 <label className="block text-xs font-medium text-gray-700 mb-1">Pool ID (Optional)</label>
                 <input
                   type="text"
                   placeholder="Enter pool ID to filter by specific pool"
                   value={poolId}
                   onChange={(e) => setPoolId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
             </div>
 
             {/* Apply Advanced Filters Button */}
-            <div className="mt-4 flex gap-3">
+            <div className="mt-4 flex flex-col sm:flex-row gap-3">
               <button
                 onClick={handleFilterChange}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl text-sm font-medium hover:shadow-lg"
               >
                 Apply Filters
               </button>
               <button
                 onClick={clearAllFilters}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200"
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200"
               >
                 Clear All Filters
               </button>
@@ -532,22 +532,22 @@ export default function TransactionsPage() {
 
               {/* Filter Summary */}
         {!filterLoading && (searchTerm || filterType !== 'all' || filterStatus !== 'all' || dateRange !== 'all' || minAmount || maxAmount || poolId) && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-blue-800">
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2 text-sm text-purple-800">
                 <Filter className="w-4 h-4" />
                 <span className="font-medium">Active Filters:</span>
-                {searchTerm && <span className="px-2 py-1 bg-blue-100 rounded text-xs">Search: "{searchTerm}"</span>}
-                {filterType !== 'all' && <span className="px-2 py-1 bg-blue-100 rounded text-xs">{filterType}</span>}
-                {filterStatus !== 'all' && <span className="px-2 py-1 bg-blue-100 rounded text-xs">{filterStatus}</span>}
-                {dateRange !== 'all' && <span className="px-2 py-1 bg-blue-100 rounded text-xs">{dateRange === 'custom' ? 'Custom Date' : `${dateRange} ago`}</span>}
-                {minAmount && <span className="px-2 py-1 bg-blue-100 rounded text-xs">Min: KSh {minAmount}</span>}
-                {maxAmount && <span className="px-2 py-1 bg-blue-100 rounded text-xs">Max: KSh {maxAmount}</span>}
-                {poolId && <span className="px-2 py-1 bg-blue-100 rounded text-xs">Pool: {poolId}</span>}
+                {searchTerm && <span className="px-2 py-1 bg-purple-100 rounded text-xs">Search: "{searchTerm}"</span>}
+                {filterType !== 'all' && <span className="px-2 py-1 bg-purple-100 rounded text-xs">{filterType}</span>}
+                {filterStatus !== 'all' && <span className="px-2 py-1 bg-purple-100 rounded text-xs">{filterStatus}</span>}
+                {dateRange !== 'all' && <span className="px-2 py-1 bg-purple-100 rounded text-xs">{dateRange === 'custom' ? 'Custom Date' : `${dateRange} ago`}</span>}
+                {minAmount && <span className="px-2 py-1 bg-purple-100 rounded text-xs">Min: KSh {minAmount}</span>}
+                {maxAmount && <span className="px-2 py-1 bg-purple-100 rounded text-xs">Max: KSh {maxAmount}</span>}
+                {poolId && <span className="px-2 py-1 bg-purple-100 rounded text-xs">Pool: {poolId}</span>}
               </div>
               <button
                 onClick={clearAllFilters}
-                className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                className="text-xs text-purple-600 hover:text-purple-800 font-medium"
               >
                 Clear All
               </button>
@@ -558,7 +558,7 @@ export default function TransactionsPage() {
         {/* Filter Loading Indicator */}
         {filterLoading && (
           <div className="text-center py-8">
-            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+            <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
             <p className="text-sm text-gray-600">Applying filters...</p>
           </div>
         )}
@@ -566,7 +566,7 @@ export default function TransactionsPage() {
       {/* Transactions List */}
       {loading ? (
         <div className="text-center py-12">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading transactions...</p>
         </div>
       ) : !filterLoading && (
@@ -579,11 +579,11 @@ export default function TransactionsPage() {
 
       {/* Pagination */}
       {!loading && !filterLoading && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mt-8">
           <button
             onClick={() => handlePageChange(pagination.currentPage - 1)}
             disabled={!pagination.hasPrevPage}
-            className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+            className="px-3 py-2 border border-gray-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
           >
             Previous
           </button>
@@ -595,7 +595,7 @@ export default function TransactionsPage() {
           <button
             onClick={() => handlePageChange(pagination.currentPage + 1)}
             disabled={!pagination.hasNextPage}
-            className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+            className="px-3 py-2 border border-gray-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
           >
             Next
           </button>
@@ -613,17 +613,17 @@ export default function TransactionsPage() {
               : 'No transactions match your current filters. Try adjusting your search or filter criteria.'
             }
           </p>
-          <div className="flex gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => router.push('/pools')}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:shadow-lg transition-all duration-300"
             >
               View Pools
             </button>
             {(searchTerm || filterType !== 'all' || filterStatus !== 'all' || dateRange !== 'all' || minAmount || maxAmount || poolId) && (
               <button
                 onClick={clearAllFilters}
-                className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                className="bg-gray-100 text-gray-700 px-6 py-2 rounded-xl font-medium hover:bg-gray-200 transition-colors"
               >
                 Clear All Filters
               </button>

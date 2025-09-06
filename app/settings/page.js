@@ -251,7 +251,7 @@ export default function SettingsPage() {
         subtitle="Manage your account preferences"
       >
         <div className="text-center py-12">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading settings...</p>
         </div>
       </DashboardLayout>
@@ -266,7 +266,7 @@ export default function SettingsPage() {
       <div className="max-w-6xl mx-auto px-4">
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-6 p-4 bg-red-50/80 backdrop-blur-xl border border-red-200/50 rounded-xl">
             <div className="flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-red-500" />
               <p className="text-red-700">{error}</p>
@@ -276,7 +276,7 @@ export default function SettingsPage() {
 
         {/* Success Message */}
         {successMessage && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="mb-6 p-4 bg-green-50/80 backdrop-blur-xl border border-green-200/50 rounded-xl">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500" />
               <p className="text-green-700">{successMessage}</p>
@@ -287,7 +287,7 @@ export default function SettingsPage() {
         <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-8 w-full lg:w-3/4 lg:mx-auto">
           
           {/* Profile Section */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white/80 backdrop-blur-xl rounded-xl border border-white/20 p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <User className="w-5 h-5 text-blue-600" />
@@ -307,7 +307,7 @@ export default function SettingsPage() {
                   type="text"
                   value={formData.displayName}
                   onChange={(e) => setFormData({...formData, displayName: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Enter your display name"
                 />
               </div>
@@ -316,7 +316,7 @@ export default function SettingsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Phone Number
                 </label>
-                <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="p-4 bg-purple-50/80 backdrop-blur-xl border border-purple-200/50 rounded-xl">
                   <div className="flex items-center gap-3 mb-3">
                     <Smartphone className="w-5 h-5 text-purple-600" />
                     <div>
@@ -328,7 +328,7 @@ export default function SettingsPage() {
                     type="tel"
                     value={phoneDisplay}
                     onChange={(e) => handlePhoneChange(e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                       phoneError ? 'border-red-300' : 'border-purple-300'
                     }`}
                     placeholder="e.g., 0712345678"
@@ -345,7 +345,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Notifications Section */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white/80 backdrop-blur-xl rounded-xl border border-white/20 p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                 <Bell className="w-5 h-5 text-green-600" />
@@ -357,7 +357,7 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-gray-50/80 backdrop-blur-xl rounded-xl">
                 <div className="flex items-center gap-3">
                   <Volume2 className="w-5 h-5 text-gray-600" />
                   <div>
@@ -372,11 +372,11 @@ export default function SettingsPage() {
                     onChange={(e) => setFormData({...formData, in_app: e.target.checked})}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-gray-50/80 backdrop-blur-xl rounded-xl">
                 <div className="flex items-center gap-3">
                   <Smartphone className="w-5 h-5 text-gray-600" />
                   <div>
@@ -391,11 +391,11 @@ export default function SettingsPage() {
                     onChange={(e) => setFormData({...formData, fcm: e.target.checked})}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-gray-50/80 backdrop-blur-xl rounded-xl">
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-gray-600" />
                   <div>
@@ -410,21 +410,21 @@ export default function SettingsPage() {
                     onChange={(e) => setFormData({...formData, email: e.target.checked})}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                 </label>
               </div>
             </div>
           </div>
 
           {/* Save Button */}
-          <div className="sticky bottom-4 bg-white border-t border-gray-200 pt-4">
+          <div className="sticky bottom-4 pt-4">
     <button
               type="submit"
               disabled={saving || phoneError}
-              className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+              className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
                 saving || phoneError
           ? 'bg-gray-400 text-white cursor-not-allowed'
-          : 'bg-blue-600 text-white hover:bg-blue-700'
+          : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg'
       }`}
     >
               {saving ? (

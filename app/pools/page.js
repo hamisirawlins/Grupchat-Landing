@@ -220,7 +220,7 @@ export default function PoolsPage() {
 
   const PoolCard = ({ pool }) => (
     <div 
-      className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-300 cursor-pointer group transform hover:-translate-y-0.5"
+      className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-sm hover:shadow-lg hover:border-white/30 transition-all duration-300 cursor-pointer group transform hover:-translate-y-0.5"
       onClick={() => router.push(`/pools/${pool.poolId}`)}
     >
       {/* Header with pool name and status */}
@@ -228,7 +228,7 @@ export default function PoolsPage() {
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <TypeIcon type={pool.type} />
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 text-lg truncate group-hover:text-blue-600 transition-colors mb-1">
+            <h3 className="font-semibold text-gray-900 text-lg truncate group-hover:text-purple-600 transition-colors mb-1">
               {pool.name}
             </h3>
             <p className="text-gray-500 text-sm line-clamp-1">{pool.description}</p>
@@ -292,7 +292,7 @@ export default function PoolsPage() {
         <div className="flex items-center gap-4">
           <TypeIcon type={pool.type} />
           <div>
-            <h3 className="font-medium text-gray-900 hover:text-blue-600 transition-colors">
+            <h3 className="font-medium text-gray-900 hover:text-purple-600 transition-colors">
               {pool.name}
             </h3>
             <p className="text-sm text-gray-500 truncate max-w-xs">{pool.description}</p>
@@ -342,7 +342,7 @@ export default function PoolsPage() {
     return (
       <DashboardLayout title="Pools" subtitle="Manage your pools and contributions">
         <div className="text-center py-12">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading pools...</p>
         </div>
       </DashboardLayout>
@@ -356,7 +356,7 @@ export default function PoolsPage() {
           <div className="text-red-600 mb-4">{error}</div>
           <button
             onClick={loadPoolsData}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:shadow-lg transition-all duration-300"
           >
             Try Again
           </button>
@@ -371,11 +371,11 @@ export default function PoolsPage() {
       subtitle="Manage your pools and contributions"
     >
       {/* Header Section */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6 hover:shadow-md transition-all duration-300">
+      <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-sm p-6 mb-6 hover:shadow-lg transition-all duration-300">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-xl flex items-center justify-center shadow-inner">
-              <FolderOpen className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center shadow-inner">
+              <FolderOpen className="w-6 h-6 text-purple-600" />
             </div>
             <div>
               <h1 className="text-xl font-semibold text-gray-900">Pool Management</h1>
@@ -384,7 +384,7 @@ export default function PoolsPage() {
           </div>
           <button
             onClick={() => router.push('/create-pool')}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center gap-2 w-fit shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300 flex items-center gap-2 w-fit shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
             <Plus className="w-4 h-4" />
             Create Pool
@@ -394,7 +394,7 @@ export default function PoolsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 group">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-sm hover:shadow-lg transition-all duration-300 group">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center shadow-inner group-hover:shadow-sm transition-all duration-300">
               <FolderOpen className="w-6 h-6 text-blue-600 group-hover:scale-110 transition-transform duration-300" />
@@ -405,7 +405,7 @@ export default function PoolsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 group">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-sm hover:shadow-lg transition-all duration-300 group">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl flex items-center justify-center shadow-inner group-hover:shadow-sm transition-all duration-300">
               <TrendingUp className="w-6 h-6 text-emerald-600 group-hover:scale-110 transition-transform duration-300" />
@@ -416,7 +416,7 @@ export default function PoolsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 group">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-sm hover:shadow-lg transition-all duration-300 group">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center shadow-inner group-hover:shadow-sm transition-all duration-300">
               <Target className="w-6 h-6 text-blue-600 group-hover:scale-110 transition-transform duration-300" />
@@ -427,7 +427,7 @@ export default function PoolsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 group">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-sm hover:shadow-lg transition-all duration-300 group">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl flex items-center justify-center shadow-inner group-hover:shadow-sm transition-all duration-300">
               <DollarSign className="w-6 h-6 text-emerald-600 group-hover:scale-110 transition-transform duration-300" />
@@ -441,7 +441,7 @@ export default function PoolsPage() {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6 hover:shadow-md transition-all duration-300">
+      <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-sm p-6 mb-6 hover:shadow-lg transition-all duration-300">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Search */}
           <div className="relative flex-1">
@@ -451,7 +451,7 @@ export default function PoolsPage() {
               placeholder="Search pools by name or description..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500 text-gray-900 shadow-sm focus:shadow-md"
+              className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 placeholder-gray-500 text-gray-900 shadow-sm focus:shadow-md"
             />
           </div>
           
@@ -461,7 +461,7 @@ export default function PoolsPage() {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-gray-900 shadow-sm focus:shadow-md"
+                className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-gray-900 shadow-sm focus:shadow-md"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -475,7 +475,7 @@ export default function PoolsPage() {
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-gray-900 shadow-sm focus:shadow-md"
+                className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-gray-900 shadow-sm focus:shadow-md"
               >
                 <option value="all">All Types</option>
                 <option value="general">General</option>
@@ -491,14 +491,14 @@ export default function PoolsPage() {
             <div className="relative">
               <button
                 onClick={() => setShowSortDialog(!showSortDialog)}
-                className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-gray-900 hover:bg-gray-50 shadow-sm hover:shadow-md"
+                className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-gray-900 hover:bg-gray-50 shadow-sm hover:shadow-md"
               >
                 <ArrowUpDown className="w-4 h-4 text-gray-500" />
                 <span className="text-sm font-medium">{getCurrentSortLabel()}</span>
                 {sortOrder === 'asc' ? (
-                  <ArrowUp className="w-4 h-4 text-blue-600" />
+                  <ArrowUp className="w-4 h-4 text-purple-600" />
                 ) : (
-                  <ArrowDown className="w-4 h-4 text-blue-600" />
+                  <ArrowDown className="w-4 h-4 text-purple-600" />
                 )}
               </button>
 
@@ -578,7 +578,7 @@ export default function PoolsPage() {
                 onClick={() => setViewMode('grid')}
                 className={`p-3 transition-all duration-300 ${
                   viewMode === 'grid' 
-                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-inner' 
+                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-inner' 
                     : 'bg-white text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                 }`}
                 title="Grid View"
@@ -589,7 +589,7 @@ export default function PoolsPage() {
                 onClick={() => setViewMode('table')}
                 className={`p-3 transition-all duration-300 ${
                   viewMode === 'table' 
-                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-inner' 
+                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-inner' 
                     : 'bg-white text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                 }`}
                 title="Table View"
@@ -610,7 +610,7 @@ export default function PoolsPage() {
 
       {/* Pools Display */}
       {filteredPools.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm text-center py-16">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-sm text-center py-16">
           <FolderOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No pools found</h3>
           <p className="text-gray-500 mb-6 max-w-md mx-auto">
@@ -621,7 +621,7 @@ export default function PoolsPage() {
           </p>
           <button
             onClick={() => router.push('/create-pool')}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-300 inline-flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
             <Plus className="w-4 h-4" />
             Create Your First Pool
@@ -638,7 +638,7 @@ export default function PoolsPage() {
           
           {/* Table View - Only on desktop when table mode is selected */}
           {viewMode === 'table' && (
-            <div className="hidden md:block bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300">
+            <div className="hidden md:block bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">

@@ -16,11 +16,11 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "GrupChat - Powering Plans Beyond The Chat",
-  description: "Transform your group conversations into powerful collaborations. Pool funds with friends and family seamlessly, turning dreams into reality.",
+  description: "Transform your group chats into powerful collaborations. Pool funds with friends and family seamlessly, turning dreams into reality.",
   metadataBase: new URL('https://grupchat.info'),
   openGraph: {
     title: "GrupChat - Powering Plans Beyond The Chat",
-    description: "Transform your group conversations into powerful collaborations. Pool funds with friends and family seamlessly, turning dreams into reality.",
+    description: "Transform your group chats into powerful collaborations. Pool funds with friends and family seamlessly, turning dreams into reality.",
     url: 'https://grupchat.info',
     siteName: 'GrupChat',
     images: [
@@ -37,7 +37,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: "GrupChat - Powering Plans Beyond The Chat",
-    description: "Transform your group conversations into powerful collaborations. Pool funds with friends and family seamlessly, turning dreams into reality.",
+    description: "Transform your group chats into powerful collaborations. Pool funds with friends and family seamlessly, turning dreams into reality.",
     images: ['/preview.png'],
   },
   icons: {

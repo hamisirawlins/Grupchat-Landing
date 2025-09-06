@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+
 export async function POST(request) {
   try {
     const { idToken } = await request.json();
@@ -12,7 +14,7 @@ export async function POST(request) {
     }
 
     // Forward the request to the backend gateway
-    const backendResponse = await fetch(`https://api.grupchat.info/v1/auth/signin`, {
+    const backendResponse = await fetch(`${baseUrl}/v1/auth/signin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
