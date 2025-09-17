@@ -46,7 +46,7 @@ function DashboardLayoutContent({ children, title, subtitle }) {
         const userData = response.data.user;
         setProfileData({
           displayName: userData.displayName || "",
-          phone: userData.phone || "",
+          phone: formatPhoneForDisplay(userData.phone || ""),
         });
       }
     } catch (error) {
@@ -57,14 +57,114 @@ function DashboardLayoutContent({ children, title, subtitle }) {
     }
   };
 
+  // Phone number formatting functions (same as settings page)
+  const formatPhoneForAPI = (localPhone) => {
+    if (!localPhone) return "";
+
+    // Convert local format to international
+    let internationalPhone = localPhone;
+
+    // Handle Kenya numbers (0 -> +254)
+    if (localPhone.startsWith("0")) {
+      internationalPhone = "+254" + localPhone.substring(1);
+    } else if (localPhone.startsWith("254")) {
+      internationalPhone = "+" + localPhone;
+    } else if (!localPhone.startsWith("+")) {
+      // Assume it's a local number, add +254 for Kenya
+      internationalPhone = "+254" + localPhone;
+    }
+
+    return internationalPhone;
+  };
+
+  const formatPhoneForDisplay = (internationalPhone) => {
+    if (!internationalPhone) return "";
+
+    // Remove + and convert to local format
+    const cleanPhone = internationalPhone.replace("+", "");
+
+    // Handle Kenya numbers (254)
+    if (cleanPhone.startsWith("254")) {
+      return "0" + cleanPhone.substring(3);
+    }
+
+    // Handle other countries (add more as needed)
+    if (cleanPhone.startsWith("1")) {
+      // US/Canada
+      return cleanPhone;
+    }
+
+    return cleanPhone;
+  };
+
+  const validatePhone = (phone) => {
+    if (!phone) return "Phone number is required";
+
+    const digits = phone.replace(/\D/g, "");
+
+    // Kenya mobile number validation
+    if (digits.startsWith("254")) {
+      // International format: +254712345678
+      if (digits.length !== 12) {
+        return "Kenya international number must be 12 digits (254 + 9 digits)";
+      }
+      // Validate that the part after 254 is a valid mobile prefix
+      const mobilePart = digits.substring(3);
+      if (!/^[17]\d{8}$/.test(mobilePart)) {
+        return "Invalid Kenya mobile number format after 254";
+      }
+    } else if (digits.startsWith("07") || digits.startsWith("01")) {
+      // Local format: 0712345678 or 0112345678
+      if (digits.length !== 10) {
+        return "Kenya local number must be 10 digits (07XX XXX XXX)";
+      }
+      // Validate mobile prefixes (07) and landline prefixes (01)
+      if (digits.startsWith("07")) {
+        // Mobile: 07XX XXX XXX
+        if (!/^07[17]\d{7}$/.test(digits)) {
+          return "Invalid Kenya mobile number format (07XX XXX XXX)";
+        }
+      } else if (digits.startsWith("01")) {
+        // Landline: 01XX XXX XXX
+        if (!/^01\d{8}$/.test(digits)) {
+          return "Invalid Kenya landline number format (01XX XXX XXX)";
+        }
+      }
+    } else {
+      return "Please enter a valid Kenya phone number starting with 07, 01, or +254";
+    }
+
+    // Additional validation: check for suspicious patterns
+    if (/(\d)\1{5,}/.test(digits)) {
+      return "Phone number contains too many repeated digits";
+    }
+
+    if (/^0+$/.test(digits)) {
+      return "Phone number cannot be all zeros";
+    }
+
+    return "";
+  };
+
   const handleProfileUpdate = async () => {
     try {
       setProfileLoading(true);
       setProfileError(null);
 
+      // Validate phone number
+      const phoneError = validatePhone(profileData.phone);
+      if (phoneError) {
+        setProfileError(phoneError);
+        setProfileLoading(false);
+        return;
+      }
+
+      // Format phone for API
+      const internationalPhone = formatPhoneForAPI(profileData.phone);
+
       const response = await dashboardAPI.updateProfile({
         displayName: profileData.displayName,
-        phone: profileData.phone,
+        phone: internationalPhone,
       });
 
       if (response.success) {

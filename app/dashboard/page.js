@@ -650,8 +650,9 @@ export default function Dashboard() {
 
                 <div className="text-center mt-4">
                   <p className="text-sm text-gray-500">
-                    {chartData.poolCompletion.completed} of{" "}
-                    {chartData.poolCompletion.total} pools completed
+                    {chartData.poolCompletion.total > 0
+                      ? `${chartData.poolCompletion.completed} of ${chartData.poolCompletion.total} pools completed`
+                      : "No pools created yet"}
                   </p>
                 </div>
               </div>
@@ -706,17 +707,33 @@ export default function Dashboard() {
                 </p>
 
                 <div className="grid grid-cols-2 gap-6">
-                  {chartData.topPerformers.map((performer) => (
-                    <div key={performer.rank} className="text-center">
-                      <div className="w-16 h-16 rounded-full mx-auto mb-3 bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center border-2 border-purple-200">
-                        <UserCircle className="w-8 h-8 text-purple-600" />
+                  {chartData.topPerformers.length > 0 ? (
+                    chartData.topPerformers.map((performer) => (
+                      <div key={performer.rank} className="text-center">
+                        <div className="w-16 h-16 rounded-full mx-auto mb-3 bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center border-2 border-purple-200">
+                          <UserCircle className="w-8 h-8 text-purple-600" />
+                        </div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {performer.position}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {performer.name}
+                        </p>
                       </div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {performer.position}
+                    ))
+                  ) : (
+                    <div className="col-span-2 text-center py-8">
+                      <div className="w-16 h-16 rounded-full mx-auto mb-3 bg-gray-100 flex items-center justify-center">
+                        <UserCircle className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        No contributors yet
                       </p>
-                      <p className="text-xs text-gray-500">{performer.name}</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Start creating pools to see contributors
+                      </p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             </div>

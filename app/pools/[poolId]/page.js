@@ -169,19 +169,19 @@ function PoolDetailPageContent() {
     // Remove all non-digit characters
     const cleaned = phone.replace(/\D/g, "");
 
-    // Handle different formats
+    // Handle different formats and convert to +254 format
     if (cleaned.startsWith("254")) {
-      // Already in international format, return without +
-      return cleaned;
+      // Already in international format, add +
+      return `+${cleaned}`;
     } else if (cleaned.startsWith("0") && cleaned.length === 10) {
       // Local format like 0715234234
-      return `254${cleaned.substring(1)}`;
+      return `+254${cleaned.substring(1)}`;
     } else if (cleaned.length === 9) {
       // Format like 715234234 (missing leading 0)
-      return `254${cleaned}`;
+      return `+254${cleaned}`;
     } else if (cleaned.startsWith("7") && cleaned.length === 9) {
       // Format like 715234234
-      return `254${cleaned}`;
+      return `+254${cleaned}`;
     }
 
     // Return as-is if we can't determine format
@@ -318,7 +318,7 @@ function PoolDetailPageContent() {
         processedPhone = preprocessPhoneNumber(phoneToProcess);
 
         // Validate phone number format (basic validation)
-        if (!processedPhone.match(/^254[17]\d{8}$/)) {
+        if (!processedPhone.match(/^\+254[17]\d{8}$/)) {
           setDepositError("Please enter a valid Kenyan phone number");
           return;
         }
@@ -391,7 +391,9 @@ function PoolDetailPageContent() {
 
       const invitationData = {
         inviteeEmail: inviteForm.inviteeEmail || null,
-        inviteePhone: inviteForm.inviteePhone || null,
+        inviteePhone: inviteForm.inviteePhone
+          ? preprocessPhoneNumber(inviteForm.inviteePhone)
+          : null,
         inviteType: inviteForm.inviteType,
         message: inviteForm.message || `Join our ${poolData.name} pool!`,
       };
@@ -463,7 +465,7 @@ function PoolDetailPageContent() {
 
       // Validate phone number
       const processedPhone = preprocessPhoneNumber(withdrawalForm.phone);
-      if (!processedPhone.match(/^254[17]\d{8}$/)) {
+      if (!processedPhone.match(/^\+254[17]\d{8}$/)) {
         setWithdrawalError("Please enter a valid Kenyan phone number");
         return;
       }
