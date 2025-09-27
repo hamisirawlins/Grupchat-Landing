@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import DashboardLayout from '@/components/DashboardLayout';
-import { dashboardAPI, handleApiError } from '@/lib/api';
-import { 
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import DashboardLayout from "@/components/DashboardLayout";
+import { dashboardAPI, handleApiError } from "@/lib/api";
+import {
   ArrowLeft,
   FolderOpen,
   Calendar,
@@ -15,28 +15,28 @@ import {
   Settings,
   Info,
   Check,
-  AlertCircle
-} from 'lucide-react';
+  AlertCircle,
+} from "lucide-react";
 
 export default function CreatePoolPage() {
   const { user } = useAuth();
   const router = useRouter();
-  
+
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    targetAmount: '',
-    type: 'general',
-    customType: '',
-    endDate: '',
+    name: "",
+    description: "",
+    targetAmount: "",
+    type: "general",
+    customType: "",
+    endDate: "",
     withdrawalSettings: {
       requires_approval: true,
       auto_withdrawal: false,
-      approvers: ['creator', 'admins']
-    }
+      approvers: ["creator", "admins"],
+    },
   });
-  
+
   // UI state
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -44,7 +44,7 @@ export default function CreatePoolPage() {
 
   useEffect(() => {
     if (!user) {
-      router.push('/');
+      router.push("/");
     }
   }, [user, router]);
 
@@ -56,44 +56,47 @@ export default function CreatePoolPage() {
     const newErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Pool name is required';
+      newErrors.name = "Pool name is required";
     } else if (formData.name.trim().length < 3) {
-      newErrors.name = 'Pool name must be at least 3 characters';
+      newErrors.name = "Pool name must be at least 3 characters";
     } else if (formData.name.trim().length > 255) {
-      newErrors.name = 'Pool name must be less than 255 characters';
+      newErrors.name = "Pool name must be less than 255 characters";
     }
 
     if (!formData.targetAmount) {
-      newErrors.targetAmount = 'Target amount is required';
+      newErrors.targetAmount = "Target amount is required";
     } else {
       const amount = parseFloat(formData.targetAmount);
       if (isNaN(amount) || amount <= 0) {
-        newErrors.targetAmount = 'Target amount must be greater than 0';
+        newErrors.targetAmount = "Target amount must be greater than 0";
       } else if (amount < 100) {
-        newErrors.targetAmount = 'Target amount must be at least KSh 100';
+        newErrors.targetAmount = "Target amount must be at least KSh 100";
       } else if (amount > 10000000) {
-        newErrors.targetAmount = 'Target amount cannot exceed KSh 10,000,000';
+        newErrors.targetAmount = "Target amount cannot exceed KSh 10,000,000";
       }
     }
 
     if (formData.description && formData.description.length > 1000) {
-      newErrors.description = 'Description must be less than 1000 characters';
+      newErrors.description = "Description must be less than 1000 characters";
     }
 
     if (formData.endDate) {
       const endDate = new Date(formData.endDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       if (endDate <= today) {
-        newErrors.endDate = 'End date must be in the future';
+        newErrors.endDate = "End date must be in the future";
       }
     }
 
-    if (formData.type === 'other' && !formData.customType.trim()) {
-      newErrors.customType = 'Please specify the pool type';
-    } else if (formData.type === 'other' && formData.customType.trim().length > 50) {
-      newErrors.customType = 'Custom type must be less than 50 characters';
+    if (formData.type === "other" && !formData.customType.trim()) {
+      newErrors.customType = "Please specify the pool type";
+    } else if (
+      formData.type === "other" &&
+      formData.customType.trim().length > 50
+    ) {
+      newErrors.customType = "Custom type must be less than 50 characters";
     }
 
     setErrors(newErrors);
@@ -102,62 +105,79 @@ export default function CreatePoolPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     setLoading(true);
-    
+
     try {
       const poolData = {
         name: formData.name.trim(),
         description: formData.description.trim(),
         targetAmount: parseFloat(formData.targetAmount),
-        type: formData.type === 'other' ? formData.customType.trim() : formData.type,
+        type:
+          formData.type === "other"
+            ? formData.customType.trim()
+            : formData.type,
         endDate: formData.endDate || null,
-        withdrawalSettings: formData.withdrawalSettings
+        withdrawalSettings: formData.withdrawalSettings,
       };
 
       const response = await dashboardAPI.createPool(poolData);
-      
+
       // Redirect to the newly created pool
       router.push(`/pools/${response.data.id}`);
-      
     } catch (error) {
-      console.error('Failed to create pool:', error);
-      setErrors({ submit: handleApiError(error, 'Failed to create pool') });
+      console.error("Failed to create pool:", error);
+      setErrors({ submit: handleApiError(error, "Failed to create pool") });
     } finally {
       setLoading(false);
     }
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: undefined
+        [field]: undefined,
       }));
     }
   };
 
   const poolTypes = [
-    { value: 'general', label: 'General', description: 'General pool', emoji: '💰' },
-    { value: 'trip', label: 'Trip', description: 'Travel pool', emoji: '🌴' },
-    { value: 'business', label: 'Business', description: 'Business pool', emoji: '💼' },
-    { value: 'education', label: 'Education', description: 'Education pool', emoji: '📚' },
-    { value: 'event', label: 'Event', description: 'Events pool', emoji: '🎉' },
-    { value: 'other', label: 'Other', description: 'Custom pool', emoji: '🔧' }
+    {
+      value: "general",
+      label: "General",
+      description: "General pool",
+      emoji: "💰",
+    },
+    { value: "trip", label: "Trip", description: "Travel pool", emoji: "🌴" },
+    {
+      value: "business",
+      label: "Business",
+      description: "Business pool",
+      emoji: "💼",
+    },
+    {
+      value: "education",
+      label: "Education",
+      description: "Education pool",
+      emoji: "📚",
+    },
+    { value: "event", label: "Event", description: "Events pool", emoji: "🎉" },
+    { value: "other", label: "Other", description: "Custom pool", emoji: "🔧" },
   ];
 
   return (
-    <DashboardLayout 
+    <DashboardLayout
       title="Create New Pool"
       subtitle="Set up a new pool for you and your team"
     >
@@ -171,8 +191,12 @@ export default function CreatePoolPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Create New Pool</h1>
-            <p className="text-gray-600">Set up a new pool for you and your team</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Create New Pool
+            </h1>
+            <p className="text-gray-600">
+              Set up a new pool for you and your team
+            </p>
           </div>
         </div>
 
@@ -184,8 +208,12 @@ export default function CreatePoolPage() {
                 <FolderOpen className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
-                <p className="text-sm text-gray-500">Essential details about your pool</p>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Basic Information
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Essential details about your pool
+                </p>
               </div>
             </div>
 
@@ -197,9 +225,9 @@ export default function CreatePoolPage() {
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
-                    errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    errors.name ? "border-red-300 bg-red-50" : "border-gray-300"
                   }`}
                   placeholder="e.g., Team Vacation Fund, Office Equipment"
                   maxLength={255}
@@ -221,9 +249,13 @@ export default function CreatePoolPage() {
                   <input
                     type="number"
                     value={formData.targetAmount}
-                    onChange={(e) => handleInputChange('targetAmount', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("targetAmount", e.target.value)
+                    }
                     className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
-                      errors.targetAmount ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                      errors.targetAmount
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300"
                     }`}
                     placeholder="50000"
                     min="100"
@@ -248,11 +280,15 @@ export default function CreatePoolPage() {
                   <input
                     type="date"
                     value={formData.endDate}
-                    onChange={(e) => handleInputChange('endDate', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("endDate", e.target.value)
+                    }
                     className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
-                      errors.endDate ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                      errors.endDate
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300"
                     }`}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={new Date().toISOString().split("T")[0]}
                   />
                 </div>
                 {errors.endDate && (
@@ -269,9 +305,13 @@ export default function CreatePoolPage() {
                 </label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("description", e.target.value)
+                  }
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
-                    errors.description ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    errors.description
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
                   }`}
                   placeholder="Tell your team what this pool is for..."
                   rows={3}
@@ -299,8 +339,12 @@ export default function CreatePoolPage() {
                 <Target className="w-5 h-5 text-purple-600" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Pool Type</h2>
-                <p className="text-sm text-gray-500">Choose the category that best fits your pool</p>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Pool Type
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Choose the category that best fits your pool
+                </p>
               </div>
             </div>
 
@@ -309,16 +353,18 @@ export default function CreatePoolPage() {
                 <button
                   key={type.value}
                   type="button"
-                  onClick={() => handleInputChange('type', type.value)}
+                  onClick={() => handleInputChange("type", type.value)}
                   className={`p-4 border-2 rounded-lg text-left transition-all ${
                     formData.type === type.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-2xl">{type.emoji}</span>
-                    <span className="font-medium text-gray-900">{type.label}</span>
+                    <span className="font-medium text-gray-900">
+                      {type.label}
+                    </span>
                     {formData.type === type.value && (
                       <Check className="w-5 h-5 text-blue-600 ml-auto" />
                     )}
@@ -329,7 +375,7 @@ export default function CreatePoolPage() {
             </div>
 
             {/* Custom Type Input */}
-            {formData.type === 'other' && (
+            {formData.type === "other" && (
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Specify Pool Type *
@@ -337,9 +383,13 @@ export default function CreatePoolPage() {
                 <input
                   type="text"
                   value={formData.customType}
-                  onChange={(e) => handleInputChange('customType', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("customType", e.target.value)
+                  }
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
-                    errors.customType ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    errors.customType
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
                   }`}
                   placeholder="e.g., House Down Payment, Car Purchase, Wedding"
                   maxLength={50}
@@ -370,12 +420,30 @@ export default function CreatePoolPage() {
                 <Settings className="w-5 h-5 text-gray-600" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-semibold text-gray-900">Advanced Settings</h2>
-                <p className="text-sm text-gray-500">Optional withdrawal and fee settings</p>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Advanced Settings
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Optional withdrawal and fee settings
+                </p>
               </div>
-              <div className={`transform transition-transform ${showAdvanced ? 'rotate-180' : ''}`}>
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <div
+                className={`transform transition-transform ${
+                  showAdvanced ? "rotate-180" : ""
+                }`}
+              >
+                <svg
+                  className="w-5 h-5 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </div>
             </button>
@@ -385,12 +453,16 @@ export default function CreatePoolPage() {
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <div className="flex items-start gap-3">
                     <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                                          <div>
-                        <h3 className="font-medium text-blue-900 mb-1">Withdrawal Processing</h3>
-                        <p className="text-sm text-blue-700">
-                          Choose how withdrawal requests will be handled in your pool. You can either require manual approval or allow automatic processing. These options are mutually exclusive.
-                        </p>
-                      </div>
+                    <div>
+                      <h3 className="font-medium text-blue-900 mb-1">
+                        Withdrawal Processing
+                      </h3>
+                      <p className="text-sm text-blue-700">
+                        Choose how withdrawal requests will be handled in your
+                        pool. You can either require manual approval or allow
+                        automatic processing.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -404,40 +476,56 @@ export default function CreatePoolPage() {
                         <input
                           type="radio"
                           name="withdrawalMethod"
-                          checked={formData.withdrawalSettings.requires_approval === true}
-                          onChange={() => handleInputChange('withdrawalSettings', {
-                            ...formData.withdrawalSettings,
-                            requires_approval: true,
-                            auto_withdrawal: false
-                          })}
+                          checked={
+                            formData.withdrawalSettings.requires_approval ===
+                            true
+                          }
+                          onChange={() =>
+                            handleInputChange("withdrawalSettings", {
+                              ...formData.withdrawalSettings,
+                              requires_approval: true,
+                              auto_withdrawal: false,
+                            })
+                          }
                           className="mt-1 w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                         />
                         <div className="flex-1">
-                          <span className="text-sm font-medium text-gray-900">Manual Approval Required</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            Manual Approval Required
+                          </span>
                           <p className="text-xs text-gray-500 mt-1">
-                            Pool admins must review and approve each withdrawal request before it's processed. 
-                            This provides extra security but requires manual intervention.
+                            Pool admins must review and approve each withdrawal
+                            request before it's processed. This provides extra
+                            security but requires manual intervention.
                           </p>
                         </div>
                       </label>
-                      
+
                       <label className="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
                         <input
                           type="radio"
                           name="withdrawalMethod"
-                          checked={formData.withdrawalSettings.requires_approval === false}
-                          onChange={() => handleInputChange('withdrawalSettings', {
-                            ...formData.withdrawalSettings,
-                            requires_approval: false,
-                            auto_withdrawal: true
-                          })}
+                          checked={
+                            formData.withdrawalSettings.requires_approval ===
+                            false
+                          }
+                          onChange={() =>
+                            handleInputChange("withdrawalSettings", {
+                              ...formData.withdrawalSettings,
+                              requires_approval: false,
+                              auto_withdrawal: true,
+                            })
+                          }
                           className="mt-1 w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                         />
                         <div className="flex-1">
-                          <span className="text-sm font-medium text-gray-900">Automatic Processing</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            Automatic Processing
+                          </span>
                           <p className="text-xs text-gray-500 mt-1">
-                            Withdrawal requests are automatically processed without requiring admin approval. 
-                            This is faster but provides less oversight.
+                            Withdrawal requests are automatically processed
+                            without requiring admin approval. This is faster but
+                            provides less oversight.
                           </p>
                         </div>
                       </label>
@@ -467,7 +555,7 @@ export default function CreatePoolPage() {
             >
               Cancel
             </button>
-            
+
             <button
               type="submit"
               disabled={loading}

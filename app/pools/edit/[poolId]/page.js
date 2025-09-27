@@ -465,7 +465,6 @@ function EditPoolPageContent() {
                     <ul className="space-y-1">
                       <li>• <strong>Require Approval:</strong> All withdrawals need admin approval</li>
                       <li>• <strong>Auto Withdrawal:</strong> Members can withdraw freely without approval</li>
-                      <li>• These settings are mutually exclusive - selecting one automatically selects the other</li>
                       <li>• Pool creators and admins can always approve/deny withdrawals</li>
                     </ul>
                   </div>
