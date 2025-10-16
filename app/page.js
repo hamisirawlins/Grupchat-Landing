@@ -199,7 +199,13 @@ export default function Home() {
 
       {/* Navigation */}
       <motion.nav
-        className="sticky top-0 z-50 bg-white backdrop-blur-xl border-b border-purple-200/30 shadow-lg"
+        className="sticky top-0 z-50 bg-white/10 backdrop-blur-2xl border-b border-white/20 shadow-2xl shadow-purple-500/10"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)",
+          backdropFilter: "blur(20px) saturate(180%)",
+          WebkitBackdropFilter: "blur(20px) saturate(180%)",
+        }}
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.2 }}
@@ -226,15 +232,27 @@ export default function Home() {
             <div className="hidden lg:flex items-center space-x-8">
               <motion.a
                 href="#features"
-                className="text-gray-700 hover:text-purple-600 transition-colors"
-                whileHover={{ y: -2 }}
+                className="text-gray-800 hover:text-purple-600 transition-colors font-medium relative px-3 py-1 rounded-lg"
+                style={{
+                  textShadow:
+                    "0 1px 2px rgba(255, 255, 255, 0.8), 0 0 8px rgba(255, 255, 255, 0.5)",
+                  background: "rgba(255, 255, 255, 0.1)",
+                  backdropFilter: "blur(10px)",
+                }}
+                whileHover={{ y: -2, scale: 1.05 }}
               >
                 Features
               </motion.a>
               <motion.a
                 href="#how-it-works"
-                className="text-gray-700 hover:text-purple-600 transition-colors"
-                whileHover={{ y: -2 }}
+                className="text-gray-800 hover:text-purple-600 transition-colors font-medium relative px-3 py-1 rounded-lg"
+                style={{
+                  textShadow:
+                    "0 1px 2px rgba(255, 255, 255, 0.8), 0 0 8px rgba(255, 255, 255, 0.5)",
+                  background: "rgba(255, 255, 255, 0.1)",
+                  backdropFilter: "blur(10px)",
+                }}
+                whileHover={{ y: -2, scale: 1.05 }}
               >
                 How it Works
               </motion.a>
@@ -244,7 +262,13 @@ export default function Home() {
             <div className="hidden sm:flex items-center space-x-3">
               <motion.a
                 href="/sign-in"
-                className="px-4 py-2 text-gray-700 hover:text-purple-600 transition-colors text-sm font-medium"
+                className="px-4 py-2 text-gray-800 hover:text-purple-600 transition-colors text-sm font-medium rounded-lg"
+                style={{
+                  textShadow:
+                    "0 1px 2px rgba(255, 255, 255, 0.8), 0 0 8px rgba(255, 255, 255, 0.5)",
+                  background: "rgba(255, 255, 255, 0.1)",
+                  backdropFilter: "blur(10px)",
+                }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -1462,7 +1486,7 @@ export default function Home() {
               {
                 question: "What happens if we don't reach our goal?",
                 answer:
-                  "You can keep depositing to the pool until the goal is reached. No restrictions. You can also withdraw depending on the pool settings and your role in the pool.",
+                  "You can keep depositing to the pool until the goal is reached. No restrictions. You can also withdraw depending on your role in the pool.",
               },
               {
                 question:
@@ -1473,7 +1497,7 @@ export default function Home() {
               {
                 question: "How much does GrupChat cost?",
                 answer:
-                  "GrupChat is free to use! We only charge a small transaction fee (less than 2%) when money is withdrawn from pools.",
+                  "GrupChat is free to use! You can create groups, plan events, and pool contributions without any upfront cost. We only charge a small transaction fee (less than 2%) to keep things running smoothly and securely.",
               },
               {
                 question: "Can I create multiple pools?",

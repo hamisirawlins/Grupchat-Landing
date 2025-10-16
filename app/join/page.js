@@ -335,7 +335,7 @@ function JoinPageContent() {
               <div className="space-y-3 text-sm text-gray-600">
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span>Secure group savings with M-Pesa integration</span>
+                  <span>Secure group pools with M-Pesa integration</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
