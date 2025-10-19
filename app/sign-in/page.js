@@ -183,7 +183,7 @@ export default function SignIn() {
             <div className="hidden sm:flex items-center space-x-3">
               <motion.a
                 href="/sign-in"
-                className="px-4 py-2 text-purple-600 font-semibold text-sm"
+                className="px-4 py-2 border-2 border-[#7a73ff] text-[#7a73ff] font-semibold text-sm rounded-full bg-white hover:bg-[#f6f5ff] transition-all duration-200"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -191,7 +191,7 @@ export default function SignIn() {
               </motion.a>
               <motion.a
                 href="/sign-up"
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-sm font-medium"
+                className="px-4 py-2 bg-[#7a73ff] text-white rounded-full shadow-lg hover:bg-[#7a73ff] transition-all duration-300 text-sm font-medium border-2 border-[#7a73ff]"
                 whileHover={{
                   scale: 1.05,
                   boxShadow:
@@ -207,7 +207,7 @@ export default function SignIn() {
             <div className="flex sm:hidden items-center space-x-2">
               <motion.a
                 href="/sign-in"
-                className="px-3 py-1.5 text-purple-600 font-semibold text-sm"
+                className="px-3 py-1.5 border-2 border-[#7a73ff] text-[#7a73ff] font-semibold text-sm rounded-full bg-white hover:bg-[#f6f5ff] transition-all duration-200"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -215,7 +215,7 @@ export default function SignIn() {
               </motion.a>
               <motion.a
                 href="/sign-up"
-                className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-sm font-medium"
+                className="px-3 py-1.5 bg-[#7a73ff] text-white rounded-full shadow-lg hover:bg-[#7a73ff] transition-all duration-300 text-sm font-medium border-2 border-[#7a73ff]"
                 whileHover={{
                   scale: 1.05,
                   boxShadow:

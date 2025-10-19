@@ -176,7 +176,7 @@ export default function Home() {
               >
                 <motion.a
                   href="https://app.grupchat.info"
-                  className="block w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-300 shadow-lg"
+                  className="block w-full px-6 py-3 bg-[#7a73ff] text-white rounded-xl font-semibold hover:bg-[#7a73ff] transition-all duration-300 shadow-lg"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -185,7 +185,7 @@ export default function Home() {
 
                 <motion.button
                   onClick={() => setShowComingSoonPopup(false)}
-                  className="block w-full px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300"
+                  className="block w-full px-6 py-3 border border-[#b8b5ff] text-[#7a73ff] rounded-xl font-semibold hover:bg-[#f6f5ff] transition-all duration-300"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -276,7 +276,7 @@ export default function Home() {
               </motion.a>
               <motion.a
                 href="/sign-up"
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 inline-block text-sm font-medium"
+                className="px-4 py-2 bg-[#7a73ff] text-white rounded-full shadow-lg hover:bg-[#7a73ff] transition-all duration-300 inline-block text-sm font-medium"
                 whileHover={{
                   scale: 1.05,
                   boxShadow:
@@ -300,7 +300,7 @@ export default function Home() {
               </motion.a>
               <motion.a
                 href="/sign-up"
-                className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 inline-block text-sm font-medium"
+                className="px-3 py-1.5 bg-[#7a73ff] text-white rounded-full shadow-lg hover:bg-[#7a73ff] transition-all duration-300 inline-block text-sm font-medium"
                 whileHover={{
                   scale: 1.05,
                   boxShadow:
@@ -315,9 +315,9 @@ export default function Home() {
         </div>
       </motion.nav>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 overflow-x-hidden relative">
         {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
             className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70"
             animate={{
@@ -331,10 +331,10 @@ export default function Home() {
             }}
           />
           <motion.div
-            className="absolute -bottom-40 -left-40 w-80 h-80 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70"
+            className="absolute -bottom-16 -left-32 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70"
             animate={{
               x: [0, -100, 0],
-              y: [0, 50, 0],
+              y: [0, 30, 0],
             }}
             transition={{
               duration: 25,
@@ -358,7 +358,7 @@ export default function Home() {
 
         {/* Hero Section */}
         <motion.div
-          className="relative z-10 px-4 py-16 sm:px-6 sm:py-20 lg:px-12 lg:py-32"
+          className="relative z-10 px-4 pt-6 pb-8 sm:px-6 sm:pt-10 sm:pb-12 lg:px-12 lg:pt-16 lg:pb-20"
           variants={containerVariants}
           initial="hidden"
           animate={isLoaded ? "visible" : "hidden"}
@@ -366,7 +366,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto text-center">
             {/* Main Headline */}
             <motion.h1
-              className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-6 sm:mb-8"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 sm:mb-6"
               variants={itemVariants}
             >
               <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -378,7 +378,7 @@ export default function Home() {
 
             {/* Subtitle */}
             <motion.p
-              className="text-lg sm:text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto mb-8 sm:mb-12 leading-relaxed px-4"
+              className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-6 sm:mb-8 leading-relaxed px-4"
               variants={itemVariants}
             >
               Transform your group chats into group activities. Pool funds with
@@ -392,7 +392,7 @@ export default function Home() {
             >
               <motion.a
                 href="/sign-up"
-                className="group relative px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-base sm:text-lg font-semibold rounded-full shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 overflow-hidden inline-block"
+                className="group relative px-6 sm:px-8 py-3 sm:py-4 bg-[#7a73ff] text-white text-base sm:text-lg font-semibold rounded-full shadow-2xl hover:bg-[#7a73ff] hover:shadow-purple-500/25 transition-all duration-300 overflow-hidden inline-block"
                 whileHover={{
                   scale: 1.05,
                   y: -5,
@@ -401,7 +401,7 @@ export default function Home() {
               >
                 <span className="relative z-10">Start Your First Pool</span>
                 <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-purple-700 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  className="absolute inset-0 bg-[#7a73ff] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   initial={false}
                 />
               </motion.a>
@@ -417,7 +417,7 @@ export default function Home() {
                 whileHover={{ y: -10, scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="text-4xl font-bold text-purple-600 mb-2">
+                <div className="text-4xl font-bold text-[#7a73ff] mb-2">
                   10+
                 </div>
                 <div className="text-gray-600">Active Users</div>
@@ -428,7 +428,7 @@ export default function Home() {
                 whileHover={{ y: -10, scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="text-4xl font-bold text-blue-600 mb-2">
+                <div className="text-4xl font-bold text-[#7a73ff] mb-2">
                   Ksh 250k+
                 </div>
                 <div className="text-gray-600">Pooled Successfully</div>
@@ -439,7 +439,7 @@ export default function Home() {
                 whileHover={{ y: -10, scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="text-4xl font-bold text-indigo-600 mb-2">
+                <div className="text-4xl font-bold text-[#7a73ff] mb-2">
                   20+
                 </div>
                 <div className="text-gray-600">Dreams Realized</div>

@@ -34,9 +34,17 @@ import {
   Target,
   CalendarDays,
   ArrowUpRight as ArrowUpRightIcon,
+  ShieldCheck,
 } from "lucide-react";
 
 function PoolDetailPageContent() {
+  // Helper to calculate withdrawal transaction fee (matches backend logic)
+  const calculateWithdrawalFee = (amount, feeRate = 0.02) => {
+    if (!amount || isNaN(amount) || amount < 200) return 0;
+    const rawFee = amount * feeRate;
+    const roundedFee = Math.round(rawFee / 10) * 10;
+    return roundedFee;
+  };
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
@@ -478,7 +486,8 @@ function PoolDetailPageContent() {
           type: "invitation",
           inviteType: inviteForm.inviteType,
           inviteCode: response.data?.inviteCode,
-          expiresAt: response.data?.expiresAt,
+          // expiresAt: response.data?.expiresAt,
+          inviteeEmail: response.data?.inviteeEmail,
         });
         setShowSuccessModal(true);
         setShowInviteModal(false);
@@ -712,165 +721,266 @@ function PoolDetailPageContent() {
 
   return (
     <DashboardLayout title={poolData.name} subtitle="">
-      {/* Pool Header Info */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm mb-8">
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <TypeIcon type={poolData.type} />
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {poolData.name}
-                </h1>
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                    poolData.status
-                  )}`}
-                >
-                  {poolData.status.charAt(0).toUpperCase() +
-                    poolData.status.slice(1)}
-                </span>
-              </div>
-              {/* Description with Tooltip */}
-              <div className="mb-4">
-                <div className="relative group">
-                  <p className="text-gray-600 text-base leading-relaxed cursor-help">
-                    {truncateDescription(poolData.description)}
+      {/* Pool Header with Progress Overview */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Pool Header Info - Takes 2 columns */}
+        <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <TypeIcon type={poolData.type} />
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    {poolData.name}
+                  </h1>
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                      poolData.status
+                    )}`}
+                  >
+                    {poolData.status.charAt(0).toUpperCase() +
+                      poolData.status.slice(1)}
+                  </span>
+                </div>
+                {/* Description with Tooltip */}
+                <div className="mb-4">
+                  <div className="relative group">
+                    <p className="text-gray-600 text-base leading-relaxed cursor-help">
+                      {truncateDescription(poolData.description)}
+                      {poolData.description &&
+                        poolData.description.length > 120 && (
+                          <span className="text-blue-600 ml-1">...</span>
+                        )}
+                    </p>
                     {poolData.description &&
                       poolData.description.length > 120 && (
-                        <span className="text-blue-600 ml-1">...</span>
+                        <div className="absolute bottom-full left-0 mb-2 px-4 py-3 bg-gray-900 text-white text-sm rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 max-w-md whitespace-pre-wrap">
+                          {poolData.description}
+                          <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                        </div>
                       )}
-                  </p>
-                  {poolData.description &&
-                    poolData.description.length > 120 && (
-                      <div className="absolute bottom-full left-0 mb-2 px-4 py-3 bg-gray-900 text-white text-sm rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 max-w-md whitespace-pre-wrap">
-                        {poolData.description}
-                        <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-                      </div>
-                    )}
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-500">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    Due: {poolData.dueDate}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Users className="w-4 h-4" />
+                    {poolData.memberCount} members
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <ShieldCheck className="w-4 h-4" />
+                    {poolData.role}
+                  </span>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-500">
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  Due: {poolData.dueDate}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Users className="w-4 h-4" />
-                  {poolData.memberCount} members
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="hidden xs:inline">Your role:</span>{" "}
-                  {poolData.role}
-                </span>
-              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleShareLink}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors relative group"
+                title={linkCopied ? "Link copied!" : "Share pool link"}
+              >
+                <Share2 className="w-5 h-5" />
+                {linkCopied && (
+                  <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                    Link copied!
+                  </span>
+                )}
+              </button>
+              {isCreatorOrAdmin && (
+                <button
+                  onClick={() => router.push(`/pools/edit/${poolId}`)}
+                  className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                  title="Edit Pool"
+                >
+                  <Edit className="w-5 h-5" />
+                </button>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+
+          {/* Pool Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-5">
+            <div className="text-center p-3 bg-gray-50 rounded-xl">
+              <p className="text-xs text-gray-500 mb-1">Target Amount</p>
+              <p className="text-lg font-bold text-gray-900">
+                KSh {poolData.targetAmount.toLocaleString()}
+              </p>
+            </div>
+            <div className="text-center p-3 bg-gray-50 rounded-xl">
+              <p className="text-xs text-gray-500 mb-1">Current Balance</p>
+              <p className="text-lg font-bold text-gray-900">
+                KSh {poolData.currentBalance.toLocaleString()}
+              </p>
+            </div>
+            <div className="text-center p-3 bg-gray-50 rounded-xl">
+              <p className="text-xs text-gray-500 mb-1">Progress</p>
+              <p className="text-lg font-bold text-gray-900">
+                {poolData.percentage}%
+              </p>
+            </div>
+            <div className="text-center p-3 bg-gray-50 rounded-xl">
+              <p className="text-xs text-gray-500 mb-1">Remaining</p>
+              <p className="text-lg font-bold text-gray-900">
+                KSh{" "}
+                {(
+                  poolData.targetAmount - poolData.currentBalance
+                ).toLocaleString()}
+              </p>
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mb-5">
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-gray-500">Progress to goal</span>
+              <span className="font-medium text-gray-900">
+                {poolData.percentage}%
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="h-2 rounded-full transition-all duration-500 ease-out"
+                style={{
+                  width: `${poolData.percentage}%`,
+                  background: `linear-gradient(to right, #b8b5ff, #7a73ff)`,
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-2">
             <button
-              onClick={handleShareLink}
-              className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors relative group"
-              title={linkCopied ? "Link copied!" : "Share pool link"}
+              onClick={() => setShowDepositModal(true)}
+              className="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              style={{ backgroundColor: "#7a73ff" }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "#6961ff")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "#7a73ff")
+              }
             >
-              <Share2 className="w-5 h-5" />
-              {linkCopied && (
-                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                  Link copied!
-                </span>
-              )}
+              <ArrowUpRight className="w-4 h-4" />
+              Deposit
             </button>
-            {isCreatorOrAdmin && (
+            <button
+              onClick={() => setShowWithdrawModal(true)}
+              className="border-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              style={{ borderColor: "#7a73ff", color: "#7a73ff" }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "#f5f4ff")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
+            >
+              <ArrowDownLeft className="w-4 h-4" />
+              Withdraw
+            </button>
+            <button
+              onClick={() => setShowInviteModal(true)}
+              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center gap-2"
+            >
+              <UserPlus className="w-4 h-4" />
+              Invite Members
+            </button>
+
+            {poolData.role === "admin" && (
               <button
                 onClick={() => router.push(`/pools/edit/${poolId}`)}
-                className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
-                title="Edit Pool"
+                className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors flex items-center gap-2"
               >
-                <Edit className="w-5 h-5" />
+                <Edit className="w-4 h-4" />
+                Edit Pool
               </button>
             )}
           </div>
         </div>
 
-        {/* Pool Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-5">
-          <div className="text-center p-3 bg-gray-50 rounded-xl">
-            <p className="text-xs text-gray-500 mb-1">Target Amount</p>
-            <p className="text-lg font-bold text-gray-900">
-              KSh {poolData.targetAmount.toLocaleString()}
-            </p>
-          </div>
-          <div className="text-center p-3 bg-green-50 rounded-xl">
-            <p className="text-xs text-gray-500 mb-1">Current Balance</p>
-            <p className="text-lg font-bold text-green-600">
-              KSh {poolData.currentBalance.toLocaleString()}
-            </p>
-          </div>
-          <div className="text-center p-3 bg-blue-50 rounded-xl">
-            <p className="text-xs text-gray-500 mb-1">Progress</p>
-            <p className="text-lg font-bold text-blue-600">
-              {poolData.percentage}%
-            </p>
-          </div>
-          <div className="text-center p-3 bg-purple-50 rounded-xl">
-            <p className="text-xs text-gray-500 mb-1">Remaining</p>
-            <p className="text-lg font-bold text-purple-600">
-              KSh{" "}
-              {(
-                poolData.targetAmount - poolData.currentBalance
-              ).toLocaleString()}
-            </p>
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="mb-5">
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-500">Progress to goal</span>
-            <span className="font-medium text-gray-900">
-              {poolData.percentage}%
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+        {/* Progress Overview Card - Takes 1 column */}
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+          <div className="flex items-center gap-3 mb-4">
             <div
-              className="h-2 rounded-full transition-all duration-500 ease-out bg-gradient-to-r from-yellow-400 to-green-500"
-              style={{ width: `${poolData.percentage}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setShowDepositModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
-          >
-            <ArrowUpRight className="w-4 h-4" />
-            Deposit
-          </button>
-          <button
-            onClick={() => setShowWithdrawModal(true)}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors flex items-center gap-2"
-          >
-            <ArrowDownLeft className="w-4 h-4" />
-            Withdraw
-          </button>
-          <button
-            onClick={() => setShowInviteModal(true)}
-            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center gap-2"
-          >
-            <UserPlus className="w-4 h-4" />
-            Invite Members
-          </button>
-
-          {poolData.role === "admin" && (
-            <button
-              onClick={() => router.push(`/pools/edit/${poolId}`)}
-              className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors flex items-center gap-2"
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{
+                background: "linear-gradient(to right, #7a73ff, #6961ff)",
+              }}
             >
-              <Edit className="w-4 h-4" />
-              Edit Pool
-            </button>
-          )}
+              <Target className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">Progress Overview</h3>
+              <p className="text-sm text-gray-500">Goal completion status</p>
+            </div>
+          </div>
+
+          {/* Circular Progress */}
+          <div className="flex items-center justify-center mb-6">
+            <div className="relative w-24 h-24">
+              <svg
+                className="w-24 h-24 transform -rotate-90"
+                viewBox="0 0 100 100"
+              >
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                  fill="transparent"
+                  className="text-gray-200"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  stroke="#7a73ff"
+                  strokeWidth="8"
+                  fill="transparent"
+                  strokeDasharray={`${2 * Math.PI * 40}`}
+                  strokeDashoffset={`${
+                    2 * Math.PI * 40 * (1 - poolData.percentage / 100)
+                  }`}
+                  className="transition-all duration-1000 ease-out"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-xl font-bold text-gray-900">
+                  {poolData.percentage}%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500 text-sm">Current</span>
+              <span className="font-semibold text-gray-900">
+                KSh {poolData.currentBalance.toLocaleString()}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500 text-sm">Target</span>
+              <span className="font-semibold text-gray-900">
+                KSh {poolData.targetAmount.toLocaleString()}
+              </span>
+            </div>
+            <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+              <span className="text-gray-500 text-sm">Remaining</span>
+              <span className="font-semibold" style={{ color: "#7a73ff" }}>
+                KSh{" "}
+                {(
+                  poolData.targetAmount - poolData.currentBalance
+                ).toLocaleString()}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -882,8 +992,11 @@ function PoolDetailPageContent() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <Target className="w-4 h-4 text-blue-600" />
+                <div
+                  className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: "#7a73ff" }}
+                >
+                  <Target className="w-4 h-4 text-white" />
                 </div>
                 <div>
                   <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
@@ -898,8 +1011,11 @@ function PoolDetailPageContent() {
 
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 bg-green-100 rounded-xl flex items-center justify-center">
-                  <TrendingUp className="w-4 h-4 text-green-600" />
+                <div
+                  className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: "#7a73ff" }}
+                >
+                  <TrendingUp className="w-4 h-4 text-white" />
                 </div>
                 <div>
                   <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
@@ -914,8 +1030,11 @@ function PoolDetailPageContent() {
 
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 bg-purple-100 rounded-xl flex items-center justify-center">
-                  <Users2 className="w-4 h-4 text-purple-600" />
+                <div
+                  className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: "#7a73ff" }}
+                >
+                  <Users2 className="w-4 h-4 text-white" />
                 </div>
                 <div>
                   <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
@@ -930,8 +1049,11 @@ function PoolDetailPageContent() {
 
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 bg-orange-100 rounded-xl flex items-center justify-center">
-                  <CalendarDays className="w-4 h-4 text-orange-600" />
+                <div
+                  className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: "#7a73ff" }}
+                >
+                  <CalendarDays className="w-4 h-4 text-white" />
                 </div>
                 <div>
                   <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
@@ -1009,13 +1131,7 @@ function PoolDetailPageContent() {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="text-right">
-                        <p
-                          className={`font-semibold text-sm ${
-                            transaction.type === "deposit"
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
+                        <p className="font-semibold text-sm text-green-600">
                           {transaction.type === "deposit" ? "+" : "-"}KSh{" "}
                           {transaction.amount.toLocaleString()}
                         </p>
@@ -1047,478 +1163,363 @@ function PoolDetailPageContent() {
           </div>
         </div>
 
-        {/* Sidebar - Pool Info and Members */}
+        {/* Pool Statistics (moved to right column) */}
         <div className="space-y-6">
-          {/* Pool Progress Card */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                <Target className="w-5 h-5 text-white" />
+          <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 mb-4">
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(to right, #7a73ff, #6961ff)",
+                }}
+              >
+                <TrendingUp className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">
-                  Progress Overview
+                <h3 className="text-base font-semibold text-gray-900">
+                  Pool Statistics
                 </h3>
-                <p className="text-sm text-gray-500">Goal completion status</p>
-              </div>
-            </div>
-
-            {/* Circular Progress */}
-            <div className="flex items-center justify-center mb-6">
-              <div className="relative w-24 h-24">
-                <svg
-                  className="w-24 h-24 transform -rotate-90"
-                  viewBox="0 0 100 100"
-                >
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="transparent"
-                    className="text-gray-200"
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="transparent"
-                    strokeDasharray={`${2 * Math.PI * 40}`}
-                    strokeDashoffset={`${
-                      2 * Math.PI * 40 * (1 - poolData.percentage / 100)
-                    }`}
-                    className="text-blue-500 transition-all duration-1000 ease-out"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xl font-bold text-gray-900">
-                    {poolData.percentage}%
-                  </span>
-                </div>
+                <p className="text-xs text-gray-500">
+                  Key metrics and insights
+                </p>
               </div>
             </div>
 
             <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500 text-sm">Current</span>
-                <span className="font-semibold text-gray-900">
-                  KSh {poolData.currentBalance.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500 text-sm">Target</span>
-                <span className="font-semibold text-gray-900">
-                  KSh {poolData.targetAmount.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                <span className="text-gray-500 text-sm">Remaining</span>
-                <span className="font-semibold text-blue-600">
-                  KSh{" "}
-                  {(
-                    poolData.targetAmount - poolData.currentBalance
-                  ).toLocaleString()}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Members Card */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                  <Users2 className="w-5 h-5 text-purple-600" />
+              {/* Transaction Summary */}
+              <div className="grid grid-cols-2 gap-3">
+                <div
+                  className="p-3 rounded-xl"
+                  style={{ backgroundColor: "#f5f4ff" }}
+                >
+                  <div className="flex items-center gap-1 mb-1">
+                    <ArrowUpRightIcon
+                      className="w-3 h-3"
+                      style={{ color: "#7a73ff" }}
+                    />
+                    <span
+                      className="text-xs font-medium"
+                      style={{ color: "#7a73ff" }}
+                    >
+                      Total Deposits
+                    </span>
+                  </div>
+                  <p
+                    className="text-base font-bold"
+                    style={{ color: "#7a73ff" }}
+                  >
+                    KSh{" "}
+                    {poolData.insights?.transactions?.totalDeposits
+                      ? parseFloat(
+                          poolData.insights.transactions.totalDeposits
+                        ).toLocaleString()
+                      : "0"}
+                  </p>
+                  <p className="text-xs" style={{ color: "#7a73ff" }}>
+                    {poolData.insights?.transactions?.deposits || 0}{" "}
+                    transactions
+                  </p>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Members</h3>
+
+                <div
+                  className="p-3 rounded-xl"
+                  style={{ backgroundColor: "#f5f4ff" }}
+                >
+                  <div className="flex items-center gap-1 mb-1">
+                    <ArrowDownLeft
+                      className="w-3 h-3"
+                      style={{ color: "#7a73ff" }}
+                    />
+                    <span
+                      className="text-xs font-medium"
+                      style={{ color: "#7a73ff" }}
+                    >
+                      Total Withdrawals
+                    </span>
+                  </div>
+                  <p
+                    className="text-base font-bold"
+                    style={{ color: "#7a73ff" }}
+                  >
+                    KSh{" "}
+                    {poolData.insights?.transactions?.totalWithdrawals
+                      ? parseFloat(
+                          poolData.insights.transactions.totalWithdrawals
+                        ).toLocaleString()
+                      : "0"}
+                  </p>
+                  <p className="text-xs" style={{ color: "#7a73ff" }}>
+                    {poolData.insights?.transactions?.withdrawals || 0}{" "}
+                    transactions
+                  </p>
                 </div>
               </div>
-              <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
-                <UserPlus className="w-5 h-5" />
-              </button>
-            </div>
 
-            {poolData.members && poolData.members.length > 0 ? (
-              <div className="space-y-3">
-                {poolData.members.slice(0, 3).map((member) => {
-                  // Find the actual deposit amount from insights data
-                  const actualDeposits =
-                    poolData.insights?.activity?.topContributors?.find(
-                      (c) => c.userId === member.id
-                    )?.totalContributed || 0;
+              {/* Additional Metrics */}
+              <div className="space-y-2 pt-1">
+                <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                  <span className="text-xs text-gray-600">Average Deposit</span>
+                  <span className="font-semibold text-gray-900 text-xs">
+                    KSh{" "}
+                    {poolData.insights?.trends?.averageContribution
+                      ? parseFloat(
+                          poolData.insights.trends.averageContribution
+                        ).toLocaleString()
+                      : "0"}
+                  </span>
+                </div>
 
-                  // Show deposit amount or "No deposits yet" for members with 0
-                  const depositDisplay =
-                    actualDeposits > 0
-                      ? `KSh ${actualDeposits.toLocaleString()}`
-                      : "No deposits yet";
+                <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                  <span className="text-xs text-gray-600">Pool Created</span>
+                  <span className="font-semibold text-gray-900 text-xs">
+                    {poolData.createdAt
+                      ? new Date(poolData.createdAt).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          }
+                        )
+                      : "Unknown"}
+                  </span>
+                </div>
 
-                  return (
-                    <div key={member.id} className="flex items-center gap-3">
-                      <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${getUserColor(
-                          member.user?.displayName
-                        )}`}
-                      >
-                        <span className="text-white font-semibold text-sm">
-                          {member.user?.displayName?.charAt(0).toUpperCase() ||
-                            "?"}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">
-                          {member.user.displayName}
+                <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                  <span className="text-xs text-gray-600">Target Date</span>
+                  <div className="text-right">
+                    <span className="font-semibold text-gray-900 text-xs">
+                      {poolData.endDate
+                        ? new Date(poolData.endDate).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            }
+                          )
+                        : "No deadline"}
+                    </span>
+                    {poolData.insights?.trends?.daysRemaining !== null &&
+                      poolData.insights?.trends?.daysRemaining !==
+                        undefined && (
+                        <p className="text-xs text-gray-500">
+                          {poolData.insights.trends.daysRemaining >= 0
+                            ? `${poolData.insights.trends.daysRemaining} days left`
+                            : `${Math.abs(
+                                poolData.insights.trends.daysRemaining
+                              )} days passed`}
                         </p>
-                        <p className="text-sm text-gray-500 capitalize">
-                          {member.role}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p
-                          className={`text-sm font-medium ${
-                            actualDeposits > 0
-                              ? "text-gray-900"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          {depositDisplay}
-                        </p>
-                        <p className="text-xs text-gray-500">deposited</p>
+                      )}
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-gray-600">Pool Status</span>
+                    <div className="relative group">
+                      <Info className="w-3 h-3 text-gray-400 cursor-help" />
+                      <div className="absolute bottom-full left-0 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 max-w-xs whitespace-normal">
+                        <strong>Status Logic:</strong>
+                        <br />• <strong>Target Reached:</strong> 100%+ progress
+                        <br />• <strong>On Track:</strong> Current rate ≥80% of
+                        required rate
+                        <br />• <strong>Behind Schedule:</strong> Current rate
+                        50-80% of required rate
+                        <br />• <strong>Significantly Behind:</strong> Current
+                        rate &lt;50% of required rate
+                        <br />• <strong>Critical:</strong> ≤7 days remaining
+                        <div className="absolute top-full left-3 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        poolData.insights?.trends?.statusColor === "success"
+                          ? "bg-green-100 text-green-800"
+                          : poolData.insights?.trends?.statusColor === "warning"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : poolData.insights?.trends?.statusColor === "danger"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {poolData.insights?.trends?.statusText || "Unknown"}
+                    </span>
+                  </div>
+                </div>
 
-                {poolData.members.length > 3 && (
-                  <button className="w-full py-2 text-purple-600 hover:text-purple-700 font-medium transition-colors text-sm">
-                    View all {poolData.members.length} members
-                  </button>
-                )}
+                {/* Deposit Rate Analysis */}
+                {poolData.insights?.trends?.daysRemaining &&
+                  poolData.insights.trends.daysRemaining > 0 && (
+                    <div className="p-2 bg-blue-50 rounded-lg border border-blue-100">
+                      <div className="flex items-center gap-1 mb-2">
+                        <TrendingUp className="w-3 h-3 text-blue-600" />
+                        <span className="text-xs font-medium text-blue-900">
+                          Deposit Rate Analysis
+                        </span>
+                      </div>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-blue-700">
+                            Required daily deposit rate:
+                          </span>
+                          <span className="font-medium text-blue-900">
+                            KSh {poolData.insights.trends.requiredDailyRate}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-blue-700">
+                            Current daily deposit rate (7-day avg):
+                          </span>
+                          <span className="font-medium text-blue-900">
+                            KSh {poolData.insights.trends.currentDailyRate}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
               </div>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-gray-500 text-sm">No members yet</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Members will appear here once they join
-                </p>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Enhanced Insights Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Member Deposits Breakdown */}
+      <div className="grid grid-cols-1 gap-6 mb-8">
+        {/* Pool Members Card with Pie Chart */}
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-              <Users2 className="w-4 h-4 text-white" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(to right, #7a73ff, #6961ff)",
+                }}
+              >
+                <Users2 className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">
+                  Pool Members
+                </h3>
+                <p className="text-xs text-gray-500">
+                  {poolData.members?.length || 0} member
+                  {poolData.members?.length !== 1 ? "s" : ""}
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-base font-semibold text-gray-900">
-                Top Depositors
-              </h3>
-              <p className="text-xs text-gray-500">
-                Based on successful deposits
-              </p>
-            </div>
+            <button
+              onClick={() => setShowInviteModal(true)}
+              className="p-2 text-gray-400 hover:text-purple-600 rounded-lg hover:bg-purple-50 transition-colors"
+              title="Invite Members"
+            >
+              <UserPlus className="w-4 h-4" />
+            </button>
           </div>
 
-          {poolData.insights?.activity?.topContributors &&
-          poolData.insights.activity.topContributors.length > 0 ? (
-            <div className="space-y-3">
-              {poolData.insights.activity.topContributors.map(
-                (depositor, index) => {
-                  const depositPercentage =
-                    poolData.targetAmount > 0
-                      ? (depositor.totalContributed / poolData.targetAmount) *
-                        100
-                      : 0;
+          {poolData.members && poolData.members.length > 0 ? (
+            <>
+              {/* Members Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-2 px-2 text-xs font-semibold text-gray-600">
+                        Member
+                      </th>
+                      <th className="text-left py-2 px-2 text-xs font-semibold text-gray-600">
+                        Role
+                      </th>
+                      <th className="text-right py-2 px-2 text-xs font-semibold text-gray-600">
+                        Contributed
+                      </th>
+                      <th className="text-right py-2 px-2 text-xs font-semibold text-gray-600">
+                        Withdrawn
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {poolData.members.map((member) => {
+                      const contributed = member.totalContributed || 0;
+                      const withdrawn = member.totalWithdrawn || 0;
 
-                  return (
-                    <div key={depositor.userId} className="relative">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center ${getUserColor(
-                              depositor.user?.displayName
-                            )}`}
-                          >
-                            <span className="text-white font-semibold text-xs">
-                              {depositor.user?.displayName
-                                ?.charAt(0)
-                                .toUpperCase() || "?"}
+                      return (
+                        <tr
+                          key={member.id}
+                          className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="py-2 px-2">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className={`w-6 h-6 rounded-lg flex items-center justify-center ${getUserColor(
+                                  member.user?.displayName
+                                )}`}
+                              >
+                                <span className="text-white font-semibold text-xs">
+                                  {member.user?.displayName
+                                    ?.charAt(0)
+                                    .toUpperCase() || "?"}
+                                </span>
+                              </div>
+                              <span className="text-xs font-medium text-gray-900 truncate max-w-[100px]">
+                                {member.user?.displayName || "Unknown"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-2 px-2">
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded-full ${
+                                member.role === "admin" ||
+                                member.role === "creator"
+                                  ? "bg-purple-100 text-purple-700"
+                                  : "bg-gray-100 text-gray-700"
+                              }`}
+                            >
+                              {member.role}
                             </span>
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900 text-xs">
-                              {depositor.user?.displayName || "Unknown User"}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              Top Depositor
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-gray-900 text-xs">
-                            KSh {depositor.totalContributed.toLocaleString()}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {depositPercentage.toFixed(1)}% of target
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Progress bar for individual deposit */}
-                      <div className="w-full bg-gray-100 rounded-full h-1.5">
-                        <div
-                          className="h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
-                          style={{
-                            width: `${Math.min(depositPercentage, 100)}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  );
-                }
-              )}
-            </div>
+                          </td>
+                          <td className="py-2 px-2 text-right">
+                            <span className="text-xs font-medium text-green-600">
+                              {contributed > 0
+                                ? `KSh ${contributed.toLocaleString()}`
+                                : "-"}
+                            </span>
+                          </td>
+                          <td className="py-2 px-2 text-right">
+                            <span className="text-xs font-medium text-red-600">
+                              {withdrawn > 0
+                                ? `KSh ${withdrawn.toLocaleString()}`
+                                : "-"}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           ) : (
-            <div className="text-center py-4">
-              <p className="text-gray-500 text-sm">
-                No successful deposits yet
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Users2 className="w-8 h-8 text-purple-400" />
+              </div>
+              <p className="text-gray-500 text-sm font-medium">
+                No members yet
               </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Deposits will appear after successful transactions
+              <p className="text-xs text-gray-400 mt-1 mb-3">
+                Invite members to start collaborating
               </p>
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="text-xs px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Invite Members
+              </button>
             </div>
           )}
-        </div>
-
-        {/* Pool Statistics */}
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h3 className="text-base font-semibold text-gray-900">
-                Pool Statistics
-              </h3>
-              <p className="text-xs text-gray-500">Key metrics and insights</p>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {/* Transaction Summary */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-green-50 rounded-xl">
-                <div className="flex items-center gap-1 mb-1">
-                  <ArrowUpRightIcon className="w-3 h-3 text-green-600" />
-                  <span className="text-xs font-medium text-green-900">
-                    Total Deposits
-                  </span>
-                </div>
-                <p className="text-base font-bold text-green-700">
-                  KSh{" "}
-                  {poolData.insights?.transactions?.totalDeposits
-                    ? parseFloat(
-                        poolData.insights.transactions.totalDeposits
-                      ).toLocaleString()
-                    : "0"}
-                </p>
-                <p className="text-xs text-green-600">
-                  {poolData.insights?.transactions?.deposits || 0} transactions
-                </p>
-              </div>
-
-              <div className="p-3 bg-red-50 rounded-xl">
-                <div className="flex items-center gap-1 mb-1">
-                  <ArrowDownLeft className="w-3 h-3 text-red-600" />
-                  <span className="text-xs font-medium text-red-900">
-                    Total Withdrawals
-                  </span>
-                </div>
-                <p className="text-base font-bold text-red-700">
-                  KSh{" "}
-                  {poolData.insights?.transactions?.totalWithdrawals
-                    ? parseFloat(
-                        poolData.insights.transactions.totalWithdrawals
-                      ).toLocaleString()
-                    : "0"}
-                </p>
-                <p className="text-xs text-red-600">
-                  {poolData.insights?.transactions?.withdrawals || 0}{" "}
-                  transactions
-                </p>
-              </div>
-            </div>
-
-            {/* Additional Metrics */}
-            <div className="space-y-2 pt-1">
-              <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                <span className="text-xs text-gray-600">Average Deposit</span>
-                <span className="font-semibold text-gray-900 text-xs">
-                  KSh{" "}
-                  {poolData.insights?.trends?.averageContribution
-                    ? parseFloat(
-                        poolData.insights.trends.averageContribution
-                      ).toLocaleString()
-                    : "0"}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                <span className="text-xs text-gray-600">Pool Created</span>
-                <span className="font-semibold text-gray-900 text-xs">
-                  {poolData.createdAt
-                    ? new Date(poolData.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
-                    : "Unknown"}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                <span className="text-xs text-gray-600">Target Date</span>
-                <div className="text-right">
-                  <span className="font-semibold text-gray-900 text-xs">
-                    {poolData.endDate
-                      ? new Date(poolData.endDate).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })
-                      : "No deadline"}
-                  </span>
-                  {poolData.insights?.trends?.daysRemaining !== null &&
-                    poolData.insights?.trends?.daysRemaining !== undefined && (
-                      <p className="text-xs text-gray-500">
-                        {poolData.insights.trends.daysRemaining >= 0
-                          ? `${poolData.insights.trends.daysRemaining} days left`
-                          : `${Math.abs(
-                              poolData.insights.trends.daysRemaining
-                            )} days passed`}
-                      </p>
-                    )}
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-gray-600">Pool Status</span>
-                  <div className="relative group">
-                    <Info className="w-3 h-3 text-gray-400 cursor-help" />
-                    <div className="absolute bottom-full left-0 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 max-w-xs whitespace-normal">
-                      <strong>Status Logic:</strong>
-                      <br />• <strong>Target Reached:</strong> 100%+ progress
-                      <br />• <strong>On Track:</strong> Current rate ≥80% of
-                      required rate
-                      <br />• <strong>Behind Schedule:</strong> Current rate
-                      50-80% of required rate
-                      <br />• <strong>Significantly Behind:</strong> Current
-                      rate &lt;50% of required rate
-                      <br />• <strong>Critical:</strong> ≤7 days remaining
-                      <div className="absolute top-full left-3 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      poolData.insights?.trends?.statusColor === "success"
-                        ? "bg-green-100 text-green-800"
-                        : poolData.insights?.trends?.statusColor === "warning"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : poolData.insights?.trends?.statusColor === "danger"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {poolData.insights?.trends?.statusText || "Unknown"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Deposit Rate Analysis */}
-              {poolData.insights?.trends?.daysRemaining &&
-                poolData.insights.trends.daysRemaining > 0 && (
-                  <div className="p-2 bg-blue-50 rounded-lg border border-blue-100">
-                    <div className="flex items-center gap-1 mb-2">
-                      <TrendingUp className="w-3 h-3 text-blue-600" />
-                      <span className="text-xs font-medium text-blue-900">
-                        Deposit Rate Analysis
-                      </span>
-                    </div>
-                    <div className="space-y-1 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-blue-700">
-                          Required daily deposit rate:
-                        </span>
-                        <span className="font-medium text-blue-900">
-                          KSh {poolData.insights.trends.requiredDailyRate}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-blue-700">
-                          Current daily deposit rate (7-day avg):
-                        </span>
-                        <span className="font-medium text-blue-900">
-                          KSh {poolData.insights.trends.currentDailyRate}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-blue-700">
-                          Deposit rate comparison:
-                        </span>
-                        <span
-                          className={`font-medium ${
-                            parseFloat(
-                              poolData.insights.trends.currentDailyRate
-                            ) >=
-                            parseFloat(
-                              poolData.insights.trends.requiredDailyRate
-                            ) *
-                              0.8
-                              ? "text-green-600"
-                              : parseFloat(
-                                  poolData.insights.trends.currentDailyRate
-                                ) >=
-                                parseFloat(
-                                  poolData.insights.trends.requiredDailyRate
-                                ) *
-                                  0.5
-                              ? "text-yellow-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {poolData.insights.trends.currentDailyRate > 0 &&
-                          poolData.insights.trends.requiredDailyRate > 0
-                            ? `${(
-                                (parseFloat(
-                                  poolData.insights.trends.currentDailyRate
-                                ) /
-                                  parseFloat(
-                                    poolData.insights.trends.requiredDailyRate
-                                  )) *
-                                100
-                              ).toFixed(1)}% of required`
-                            : "N/A"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-            </div>
-          </div>
         </div>
       </div>
 
@@ -1529,8 +1530,8 @@ function PoolDetailPageContent() {
             <form onSubmit={handleDepositSubmit}>
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <DollarSign className="w-5 h-5 text-blue-600" />
+                  <div className="w-10 h-10 bg-[#7a73ff] rounded-xl flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-white" />
                   </div>
                   <h2 className="text-xl font-semibold text-gray-900">
                     Make a Deposit
@@ -1563,16 +1564,7 @@ function PoolDetailPageContent() {
                 </button>
               </div>
 
-              {/* Pool Info */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-6">
-                <p className="text-sm text-gray-600 mb-1">Contributing to</p>
-                <p className="font-semibold text-gray-900">{poolData.name}</p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Progress: {poolData.percentage}% • KSh{" "}
-                  {poolData.currentBalance.toLocaleString()} of KSh{" "}
-                  {poolData.targetAmount.toLocaleString()}
-                </p>
-              </div>
+              {/* Pool Info removed as per request */}
 
               {/* Error Message */}
               {depositError && (
@@ -1592,7 +1584,7 @@ function PoolDetailPageContent() {
                     onClick={() => setPaymentMethod("stk")}
                     className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                       paymentMethod === "stk"
-                        ? "border-blue-500 bg-blue-50 text-blue-700"
+                        ? "border-[#7a73ff] bg-[#f6f5ff] text-[#7a73ff]"
                         : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
                     }`}
                   >
@@ -1609,7 +1601,7 @@ function PoolDetailPageContent() {
                     onClick={() => setPaymentMethod("paybill")}
                     className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                       paymentMethod === "paybill"
-                        ? "border-blue-500 bg-blue-50 text-blue-700"
+                        ? "border-[#7a73ff] bg-[#f6f5ff] text-[#7a73ff]"
                         : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
                     }`}
                   >
@@ -1643,7 +1635,7 @@ function PoolDetailPageContent() {
                           amount: e.target.value,
                         })
                       }
-                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
+                      className="w-full pl-12 pr-4 py-3 border border-[#b8b5ff] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-[#7a73ff] transition-all duration-300 placeholder-gray-500 text-gray-900"
                       placeholder="Enter amount"
                       min="10"
                       step="1"
@@ -1671,7 +1663,7 @@ function PoolDetailPageContent() {
                         type="button"
                         onClick={() => setUseProfilePhone(!useProfilePhone)}
                         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                          useProfilePhone ? "bg-blue-600" : "bg-gray-200"
+                          useProfilePhone ? "bg-[#7a73ff]" : "bg-gray-200"
                         }`}
                       >
                         <span
@@ -1684,11 +1676,11 @@ function PoolDetailPageContent() {
                   </div>
 
                   {useProfilePhone ? (
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                    <div className="bg-[#f6f5ff] border border-[#b8b5ff] rounded-xl p-3">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <Smartphone className="w-4 h-4 text-blue-600" />
-                          <span className="text-sm font-medium text-blue-900">
+                          <Smartphone className="w-4 h-4 text-[#7a73ff]" />
+                          <span className="text-sm font-medium text-[#7a73ff]">
                             {userProfile?.phone || "No phone number in profile"}
                           </span>
                         </div>
@@ -1700,14 +1692,14 @@ function PoolDetailPageContent() {
                               setAddPhoneError("");
                               setShowAddPhoneModal(true);
                             }}
-                            className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            className="text-xs px-3 py-1.5 bg-[#7a73ff] text-white rounded-lg hover:bg-[#6961ff] transition-colors"
                           >
                             Add Phone
                           </button>
                         )}
                       </div>
                       {!userProfile?.phone && (
-                        <p className="text-xs text-blue-600 mt-2">
+                        <p className="text-xs text-[#7a73ff] mt-2">
                           Please add a phone number to your profile or toggle to
                           manual input
                         </p>
@@ -1723,7 +1715,7 @@ function PoolDetailPageContent() {
                           phone: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
+                      className="w-full px-4 py-3 border border-[#b8b5ff] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-[#7a73ff] transition-all duration-300 placeholder-gray-500 text-gray-900"
                       placeholder="0715234234 or 254715234234"
                       required
                     />
@@ -1732,7 +1724,7 @@ function PoolDetailPageContent() {
                   <p className="text-xs text-gray-500 mt-1">
                     {useProfilePhone
                       ? "Using phone number from your profile"
-                      : "Enter your phone number in any format (0715234234, 715234234, or 254715234234)"}
+                      : "Enter your phone number in any format (0712..., 712, or 254712...)"}
                   </p>
                 </div>
               )}
@@ -1740,24 +1732,24 @@ function PoolDetailPageContent() {
               {/* Paybill Instructions */}
               {paymentMethod === "paybill" && (
                 <div className="mb-6">
-                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                  <div className="bg-[#f6f5ff] rounded-xl p-4 border border-[#b8b5ff]">
                     <div className="flex items-start gap-3">
-                      <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <Info className="w-5 h-5 text-[#7a73ff] mt-0.5 flex-shrink-0" />
                       <div>
-                        <h4 className="font-medium text-blue-900 text-sm mb-2">
+                        <h4 className="font-medium text-[#7a73ff] text-sm mb-2">
                           Paybill Payment Instructions
                         </h4>
-                        <div className="space-y-2 text-xs text-blue-700">
+                        <div className="space-y-2 text-xs text-[#7a73ff]">
                           <p>1. Go to M-Pesa on your phone</p>
                           <p>2. Select "Lipa na M-Pesa" → "Pay Bill"</p>
                           <p>3. Enter the following details:</p>
-                          <div className="bg-white rounded-lg p-3 mt-2 border border-blue-200">
+                          <div className="bg-white rounded-lg p-3 mt-2 border border-[#b8b5ff]">
                             <div className="flex justify-between items-center mb-2">
-                              <span className="font-medium text-blue-900">
+                              <span className="font-medium text-[#7a73ff]">
                                 Paybill Number:
                               </span>
                               <div className="flex items-center gap-2">
-                                <span className="font-mono text-blue-900">
+                                <span className="font-mono text-[#7a73ff]">
                                   4141545
                                 </span>
                                 <button
@@ -1765,7 +1757,7 @@ function PoolDetailPageContent() {
                                   onClick={() =>
                                     navigator.clipboard.writeText("4141545")
                                   }
-                                  className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                                  className="p-1 text-[#7a73ff] hover:bg-[#b8b5ff] rounded transition-colors"
                                   title="Copy paybill number"
                                 >
                                   <Copy className="w-3 h-3" />
@@ -1779,7 +1771,7 @@ function PoolDetailPageContent() {
                               <div className="flex items-center gap-2">
                                 {poolData.paybillIdentifier ? (
                                   <>
-                                    <span className="font-mono text-blue-900 text-sm font-semibold">
+                                    <span className="font-mono text-[#7a73ff] text-sm font-semibold">
                                       {poolData.paybillIdentifier}
                                     </span>
                                     <button
@@ -1789,14 +1781,14 @@ function PoolDetailPageContent() {
                                           poolData.paybillIdentifier
                                         )
                                       }
-                                      className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                                      className="p-1 text-[#7a73ff] hover:bg-[#b8b5ff] rounded transition-colors"
                                       title="Copy account number"
                                     >
                                       <Copy className="w-3 h-3" />
                                     </button>
                                   </>
                                 ) : (
-                                  <span className="text-blue-600 text-sm italic">
+                                  <span className="text-[#7a73ff] text-sm italic">
                                     Error generating pool identifier...
                                   </span>
                                 )}
@@ -1806,29 +1798,7 @@ function PoolDetailPageContent() {
                           <p>4. Enter the amount you want to deposit</p>
                           <p>5. Enter your M-Pesa PIN to complete</p>
 
-                          {/* Additional Information */}
-                          <div className="mt-3 p-2 bg-blue-100 rounded-lg border border-blue-200">
-                            <p className="text-xs text-blue-800 font-medium mb-1">
-                              💡 Important Notes:
-                            </p>
-                            <ul className="text-xs text-blue-700 space-y-1">
-                              <li>
-                                • Use the Account Number above to identify this
-                                specific pool
-                              </li>
-                              <li>
-                                • You can enter any amount you want to
-                                contribute
-                              </li>
-                              <li>
-                                • Payment will be automatically added to this
-                                pool
-                              </li>
-                              <li>
-                                • You'll receive a confirmation SMS from M-Pesa
-                              </li>
-                            </ul>
-                          </div>
+                          {/* Notes section removed as per request */}
                         </div>
                       </div>
                     </div>
@@ -1836,26 +1806,7 @@ function PoolDetailPageContent() {
                 </div>
               )}
 
-              {/* Description Input (Optional) - Only for STK Push */}
-              {paymentMethod === "stk" && (
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={depositForm.description}
-                    onChange={(e) =>
-                      setDepositForm({
-                        ...depositForm,
-                        description: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
-                    placeholder="Add a note for this deposit"
-                  />
-                </div>
-              )}
+              {/* Description input removed as per request */}
 
               {/* Action Buttons */}
               <div className="flex gap-3">
@@ -1881,7 +1832,7 @@ function PoolDetailPageContent() {
                       : undefined
                   }
                   disabled={depositLoading}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                  className="flex-1 px-4 py-3 bg-[#7a73ff] text-white rounded-xl hover:bg-[#6961ff] transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
                   {depositLoading ? (
                     <div className="flex items-center justify-center gap-2">
@@ -1898,8 +1849,8 @@ function PoolDetailPageContent() {
 
               {/* Info Note */}
               {paymentMethod === "stk" && (
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-xs text-blue-700">
+                <div className="mt-4 p-3 bg-[#f6f5ff] rounded-lg">
+                  <p className="text-xs text-[#7a73ff]">
                     <strong>Note:</strong> You'll receive an M-Pesa STK push
                     notification on your phone to complete the payment.
                   </p>
@@ -2040,14 +1991,14 @@ function PoolDetailPageContent() {
       {/* Invite Members Modal */}
       {showInviteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+          <div className="bg-[#f6f5ff] rounded-2xl p-6 w-full max-w-md shadow-xl border border-[#b8b5ff]">
             <form onSubmit={handleInviteSubmit}>
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                    <UserPlus className="w-5 h-5 text-purple-600" />
+                  <div className="w-10 h-10 bg-[#7a73ff] rounded-xl flex items-center justify-center">
+                    <UserPlus className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-xl font-semibold text-gray-900">
+                  <h2 className="text-xl font-semibold text-[#7a73ff]">
                     Invite Members
                   </h2>
                 </div>
@@ -2063,7 +2014,7 @@ function PoolDetailPageContent() {
                     });
                     setInviteError("");
                   }}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="p-2 text-[#7a73ff] hover:text-[#6961ff] rounded-lg hover:bg-[#e5e4ff] transition-colors"
                 >
                   <svg
                     className="w-5 h-5"
@@ -2081,125 +2032,43 @@ function PoolDetailPageContent() {
                 </button>
               </div>
 
-              {/* Pool Info */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-6">
-                <p className="text-sm text-gray-600 mb-1">Inviting to</p>
-                <p className="font-semibold text-gray-900">{poolData.name}</p>
-                <p className="text-xs text-gray-500 mt-1">
+              {/* Pool Info - purple theme */}
+              <div className="bg-[#f6f5ff] rounded-xl p-4 mb-6 border border-[#7a73ff]">
+                <p className="text-sm text-[#7a73ff] mb-1">Inviting to</p>
+                <p className="font-semibold ">{poolData.name}</p>
+                <p className="text-xs mt-1">
                   Current members: {poolData.memberCount} • Target: KSh{" "}
                   {poolData.targetAmount.toLocaleString()}
                 </p>
               </div>
 
               {/* Invitation Type Toggle */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Invitation Type
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setInviteForm({ ...inviteForm, inviteType: "link" })
-                    }
-                    className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                      inviteForm.inviteType === "link"
-                        ? "border-purple-500 bg-purple-50 text-purple-700"
-                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Share2 className="w-5 h-5" />
-                      <div className="text-left">
-                        <p className="font-medium">Link Invitation</p>
-                        <p className="text-xs opacity-70">Shareable link</p>
-                      </div>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setInviteForm({ ...inviteForm, inviteType: "in_app" })
-                    }
-                    className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                      inviteForm.inviteType === "in_app"
-                        ? "border-purple-500 bg-purple-50 text-purple-700"
-                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <UserPlus className="w-5 h-5" />
-                      <div className="text-left">
-                        <p className="font-medium">In-App Invitation</p>
-                        <p className="text-xs opacity-70">Direct invitation</p>
-                      </div>
-                    </div>
-                  </button>
-                </div>
-              </div>
+              {/* Invitation type toggle removed; default to in-app/email */}
 
               {/* Invitee Details */}
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={inviteForm.inviteeEmail}
-                    onChange={(e) =>
-                      setInviteForm({
-                        ...inviteForm,
-                        inviteeEmail: e.target.value,
-                      })
-                    }
-                    placeholder="Enter email address to send invitation"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {inviteForm.inviteType === "link"
-                      ? "We'll send an email with the invitation link"
-                      : "We'll send an in-app invitation and email"}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number (Optional)
-                  </label>
-                  <input
-                    type="tel"
-                    value={inviteForm.inviteePhone}
-                    onChange={(e) =>
-                      setInviteForm({
-                        ...inviteForm,
-                        inviteePhone: e.target.value,
-                      })
-                    }
-                    placeholder="Enter phone number for SMS notifications"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Optional: For additional notification channels
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Personal Message (Optional)
-                  </label>
-                  <textarea
-                    value={inviteForm.message}
-                    onChange={(e) =>
-                      setInviteForm({ ...inviteForm, message: e.target.value })
-                    }
-                    placeholder="Add a personal message to your invitation..."
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 resize-none"
-                  />
-                </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-[#7a73ff] mb-2">
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={inviteForm.inviteeEmail}
+                  onChange={(e) =>
+                    setInviteForm({
+                      ...inviteForm,
+                      inviteeEmail: e.target.value,
+                      inviteType: "in_app",
+                      inviteePhone: "",
+                      message: "",
+                    })
+                  }
+                  placeholder="email address"
+                  className="w-full px-4 py-3 border border-[#b8b5ff] rounded-lg focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent transition-all duration-200 bg-white text-[#7a73ff] placeholder-[#b8b5ff]"
+                  required
+                />
+                <p className="text-xs text-[#7a73ff] mt-1">
+                  An invitation will be sent to this email address.
+                </p>
               </div>
 
               {/* Error Message */}
@@ -2213,7 +2082,7 @@ function PoolDetailPageContent() {
               <button
                 type="submit"
                 disabled={inviteLoading}
-                className="w-full bg-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-[#7a73ff] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#6961ff] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
               >
                 {inviteLoading ? (
                   <>
@@ -2239,8 +2108,8 @@ function PoolDetailPageContent() {
             <form onSubmit={handleWithdrawalSubmit}>
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
-                    <ArrowDownLeft className="w-5 h-5 text-red-600" />
+                  <div className="w-10 h-10 bg-[#7a73ff] rounded-xl flex items-center justify-center">
+                    <ArrowDownLeft className="w-5 h-5 text-white" />
                   </div>
                   <h2 className="text-xl font-semibold text-gray-900">
                     Withdraw Funds
@@ -2278,19 +2147,12 @@ function PoolDetailPageContent() {
                 </button>
               </div>
 
-              {/* Pool Info */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-6">
-                <p className="text-sm text-gray-600 mb-1">Withdrawing from</p>
-                <p className="font-semibold text-gray-900">{poolData.name}</p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Available: KSh {poolData.currentBalance.toLocaleString()}
-                </p>
-              </div>
+              {/* Pool Info removed as per request */}
 
               {/* Error Message */}
               {withdrawalError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-red-600">{withdrawalError}</p>
+                <div className="bg-[#f6f5ff] border border-[#b8b5ff] rounded-lg p-3 mb-4">
+                  <p className="text-sm text-[#7a73ff]">{withdrawalError}</p>
                 </div>
               )}
 
@@ -2312,7 +2174,7 @@ function PoolDetailPageContent() {
                         amount: e.target.value,
                       })
                     }
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
+                    className="w-full pl-12 pr-4 py-3 border border-[#b8b5ff] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-[#7a73ff] transition-all duration-300 placeholder-gray-500 text-gray-900"
                     placeholder="Enter amount"
                     min="10"
                     max={poolData.currentBalance}
@@ -2321,91 +2183,11 @@ function PoolDetailPageContent() {
                   />
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Minimum: KSh 10 • Maximum: KSh{" "}
-                  {poolData.currentBalance.toLocaleString()}
-                </p>
-              </div>
-
-              {/* Phone Number Input */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    M-Pesa Phone Number *
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500">
-                      Use profile phone
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setUseWithdrawalProfilePhone(!useWithdrawalProfilePhone)
-                      }
-                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                        useWithdrawalProfilePhone ? "bg-red-600" : "bg-gray-200"
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          useWithdrawalProfilePhone
-                            ? "translate-x-5"
-                            : "translate-x-1"
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-
-                {useWithdrawalProfilePhone ? (
-                  <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <Smartphone className="w-4 h-4 text-red-600" />
-                        <span className="text-sm font-medium text-red-900">
-                          {userProfile?.phone || "No phone number in profile"}
-                        </span>
-                      </div>
-                      {!userProfile?.phone && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAddPhoneInput("");
-                            setAddPhoneError("");
-                            setShowAddPhoneModal(true);
-                          }}
-                          className="text-xs px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                        >
-                          Add Phone
-                        </button>
-                      )}
-                    </div>
-                    {!userProfile?.phone && (
-                      <p className="text-xs text-red-600 mt-2">
-                        Please add a phone number to your profile or toggle to
-                        manual input
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <input
-                    type="tel"
-                    value={withdrawalForm.phone}
-                    onChange={(e) =>
-                      setWithdrawalForm({
-                        ...withdrawalForm,
-                        phone: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
-                    placeholder="0715234234 or 254715234234"
-                    required
-                  />
-                )}
-
-                <p className="text-xs text-gray-500 mt-1">
-                  {useWithdrawalProfilePhone
-                    ? "Using phone number from your profile"
-                    : "Enter your phone number in any format (0715234234, 715234234, or 254715234234)"}
+                  Transaction fee: KSh{" "}
+                  {calculateWithdrawalFee(
+                    parseFloat(withdrawalForm.amount),
+                    poolData?.platform_fee_rate || 0.02
+                  ).toLocaleString()}
                 </p>
               </div>
 
@@ -2430,6 +2212,95 @@ function PoolDetailPageContent() {
                   <option value="paybill">Send to Paybill</option>
                 </select>
               </div>
+
+              {/* Phone Number Input */}
+              {withdrawalForm.type === "mobile" && (
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      M-Pesa Phone Number *
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">
+                        Use profile phone
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setUseWithdrawalProfilePhone(
+                            !useWithdrawalProfilePhone
+                          )
+                        }
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                          useWithdrawalProfilePhone
+                            ? "bg-[#7a73ff]"
+                            : "bg-gray-200"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            useWithdrawalProfilePhone
+                              ? "translate-x-5"
+                              : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  {useWithdrawalProfilePhone ? (
+                    <div className="bg-[#f6f5ff] border border-[#b8b5ff] rounded-xl p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <Smartphone className="w-4 h-4 text-[#7a73ff]" />
+                          <span className="text-sm font-medium text-[#7a73ff]">
+                            {userProfile?.phone || "No phone number in profile"}
+                          </span>
+                        </div>
+                        {!userProfile?.phone && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAddPhoneInput("");
+                              setAddPhoneError("");
+                              setShowAddPhoneModal(true);
+                            }}
+                            className="text-xs px-3 py-1.5 bg-[#7a73ff] text-white rounded-lg hover:bg-[#6961ff] transition-colors"
+                          >
+                            Add Phone
+                          </button>
+                        )}
+                      </div>
+                      {!userProfile?.phone && (
+                        <p className="text-xs text-[#7a73ff] mt-2">
+                          Please add a phone number to your profile or toggle to
+                          manual input
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <input
+                      type="tel"
+                      value={withdrawalForm.phone}
+                      onChange={(e) =>
+                        setWithdrawalForm({
+                          ...withdrawalForm,
+                          phone: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
+                      placeholder="0715234234 or 254715234234"
+                      required
+                    />
+                  )}
+
+                  <p className="text-xs text-gray-500 mt-1">
+                    {useWithdrawalProfilePhone
+                      ? "Using phone number from your profile"
+                      : "Enter your phone number in any format (0715234234, 715234234, or 254715234234)"}
+                  </p>
+                </div>
+              )}
 
               {/* Conditional Fields Based on Type */}
               {withdrawalForm.type === "till" && (
@@ -2495,38 +2366,10 @@ function PoolDetailPageContent() {
               )}
 
               {/* Notes Input (Optional) */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Notes (Optional)
-                </label>
-                <textarea
-                  value={withdrawalForm.notes}
-                  onChange={(e) =>
-                    setWithdrawalForm({
-                      ...withdrawalForm,
-                      notes: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
-                  placeholder="Add a note for this withdrawal"
-                  rows="3"
-                />
-              </div>
+              {/* Notes input removed as per request */}
 
               {/* Platform Fee Notice */}
-              <div className="mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
-                <div className="flex items-start gap-2">
-                  <Info className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-xs text-yellow-700">
-                    <p className="font-medium mb-1">Platform Fee Notice</p>
-                    <p>
-                      A platform fee may be deducted from your withdrawal
-                      amount. The exact amount will be shown before
-                      confirmation.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              {/* Platform fee notice removed as per request */}
 
               {/* Action Buttons */}
               <div className="flex gap-3">
@@ -2552,7 +2395,7 @@ function PoolDetailPageContent() {
                 <button
                   type="submit"
                   disabled={withdrawalLoading}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                  className="flex-1 px-4 py-3 bg-[#7a73ff] text-white rounded-xl hover:bg-[#6961ff] transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
                   {withdrawalLoading ? (
                     <div className="flex items-center justify-center gap-2">
@@ -2560,7 +2403,7 @@ function PoolDetailPageContent() {
                       Processing...
                     </div>
                   ) : (
-                    "Initiate Withdrawal"
+                    "Withdraw"
                   )}
                 </button>
               </div>
@@ -2595,7 +2438,7 @@ function PoolDetailPageContent() {
                 {successData.type === "invitation"
                   ? successData.inviteType === "link"
                     ? "Link invitation created successfully. Share the link with potential members."
-                    : "In-app invitation sent successfully. The user will be notified."
+                    : "Invitation sent successfully. "
                   : successData.type === "withdrawal"
                   ? "Your withdrawal request has been processed and funds will be sent to your specified destination."
                   : successData.paymentMethod === "paybill"
@@ -2613,12 +2456,18 @@ function PoolDetailPageContent() {
                 <div className="space-y-2 text-sm">
                   {successData.type === "invitation" ? (
                     <>
-                      <div className="flex justify-between">
+                      {/* <div className="flex justify-between">
                         <span className="text-gray-500">Invitation Type:</span>
                         <span className="font-medium text-gray-900 capitalize">
                           {successData.inviteType === "link"
                             ? "Link Invitation"
                             : "In-App Invitation"}
+                        </span>
+                      </div> */}
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Invited Email:</span>
+                        <span className="font-medium text-gray-900">
+                          {successData.inviteeEmail}
                         </span>
                       </div>
                       {successData.inviteCode && (
@@ -2629,22 +2478,23 @@ function PoolDetailPageContent() {
                           </span>
                         </div>
                       )}
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Expires:</span>
-                        <span className="font-medium text-gray-900 text-xs">
-                          {successData.expiresAt
-                            ? new Date(
-                                successData.expiresAt
-                              ).toLocaleDateString("en-US", {
+                      {successData.expiresAt && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Expires:</span>
+                          <span className="font-medium text-gray-900 text-xs">
+                            {new Date(successData.expiresAt).toLocaleDateString(
+                              "en-US",
+                              {
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
                                 hour: "2-digit",
                                 minute: "2-digit",
-                              })
-                            : "3 days"}
-                        </span>
-                      </div>
+                              }
+                            )}
+                          </span>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <>
@@ -2698,14 +2548,14 @@ function PoolDetailPageContent() {
                           </span>
                         </div>
                       )}
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Pool:</span>
+                        <span className="font-medium text-gray-900">
+                          {successData.poolName}
+                        </span>
+                      </div>
                     </>
                   )}
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Pool:</span>
-                    <span className="font-medium text-gray-900">
-                      {successData.poolName}
-                    </span>
-                  </div>
                   {successData.type !== "invitation" && (
                     <div className="flex justify-between">
                       <span className="text-gray-500">Transaction ID:</span>
@@ -2771,14 +2621,14 @@ function PoolDetailPageContent() {
                         ) : (
                           <>
                             <li>
-                              1. The user will receive an in-app notification
+                              1. The user will receive a pool invite notification
                             </li>
                             <li>
-                              2. They can accept or decline the invitation
+                              2. They can accept or ignore the invitation
                             </li>
-                            <li>3. You'll be notified of their decision</li>
+                            <li>3. Members will be notified when the new member accepts the invite</li>
                             <li>
-                              4. If accepted, they'll be added to the pool
+                              4. Once accepted, they'll be added to the pool
                             </li>
                           </>
                         )}

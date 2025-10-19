@@ -230,27 +230,8 @@ export default function NotificationsPage() {
   };
 
   const getNotificationColor = (type) => {
-    const colorMap = {
-      pool_invite: "bg-blue-100 text-blue-600",
-      deposit: "bg-green-100 text-green-600",
-      withdrawal: "bg-purple-100 text-purple-600",
-      approval_request: "bg-orange-100 text-orange-600",
-      pool_milestone: "bg-emerald-100 text-emerald-600",
-      payment_failed: "bg-red-100 text-red-600",
-      pool_complete: "bg-green-100 text-green-600",
-      invitation: "bg-blue-100 text-blue-600",
-      transaction: "bg-green-100 text-green-600",
-      membership: "bg-purple-100 text-purple-600",
-      general: "bg-gray-100 text-gray-600",
-      // New backend notification types
-      deposit_success: "bg-green-100 text-green-600",
-      deposit_failed: "bg-red-100 text-red-600",
-      withdrawal_success: "bg-purple-100 text-purple-600",
-      withdrawal_failed: "bg-red-100 text-red-600",
-      payment_success: "bg-green-100 text-green-600",
-      payment_failed: "bg-red-100 text-red-600",
-    };
-    return colorMap[type] || "bg-gray-100 text-gray-600";
+    // All notifications use purple theme for icon backgrounds and text
+    return "bg-[#7a73ff] text-white";
   };
 
   const NotificationCard = ({ notification }) => {
@@ -286,7 +267,7 @@ export default function NotificationsPage() {
                   <button
                     onClick={() => markAsRead(notification.id)}
                     disabled={markingAsRead.has(notification.id)}
-                    className="p-1 text-purple-600 hover:bg-purple-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-1 text-[#7a73ff] hover:bg-[#b8b5ff] rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Mark as read"
                   >
                     {markingAsRead.has(notification.id) ? (
@@ -324,7 +305,7 @@ export default function NotificationsPage() {
                     onClick={() =>
                       router.push(`/pools/${notification.data.poolId}`)
                     }
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-xl text-xs font-medium hover:shadow-lg transition-all duration-300"
+                    className="bg-[#7a73ff] text-white px-3 py-1 rounded-xl text-xs font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300"
                   >
                     Try Again
                   </button>
@@ -337,7 +318,7 @@ export default function NotificationsPage() {
                     onClick={() =>
                       router.push(`/pools/${notification.data.poolId}`)
                     }
-                    className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1 rounded-xl text-xs font-medium hover:shadow-lg transition-all duration-300"
+                    className="bg-[#7a73ff] text-white px-3 py-1 rounded-xl text-xs font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300"
                   >
                     View Pool
                   </button>
@@ -350,7 +331,7 @@ export default function NotificationsPage() {
                     onClick={() =>
                       router.push(`/pools/${notification.data.poolId}`)
                     }
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-xl text-xs font-medium hover:shadow-lg transition-all duration-300"
+                    className="bg-[#7a73ff] text-white px-3 py-1 rounded-xl text-xs font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300"
                   >
                     View Pool
                   </button>
@@ -409,7 +390,7 @@ export default function NotificationsPage() {
           <p className="text-red-600 mb-6">{error}</p>
           <button
             onClick={loadNotifications}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:shadow-lg transition-all duration-300"
+            className="bg-[#7a73ff] text-white px-6 py-2 rounded-xl font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300"
           >
             Try Again
           </button>
@@ -430,7 +411,7 @@ export default function NotificationsPage() {
             <button
               onClick={markAllAsRead}
               disabled={markingAllAsRead}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:shadow-lg transition-all duration-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="bg-[#7a73ff] text-white px-4 py-2 rounded-xl font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {markingAllAsRead ? (
                 <>
@@ -447,14 +428,14 @@ export default function NotificationsPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 text-[#7a73ff] hover:text-white rounded-lg hover:bg-[#b8b5ff] transition-colors"
           >
             <Settings className="w-5 h-5" />
           </button>
           <button
             onClick={loadNotifications}
             disabled={loading}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 disabled:opacity-50 transition-colors"
+            className="p-2 text-[#7a73ff] hover:text-white rounded-lg hover:bg-[#b8b5ff] disabled:opacity-50 transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
@@ -495,7 +476,7 @@ export default function NotificationsPage() {
 
       {/* Notification Settings Modal */}
       {showSettings && (
-        <div className="bg-white/90 backdrop-blur-xl rounded-xl p-6 border border-white/20 shadow-sm mb-6">
+        <div className="bg-[#f6f5ff] backdrop-blur-xl rounded-xl p-6 border border-[#b8b5ff] shadow-sm mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Notification Settings
           </h3>
@@ -521,7 +502,7 @@ export default function NotificationsPage() {
                   }
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                <div className="w-11 h-6 bg-[#b8b5ff] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#7a73ff] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#b8b5ff] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#7a73ff]"></div>
               </label>
             </div>
 
@@ -576,27 +557,27 @@ export default function NotificationsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 border border-white/20">
+        <div className="bg-white rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Bell className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center">
+              <Bell className="w-5 h-5 text-white" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Total Notifications</p>
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-xl font-bold text-[#7a73ff]">
                 {notifications.length}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 border border-white/20">
+        <div className="bg-white rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-              <AlertCircle className="w-5 h-5 text-orange-600" />
+            <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-white" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Unread</p>
-              <p className="text-xl font-bold text-orange-600">{unreadCount}</p>
+              <p className="text-xl font-bold text-[#7a73ff]">{unreadCount}</p>
             </div>
           </div>
         </div>
@@ -608,8 +589,8 @@ export default function NotificationsPage() {
           onClick={() => setFilter("all")}
           className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
             filter === "all"
-              ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
-              : "bg-white/80 backdrop-blur-xl text-gray-700 border border-white/20 hover:bg-white/90"
+              ? "bg-[#7a73ff] text-white shadow-lg"
+              : "bg-[#f6f5ff] backdrop-blur-xl text-[#7a73ff] border border-[#b8b5ff] hover:bg-[#eaeaff]"
           }`}
         >
           All ({notifications.length})
@@ -618,8 +599,8 @@ export default function NotificationsPage() {
           onClick={() => setFilter("unread")}
           className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
             filter === "unread"
-              ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
-              : "bg-white/80 backdrop-blur-xl text-gray-700 border border-white/20 hover:bg-white/90"
+              ? "bg-[#7a73ff] text-white shadow-lg"
+              : "bg-[#f6f5ff] backdrop-blur-xl text-[#7a73ff] border border-[#b8b5ff] hover:bg-[#eaeaff]"
           }`}
         >
           Unread ({unreadCount})
@@ -635,7 +616,7 @@ export default function NotificationsPage() {
 
       {filteredNotifications.length === 0 && (
         <div className="text-center py-12">
-          <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <Bell className="w-16 h-16 text-[#b8b5ff] mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             No notifications found
           </h3>
@@ -646,7 +627,7 @@ export default function NotificationsPage() {
           </p>
           <button
             onClick={() => router.push("/pools")}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:shadow-lg transition-all duration-300"
+            className="bg-[#7a73ff] text-white px-6 py-2 rounded-xl font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300"
           >
             View Pool
           </button>

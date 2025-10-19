@@ -37,6 +37,7 @@ import {
 import BarChartComponent from "@/components/charts/BarChart";
 import DonutChartComponent from "@/components/charts/DonutChart";
 import LineChartComponent from "@/components/charts/LineChart";
+import CombinedChart from "@/components/charts/CombinedChart";
 import RadialProgressChart from "@/components/charts/RadialProgressChart";
 
 export default function Dashboard() {
@@ -137,13 +138,10 @@ export default function Dashboard() {
         },
         performanceMetrics: {
           labels: transactionTrends.map((t) => t.month),
-          data: transactionTrends.map((t) => {
-            // Convert net amount to a chart-friendly value
-            const netAmount = parseFloat(t.netAmount);
-            return netAmount > 0
-              ? Math.round(netAmount / 100)
-              : Math.round(Math.abs(netAmount) / 100);
-          }),
+          totalPooled: transactionTrends.map((t) =>
+            parseFloat(t.totalDeposits)
+          ),
+          transactionCount: transactionTrends.map((t) => t.transactions),
         },
         topPerformers: topContributors.map((contributor, index) => ({
           ...contributor,
@@ -167,7 +165,7 @@ export default function Dashboard() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f6f5ff] flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
@@ -183,7 +181,7 @@ export default function Dashboard() {
   // Show loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f6f5ff] flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading dashboard...</p>
@@ -195,7 +193,7 @@ export default function Dashboard() {
   // Show error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f6f5ff] flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-8 h-8 text-red-600" />
@@ -206,7 +204,7 @@ export default function Dashboard() {
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={loadDashboardData}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-xl hover:shadow-lg transition-all duration-300"
+            className="bg-[#7a73ff] text-white px-4 py-2 rounded-xl hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300"
           >
             Try Again
           </button>
@@ -238,7 +236,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-3">
-            <Icon className="w-5 h-5 text-gray-500" />
+            <Icon className="w-5 h-5 text-white" />
             <h3 className="text-gray-500 text-sm font-medium">{title}</h3>
           </div>
           <p className="text-3xl font-bold text-gray-900">{value}</p>
@@ -252,12 +250,12 @@ export default function Dashboard() {
 
   const TypeIcon = ({ type }) => {
     const config = {
-      trip: { emoji: "🌴", color: "bg-blue-500" },
-      business: { emoji: "💼", color: "bg-green-500" },
-      education: { emoji: "📚", color: "bg-purple-500" },
-      event: { emoji: "🎉", color: "bg-pink-500" },
-      general: { emoji: "💰", color: "bg-gray-500" },
-      other: { emoji: "🔧", color: "bg-orange-500" },
+      trip: { emoji: "🌴", color: "bg-[#7a73ff]" },
+      business: { emoji: "💼", color: "bg-[#7a73ff]" },
+      education: { emoji: "📚", color: "bg-[#7a73ff]" },
+      event: { emoji: "🎉", color: "bg-[#7a73ff]" },
+      general: { emoji: "💰", color: "bg-[#7a73ff]" },
+      other: { emoji: "🔧", color: "bg-[#7a73ff]" },
     };
 
     const { emoji, color } = config[type] || config.general;
@@ -292,9 +290,9 @@ export default function Dashboard() {
           {pool.members.slice(0, 3).map((member, i) => (
             <div
               key={i}
-              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-white bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center"
+              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-white bg-[#7a73ff] flex items-center justify-center"
             >
-              <UserCircle className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+              <UserCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
           ))}
           {pool.memberCount > pool.members.length && (
@@ -334,9 +332,9 @@ export default function Dashboard() {
             {pool.percentage}%
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-[#e5e3ff] rounded-full h-2">
           <div
-            className="h-2 rounded-full transition-all duration-500 ease-out bg-gradient-to-r from-purple-500 to-blue-500"
+            className="h-2 rounded-full transition-all duration-500 ease-out bg-[#7a73ff]"
             style={{ width: `${pool.percentage}%` }}
           />
         </div>
@@ -583,8 +581,8 @@ export default function Dashboard() {
             <div className="xl:col-span-2">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <FolderOpen className="w-4 h-4 text-blue-600" />
+                  <div className="w-8 h-8 bg-[#7a73ff] rounded-lg flex items-center justify-center">
+                    <FolderOpen className="w-4 h-4 text-white" />
                   </div>
                   <h2 className="text-xl font-semibold text-gray-900">
                     Active Pools
@@ -592,7 +590,7 @@ export default function Dashboard() {
                 </div>
                 <button
                   onClick={() => router.push("/create-pool")}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 sm:px-4 py-2 rounded-xl text-sm font-medium hover:shadow-lg transition-all duration-300 flex items-center gap-2"
+                  className="bg-[#7a73ff] text-white px-3 sm:px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300 flex items-center gap-2"
                 >
                   <svg
                     className="w-4 h-4"
@@ -619,7 +617,7 @@ export default function Dashboard() {
                   ))
                 ) : (
                   <div className="text-center py-12">
-                    <FolderOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <FolderOpen className="w-16 h-16 text-[#b8b5ff] mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
                       No active pools
                     </h3>
@@ -628,7 +626,7 @@ export default function Dashboard() {
                     </p>
                     <button
                       onClick={() => router.push("/create-pool")}
-                      className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:shadow-lg transition-all duration-300"
+                      className="bg-[#7a73ff] text-white px-6 py-2 rounded-xl font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300"
                     >
                       Create Pool
                     </button>
@@ -639,48 +637,18 @@ export default function Dashboard() {
 
             {/* Analytics & Charts */}
             <div className="space-y-6 lg:space-y-8">
-              {/* Pool Completion Overview */}
-              <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-white/20 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="w-4 h-4 text-green-600" />
-                    </div>
-                    <h3 className="font-semibold text-gray-900">
-                      Pool Completion
-                    </h3>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-center">
-                  <DonutChartComponent
-                    completedProjects={chartData.poolCompletion.completed}
-                    totalProjects={chartData.poolCompletion.total}
-                    size={140}
-                  />
-                </div>
-
-                <div className="text-center mt-4">
-                  <p className="text-sm text-gray-500">
-                    {chartData.poolCompletion.total > 0
-                      ? `${chartData.poolCompletion.completed} of ${chartData.poolCompletion.total} pools completed`
-                      : "No pools created yet"}
-                  </p>
-                </div>
-              </div>
-
               {/* Transaction Trends */}
               <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-white/20 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="w-4 h-4 text-purple-600" />
+                    <div className="w-8 h-8 bg-[#7a73ff] rounded-lg flex items-center justify-center">
+                      <TrendingUp className="w-4 h-4 text-white" />
                     </div>
                     <h3 className="font-semibold text-gray-900">
                       Transaction Trends
                     </h3>
                   </div>
-                  <select className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                  <select className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7a73ff] bg-white">
                     <option>6 Months</option>
                     <option>1 Year</option>
                     <option>2 Years</option>
@@ -688,11 +656,11 @@ export default function Dashboard() {
                 </div>
 
                 <p className="text-sm text-gray-500 mb-4">
-                  Pool transactions and contributions over time.
+                  Monthly pool contributions and transaction activity.
                 </p>
-                <LineChartComponent
+                <CombinedChart
                   data={chartData.performanceMetrics}
-                  height={180}
+                  height={200}
                 />
               </div>
 
@@ -722,8 +690,8 @@ export default function Dashboard() {
                   {chartData.topPerformers.length > 0 ? (
                     chartData.topPerformers.map((performer) => (
                       <div key={performer.rank} className="text-center">
-                        <div className="w-16 h-16 rounded-full mx-auto mb-3 bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center border-2 border-purple-200">
-                          <UserCircle className="w-8 h-8 text-purple-600" />
+                        <div className="w-16 h-16 rounded-full mx-auto mb-3 bg-[#7a73ff] flex items-center justify-center border-2 border-[#7a73ff]">
+                          <UserCircle className="w-8 h-8 text-white" />
                         </div>
                         <p className="text-sm font-medium text-gray-900">
                           {performer.position}
@@ -735,8 +703,8 @@ export default function Dashboard() {
                     ))
                   ) : (
                     <div className="col-span-2 text-center py-8">
-                      <div className="w-16 h-16 rounded-full mx-auto mb-3 bg-gray-100 flex items-center justify-center">
-                        <UserCircle className="w-8 h-8 text-gray-400" />
+                      <div className="w-16 h-16 rounded-full mx-auto mb-3 bg-[#e5e3ff] flex items-center justify-center">
+                        <UserCircle className="w-8 h-8 text-[#b8b5ff]" />
                       </div>
                       <p className="text-sm text-gray-500">
                         No contributors yet
@@ -853,7 +821,7 @@ export default function Dashboard() {
                   console.log("Update profile:", profileData);
                   setShowProfileModal(false);
                 }}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 font-medium"
+                className="flex-1 px-4 py-3 bg-[#7a73ff] text-white rounded-xl hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300 font-medium"
               >
                 Save Changes
               </button>

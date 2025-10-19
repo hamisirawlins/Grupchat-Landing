@@ -250,11 +250,11 @@ export default function PoolsPage() {
 
   const TypeIcon = ({ type }) => {
     const config = {
-      trip: { emoji: "🌴", color: "bg-blue-500" },
-      business: { emoji: "💼", color: "bg-green-500" },
-      education: { emoji: "📚", color: "bg-purple-500" },
-      event: { emoji: "🎉", color: "bg-pink-500" },
-      general: { emoji: "💰", color: "bg-gray-500" },
+      trip: { emoji: "🌴", color: "bg-[#b8b5ff]" },
+      business: { emoji: "💼", color: "bg-[#7a73ff]" },
+      education: { emoji: "📚", color: "bg-[#b8b5ff]" },
+      event: { emoji: "🎉", color: "bg-[#7a73ff]" },
+      general: { emoji: "💰", color: "bg-[#b8b5ff]" },
     };
 
     const { emoji, color } = config[type] || config.general;
@@ -430,77 +430,72 @@ export default function PoolsPage() {
       title="Pools"
       subtitle="Manage your pools and contributions"
     >
-      {/* Header Section */}
-      <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-sm p-6 mb-6 hover:shadow-lg transition-all duration-300">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center shadow-inner">
-              <FolderOpen className="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">
-                Pool Management
-              </h1>
-              <p className="text-sm text-gray-500">
-                Track and manage all your pools
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => router.push("/create-pool")}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300 flex items-center gap-2 w-fit shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-          >
-            <Plus className="w-4 h-4" />
-            Create Pool
-          </button>
-        </div>
-      </div>
-
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-sm hover:shadow-lg transition-all duration-300 group">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center shadow-inner group-hover:shadow-sm transition-all duration-300">
-              <FolderOpen className="w-6 h-6 text-blue-600 group-hover:scale-110 transition-transform duration-300" />
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => router.push("/create-pool")}
+          className="bg-[#7a73ff] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#6961ff] transition-colors flex items-center gap-2 w-fit shadow-md"
+        >
+          <Plus className="w-4 h-4" />
+          Create Pool
+        </button>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-sm hover:shadow-lg transition-all duration-300 group">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center shadow-inner group-hover:shadow-sm transition-all duration-300"
+              style={{ backgroundColor: "#7a73ff" }}
+            >
+              <FolderOpen className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-300" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Total Pools</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-xs font-medium text-gray-500">Total Pools</p>
+              <p className="text-lg font-bold text-gray-900">{stats.total}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-sm hover:shadow-lg transition-all duration-300 group">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl flex items-center justify-center shadow-inner group-hover:shadow-sm transition-all duration-300">
-              <TrendingUp className="w-6 h-6 text-emerald-600 group-hover:scale-110 transition-transform duration-300" />
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-sm hover:shadow-lg transition-all duration-300 group">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center shadow-inner group-hover:shadow-sm transition-all duration-300"
+              style={{ backgroundColor: "#7a73ff" }}
+            >
+              <TrendingUp className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-300" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Active Pools</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
+              <p className="text-xs font-medium text-gray-500">Active Pools</p>
+              <p className="text-lg font-bold text-gray-900">{stats.active}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-sm hover:shadow-lg transition-all duration-300 group">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center shadow-inner group-hover:shadow-sm transition-all duration-300">
-              <Target className="w-6 h-6 text-blue-600 group-hover:scale-110 transition-transform duration-300" />
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-sm hover:shadow-lg transition-all duration-300 group">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center shadow-inner group-hover:shadow-sm transition-all duration-300"
+              style={{ backgroundColor: "#7a73ff" }}
+            >
+              <Target className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-300" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Completed</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xs font-medium text-gray-500">Completed</p>
+              <p className="text-lg font-bold text-gray-900">
                 {stats.completed}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-sm hover:shadow-lg transition-all duration-300 group">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl flex items-center justify-center shadow-inner group-hover:shadow-sm transition-all duration-300">
-              <DollarSign className="w-6 h-6 text-emerald-600 group-hover:scale-110 transition-transform duration-300" />
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-sm hover:shadow-lg transition-all duration-300 group">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center shadow-inner group-hover:shadow-sm transition-all duration-300"
+              style={{ backgroundColor: "#7a73ff" }}
+            >
+              <DollarSign className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-300" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Total Pooled</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xs font-medium text-gray-500">Total Pooled</p>
+              <p className="text-lg font-bold text-gray-900">
                 KSh {stats.totalAmount.toLocaleString()}
               </p>
             </div>
@@ -521,7 +516,7 @@ export default function PoolsPage() {
       </div>
 
       {/* Combined: Filters/Search + Results */}
-      <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-sm p-6 mb-6 hover:shadow-lg transition-all duration-300">
+      <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-sm p-4 mb-4 hover:shadow-lg transition-all duration-300 text-sm">
         {/* Filters Row */}
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Search */}
@@ -685,7 +680,7 @@ export default function PoolsPage() {
               </p>
               <button
                 onClick={() => router.push("/create-pool")}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="bg-[#7a73ff] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#6961ff] transition-colors flex items-center gap-2 w-fit shadow-md"
               >
                 <Plus className="w-4 h-4" />
                 Create Your First Pool
@@ -694,40 +689,40 @@ export default function PoolsPage() {
           ) : (
             <>
               {/* Grid View - mobile */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:hidden text-sm">
                 {filteredPools.map((pool) => (
                   <PoolCard key={pool.poolId} pool={pool} />
                 ))}
               </div>
 
               {/* Table View - desktop */}
-              <div className="hidden md:block overflow-hidden">
+              <div className="hidden md:block overflow-hidden text-sm">
                 <div className="overflow-x-auto rounded-2xl border border-gray-100">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Pool
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Target
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Pooled
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Progress
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Members
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Due Date
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Role
                         </th>
                       </tr>

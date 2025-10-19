@@ -211,24 +211,24 @@ export default function CreatePoolPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Basic Information */}
+          {/* Unified Card: Basic Info + Pool Type */}
           <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <FolderOpen className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-[#b8b5ff] rounded-lg flex items-center justify-center">
+                <FolderOpen className="w-5 h-5 text-[#7a73ff]" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">
-                  Basic Information
+                  Pool Details
                 </h2>
                 <p className="text-sm text-gray-500">
-                  Essential details about your pool
+                  Enter all the details for your new pool
                 </p>
               </div>
             </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="lg:col-span-2">
+              {/* Pool Name */}
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Pool Name *
                 </label>
@@ -236,7 +236,7 @@ export default function CreatePoolPage() {
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
                     errors.name ? "border-red-300 bg-red-50" : "border-gray-300"
                   }`}
                   placeholder="e.g., Team Vacation Fund, Office Equipment"
@@ -249,20 +249,52 @@ export default function CreatePoolPage() {
                   </p>
                 )}
               </div>
-
+              {/* Pool Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Pool Type
+                </label>
+                <div className="relative">
+                  <select
+                    value={formData.type}
+                    onChange={(e) => handleInputChange("type", e.target.value)}
+                    className="w-full appearance-none bg-white border border-gray-300 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-[#7a73ff] transition-all duration-300 text-gray-900 shadow-sm"
+                  >
+                    {poolTypes.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                  <svg
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                  >
+                    <path
+                      d="M6 8l4 4 4-4"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              </div>
+              {/* Target Amount */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Target Amount *
                 </label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#7a73ff]" />
                   <input
                     type="number"
                     value={formData.targetAmount}
                     onChange={(e) =>
                       handleInputChange("targetAmount", e.target.value)
                     }
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
+                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
                       errors.targetAmount
                         ? "border-red-300 bg-red-50"
                         : "border-gray-300"
@@ -280,20 +312,20 @@ export default function CreatePoolPage() {
                   </p>
                 )}
               </div>
-
+              {/* End Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   End Date (Optional)
                 </label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#7a73ff]" />
                   <input
                     type="date"
                     value={formData.endDate}
                     onChange={(e) =>
                       handleInputChange("endDate", e.target.value)
                     }
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
+                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
                       errors.endDate
                         ? "border-red-300 bg-red-50"
                         : "border-gray-300"
@@ -308,7 +340,7 @@ export default function CreatePoolPage() {
                   </p>
                 )}
               </div>
-
+              {/* Description */}
               <div className="lg:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description (Optional)
@@ -318,7 +350,7 @@ export default function CreatePoolPage() {
                   onChange={(e) =>
                     handleInputChange("description", e.target.value)
                   }
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
                     errors.description
                       ? "border-red-300 bg-red-50"
                       : "border-gray-300"
@@ -339,94 +371,40 @@ export default function CreatePoolPage() {
                   </p>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Pool Type */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Target className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Pool Type
-                </h2>
-                <p className="text-sm text-gray-500">
-                  Choose the category that best fits your pool
-                </p>
-              </div>
-            </div>
-
-            <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Pool Type
-              </label>
-              <div className="relative">
-                <select
-                  value={formData.type}
-                  onChange={(e) => handleInputChange("type", e.target.value)}
-                  className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-gray-900 shadow-sm"
-                >
-                  {poolTypes.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-                <svg
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                >
-                  <path
-                    d="M6 8l4 4 4-4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+              {/* Custom Type Input */}
+              {formData.type === "other" && (
+                <div className="lg:col-span-2 mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Specify Pool Type *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.customType}
+                    onChange={(e) =>
+                      handleInputChange("customType", e.target.value)
+                    }
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
+                      errors.customType
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300"
+                    }`}
+                    placeholder="e.g., House Down Payment, Car Purchase, Wedding"
+                    maxLength={50}
                   />
-                </svg>
-              </div>
-              <p className="text-sm text-gray-500 mt-2">
-                Choose the category that best fits your pool. Select "Other" to
-                specify a custom type.
-              </p>
-            </div>
-
-            {/* Custom Type Input */}
-            {formData.type === "other" && (
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Specify Pool Type *
-                </label>
-                <input
-                  type="text"
-                  value={formData.customType}
-                  onChange={(e) =>
-                    handleInputChange("customType", e.target.value)
-                  }
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
-                    errors.customType
-                      ? "border-red-300 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                  placeholder="e.g., House Down Payment, Car Purchase, Wedding"
-                  maxLength={50}
-                />
-                <div className="flex justify-between items-center mt-1">
-                  {errors.customType && (
-                    <p className="text-sm text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.customType}
+                  <div className="flex justify-between items-center mt-1">
+                    {errors.customType && (
+                      <p className="text-sm text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.customType}
+                      </p>
+                    )}
+                    <p className="text-sm text-gray-500 ml-auto">
+                      {formData.customType.length}/50
                     </p>
-                  )}
-                  <p className="text-sm text-gray-500 ml-auto">
-                    {formData.customType.length}/50
-                  </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Advanced Settings removed — withdrawal processing is automatic */}
@@ -446,15 +424,14 @@ export default function CreatePoolPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-6 py-3 border-2 border-[#7a73ff] text-[#7a73ff] rounded-lg bg-white hover:bg-[#f6f5ff] font-medium transition-colors"
             >
               Cancel
             </button>
-
             <button
               type="submit"
               disabled={loading}
-              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              className="px-8 py-3 bg-[#7a73ff] text-white rounded-lg hover:bg-[#6961ff] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 font-medium shadow-md"
             >
               {loading ? (
                 <>

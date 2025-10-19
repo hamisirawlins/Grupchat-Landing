@@ -177,8 +177,7 @@ function DashboardLayoutContent({ children, title, subtitle }) {
         setProfileError(response.message || "Failed to update profile");
       }
     } catch (error) {
-      console.error("Failed to update profile:", error);
-      setProfileError("Failed to update profile");
+      setProfileError(error.message || "Failed to update profile");
     } finally {
       setProfileLoading(false);
     }
@@ -361,7 +360,7 @@ function DashboardLayoutContent({ children, title, subtitle }) {
       {/* Profile Modal */}
       {showProfileModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white/90 backdrop-blur-xl rounded-2xl p-4 sm:p-6 w-full max-w-md border border-white/20 shadow-2xl">
+          <div className="bg-white backdrop-blur-xl rounded-2xl p-4 sm:p-6 w-full max-w-md border border-white/20 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
                 Edit Profile
@@ -451,7 +450,7 @@ function DashboardLayoutContent({ children, title, subtitle }) {
               </button>
               <button
                 onClick={handleProfileUpdate}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-300"
+                className="px-4 py-2 bg-[#7a73ff] text-white rounded-xl hover:shadow-lg transition-all duration-300"
                 disabled={profileLoading || profileDataLoading}
               >
                 {profileLoading ? "Saving..." : "Save Changes"}

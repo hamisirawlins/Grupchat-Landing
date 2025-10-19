@@ -312,8 +312,8 @@ export default function SettingsPage() {
           {/* Profile Section */}
           <div className="bg-white/80 backdrop-blur-xl rounded-xl border border-white/20 p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <User className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center">
+                <User className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">
@@ -345,41 +345,28 @@ export default function SettingsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Phone Number
                 </label>
-                <div className="p-4 bg-purple-50/80 backdrop-blur-xl border border-purple-200/50 rounded-xl">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Smartphone className="w-5 h-5 text-purple-600" />
-                    <div>
-                      <p className="font-medium text-purple-900">
-                        M-Pesa Payment Number
-                      </p>
-                    </div>
-                  </div>
-
-                  <input
-                    type="tel"
-                    value={phoneDisplay}
-                    onChange={(e) => handlePhoneChange(e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                      phoneError ? "border-red-300" : "border-purple-300"
-                    }`}
-                    placeholder="e.g., 0712345678"
-                  />
-                  {phoneError && (
-                    <p className="text-sm text-red-600 mt-1">{phoneError}</p>
-                  )}
-                  <p className="text-xs text-purple-600 mt-1">
-                    e.g., 0712345678
-                  </p>
-                </div>
+                <input
+                  type="tel"
+                  value={phoneDisplay}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  className={`w-full px-4 py-3 border bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent ${
+                    phoneError ? "border-red-300" : "border-[#b8b5ff]"
+                  }`}
+                  placeholder="e.g., 0712345678"
+                />
+                {phoneError && (
+                  <p className="text-sm text-red-600 mt-1">{phoneError}</p>
+                )}
+                <p className="text-xs text-[#7a73ff] mt-1">e.g., 0712345678</p>
               </div>
             </div>
           </div>
 
           {/* Notifications Section */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-xl border border-white/20 p-6">
+          <div className="bg-white/80 backdrop-blur-xl rounded-xl border border-[#b8b5ff] p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <Bell className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center">
+                <Bell className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">
@@ -392,11 +379,11 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-50/80 backdrop-blur-xl rounded-xl">
+              {/* <div className="flex items-center justify-between p-4 bg-[#f6f5ff] backdrop-blur-xl rounded-xl">
                 <div className="flex items-center gap-3">
-                  <Volume2 className="w-5 h-5 text-gray-600" />
+                  <Volume2 className="w-5 h-5 text-[#7a73ff]" />
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-[#7a73ff]">
                       In-App Notifications
                     </p>
                     <p className="text-sm text-gray-500">
@@ -413,15 +400,15 @@ export default function SettingsPage() {
                     }
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                  <div className="w-11 h-6 bg-[#b8b5ff] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#7a73ff] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#b8b5ff] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#7a73ff]"></div>
                 </label>
-              </div>
+              </div> */}
 
-              <div className="flex items-center justify-between p-4 bg-gray-50/80 backdrop-blur-xl rounded-xl">
+              <div className="flex items-center justify-between p-4 bg-[#f6f5ff] backdrop-blur-xl rounded-xl">
                 <div className="flex items-center gap-3">
-                  <Smartphone className="w-5 h-5 text-gray-600" />
+                  <Smartphone className="w-5 h-5 text-[#7a73ff]" />
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-[#7a73ff]">
                       Push Notifications
                     </p>
                     <p className="text-sm text-gray-500">
@@ -438,15 +425,15 @@ export default function SettingsPage() {
                     }
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                  <div className="w-11 h-6 bg-[#b8b5ff] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#7a73ff] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#b8b5ff] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#7a73ff]"></div>
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-gray-50/80 backdrop-blur-xl rounded-xl">
+              <div className="flex items-center justify-between p-4 bg-[#f6f5ff] backdrop-blur-xl rounded-xl">
                 <div className="flex items-center gap-3">
-                  <Mail className="w-5 h-5 text-gray-600" />
+                  <Mail className="w-5 h-5 text-[#7a73ff]" />
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-[#7a73ff]">
                       Email Notifications
                     </p>
                     <p className="text-sm text-gray-500">
@@ -463,7 +450,7 @@ export default function SettingsPage() {
                     }
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                  <div className="w-11 h-6 bg-[#b8b5ff] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#7a73ff] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#b8b5ff] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#7a73ff]"></div>
                 </label>
               </div>
             </div>
@@ -477,7 +464,7 @@ export default function SettingsPage() {
               className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
                 saving || phoneError
                   ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg"
+                  : "bg-[#7a73ff] text-white hover:bg-[#6961ff] hover:shadow-lg"
               }`}
             >
               {saving ? (

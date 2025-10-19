@@ -61,9 +61,7 @@ export default function TransactionsPage() {
   const loadTransactions = async (page = 1) => {
     try {
       if (page === 1) {
-        if (!isRefreshing) {
-          setFilterLoading(true);
-        }
+        setLoading(true);
       } else {
         setLoading(true);
       }
@@ -311,15 +309,7 @@ export default function TransactionsPage() {
           </div>
         </div>
         <div className="text-right sm:ml-4 mt-2 sm:mt-0 w-full sm:w-auto">
-          <p
-            className={`text-lg font-bold ${
-              transaction.type === "deposit"
-                ? "text-green-600"
-                : transaction.type === "withdrawal"
-                ? "text-red-600"
-                : "text-gray-600"
-            }`}
-          >
+          <p className="text-lg font-bold text-green-600">
             {transaction.type === "withdrawal" ? "-" : "+"}KSh{" "}
             {parseFloat(transaction.amount).toLocaleString()}
           </p>
@@ -396,44 +386,40 @@ export default function TransactionsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 border border-white/20">
+        <div className="bg-white rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <ArrowDownLeft className="w-5 h-5 text-green-600" />
+            <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center">
+              <ArrowDownLeft className="w-5 h-5 text-white" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Total Deposits</p>
-              <p className="text-xl font-bold text-green-600">
+              <p className="text-xl font-bold text-[#7a73ff]">
                 KSh {depositTotal.toLocaleString()}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 border border-white/20">
+        <div className="bg-white rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-              <ArrowUpRight className="w-5 h-5 text-red-600" />
+            <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center">
+              <ArrowUpRight className="w-5 h-5 text-white" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Total Withdrawals</p>
-              <p className="text-xl font-bold text-red-600">
+              <p className="text-xl font-bold text-[#7a73ff]">
                 KSh {withdrawalTotal.toLocaleString()}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 border border-white/20">
+        <div className="bg-white rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-white" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Net Amount</p>
-              <p
-                className={`text-xl font-bold ${
-                  totalAmount >= 0 ? "text-green-600" : "text-red-600"
-                }`}
-              >
+              <p className="text-xl font-bold text-[#7a73ff]">
                 KSh {Math.abs(totalAmount).toLocaleString()}
               </p>
             </div>
@@ -442,7 +428,7 @@ export default function TransactionsPage() {
       </div>
 
       {/* Refresh below filters */}
-      <div className="flex items-center justify-end mb-4">
+      {/* <div className="flex items-center justify-end mb-4">
         <button
           onClick={handlePullToRefresh}
           className="px-3 py-2 text-sm rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 flex items-center gap-2"
@@ -454,7 +440,7 @@ export default function TransactionsPage() {
           />
           {isRefreshing ? "Refreshing..." : "Refresh"}
         </button>
-      </div>
+      </div> */}
 
       {/* Filters */}
       <div className="bg-white/80 backdrop-blur-xl rounded-xl p-4 border border-white/20 mb-6">
@@ -506,104 +492,9 @@ export default function TransactionsPage() {
           </select>
         </div>
 
-        {/* Advanced Filters Toggle */}
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <button
-            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700 font-medium"
-          >
-            <Filter className="w-4 h-4" />
-            {showAdvancedFilters ? "Hide" : "Show"} Advanced Filters
-          </button>
-        </div>
+        {/* Advanced Filters Toggle removed */}
 
-        {/* Advanced Filters */}
-        {showAdvancedFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {/* Custom Date Range */}
-              {dateRange === "custom" && (
-                <>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Start Date
-                    </label>
-                    <input
-                      type="date"
-                      value={
-                        startDate ? startDate.toISOString().split("T")[0] : ""
-                      }
-                      onChange={(e) => setStartDate(new Date(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      End Date
-                    </label>
-                    <input
-                      type="date"
-                      value={endDate ? endDate.toISOString().split("T")[0] : ""}
-                      onChange={(e) => setEndDate(new Date(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
-                  </div>
-                  <div className="sm:col-span-2 md:col-span-3 lg:col-span-2">
-                    <button
-                      onClick={handleCustomDateChange}
-                      disabled={!startDate || !endDate}
-                      className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl text-sm font-medium hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Apply Custom Date Range
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {/* Amount Range */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Min Amount (KSh)
-                </label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={minAmount}
-                  onChange={(e) => setMinAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Max Amount (KSh)
-                </label>
-                <input
-                  type="number"
-                  placeholder="10000"
-                  value={maxAmount}
-                  onChange={(e) => setMaxAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-            </div>
-
-            {/* Apply Advanced Filters Button */}
-            <div className="mt-4 flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={handleFilterChange}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl text-sm font-medium hover:shadow-lg"
-              >
-                Apply Filters
-              </button>
-              <button
-                onClick={clearAllFilters}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200"
-              >
-                Clear All Filters
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Advanced filters section removed */}
       </div>
 
       {/* Filter Summary */}
@@ -663,7 +554,7 @@ export default function TransactionsPage() {
         )}
 
       {/* Filter Loading Indicator */}
-      {filterLoading && (
+      {filterLoading && !loading && (
         <div className="text-center py-8">
           <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
           <p className="text-sm text-gray-600">Applying filters...</p>
