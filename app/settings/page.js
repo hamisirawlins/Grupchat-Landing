@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -235,13 +235,28 @@ export default function SettingsPage() {
 
   // Load settings on component mount
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
       router.push("/");
       return;
     }
 
     loadSettings();
-  }, [user, router]);
+  }, [user, authLoading, router]);
+
+  if (authLoading) {
+    return (
+      <DashboardLayout
+        title="Settings"
+        subtitle="Manage your account preferences"
+      >
+        <div className="text-center py-12">
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   if (!user) {
     return null;

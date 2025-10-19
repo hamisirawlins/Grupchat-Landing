@@ -27,10 +27,11 @@ import {
   ArrowUp,
   ArrowDown,
   X,
+  RefreshCw,
 } from "lucide-react";
 
 export default function PoolsPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   // Filter and search state
@@ -53,12 +54,14 @@ export default function PoolsPage() {
   });
 
   useEffect(() => {
+    // Wait for auth state to resolve before deciding
+    if (authLoading) return;
     if (!user) {
       router.push("/");
-    } else {
-      loadPoolsData();
+      return;
     }
-  }, [user, router]);
+    loadPoolsData();
+  }, [user, authLoading, router]);
 
   const loadPoolsData = async () => {
     try {
@@ -129,6 +132,28 @@ export default function PoolsPage() {
     }
   };
 
+  // Pull to refresh: clear filters and reload list only
+  const handlePullToRefresh = async () => {
+    setSearchTerm("");
+    setFilterStatus("all");
+    setFilterType("all");
+    setSortBy("created_at");
+    setSortOrder("desc");
+    await loadPoolsData();
+  };
+
+  if (authLoading) {
+    return (
+      <DashboardLayout title="Loading..." subtitle="Loading your pools">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
   if (!user) {
     return null;
   }
@@ -483,11 +508,24 @@ export default function PoolsPage() {
         </div>
       </div>
 
-      {/* Filters and Search */}
+      {/* Refresh above combined card */}
+      <div className="flex items-center justify-start mb-4">
+        <button
+          onClick={handlePullToRefresh}
+          className="p-2 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 flex items-center gap-2"
+          title="Refresh list"
+        >
+          <RefreshCw className="w-4 h-4" />
+          <span className="hidden sm:inline text-sm">Refresh</span>
+        </button>
+      </div>
+
+      {/* Combined: Filters/Search + Results */}
       <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-sm p-6 mb-6 hover:shadow-lg transition-all duration-300">
+        {/* Filters Row */}
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Search */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 w-full min-w-[240px] sm:min-w-[280px] lg:min-w-[360px]">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
@@ -499,12 +537,12 @@ export default function PoolsPage() {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative">
+          <div className="flex flex-col sm:flex-row gap-4 w-full">
+            <div className="relative w-full sm:w-auto">
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-gray-900 shadow-sm focus:shadow-md"
+                className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-gray-900 shadow-sm focus:shadow-md"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -514,11 +552,11 @@ export default function PoolsPage() {
               <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
 
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-gray-900 shadow-sm focus:shadow-md"
+                className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-gray-900 shadow-sm focus:shadow-md"
               >
                 <option value="all">All Types</option>
                 <option value="general">General</option>
@@ -531,10 +569,10 @@ export default function PoolsPage() {
             </div>
 
             {/* Sort Button */}
-            <div className="relative">
+            <div className="relative z-[60] w-full sm:w-auto">
               <button
                 onClick={() => setShowSortDialog(!showSortDialog)}
-                className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-gray-900 hover:bg-gray-50 shadow-sm hover:shadow-md"
+                className="w-full sm:w-auto flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-gray-900 hover:bg-gray-50 shadow-sm hover:shadow-md"
               >
                 <ArrowUpDown className="w-4 h-4 text-gray-500" />
                 <span className="text-sm font-medium">
@@ -552,12 +590,12 @@ export default function PoolsPage() {
                 <>
                   {/* Backdrop */}
                   <div
-                    className="fixed inset-0 z-40"
+                    className="fixed inset-0 z-[65]"
                     onClick={() => setShowSortDialog(false)}
                   />
 
                   {/* Dialog */}
-                  <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                  <div className="fixed inset-x-4 top-28 sm:absolute sm:inset-auto sm:left-auto sm:right-0 sm:top-full mt-2 sm:mt-2 w-auto sm:w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999]">
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="font-medium text-gray-900">
@@ -631,86 +669,88 @@ export default function PoolsPage() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Results Info */}
-      <div className="flex items-center justify-between mb-6">
-        <p className="text-sm text-gray-600">
-          Showing {filteredPools.length} of {pools.length} pools
-        </p>
-      </div>
-
-      {/* Pools Display */}
-      {filteredPools.length === 0 ? (
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-sm text-center py-16">
-          <FolderOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No pools found
-          </h3>
-          <p className="text-gray-500 mb-6 max-w-md mx-auto">
-            {searchTerm || filterStatus !== "all" || filterType !== "all"
-              ? "Try adjusting your search or filter criteria to find what you're looking for."
-              : "Create your first pool to start managing group funds and reach your goals together."}
-          </p>
-          <button
-            onClick={() => router.push("/create-pool")}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-          >
-            <Plus className="w-4 h-4" />
-            Create Your First Pool
-          </button>
-        </div>
-      ) : (
-        <>
-          {/* Grid View - Shown on mobile only */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:hidden">
-            {filteredPools.map((pool) => (
-              <PoolCard key={pool.poolId} pool={pool} />
-            ))}
-          </div>
-
-          {/* Table View - Shown on desktop only */}
-          <div className="hidden md:block bg-white/80 backdrop-blur-xl rounded-2xl border border-white/20 shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Pool
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Target
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Pooled
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Progress
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Members
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Due Date
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Role
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredPools.map((pool) => (
-                    <PoolTableRow key={pool.poolId} pool={pool} />
-                  ))}
-                </tbody>
-              </table>
+        {/* Results Section inside card */}
+        <div className="mt-6 pt-6 border-t border-gray-100">
+          {filteredPools.length === 0 ? (
+            <div className="text-center py-12">
+              <FolderOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No pools found
+              </h3>
+              <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                {searchTerm || filterStatus !== "all" || filterType !== "all"
+                  ? "Try adjusting your search or filter criteria to find what you're looking for."
+                  : "Create your first pool to start managing group funds and reach your goals together."}
+              </p>
+              <button
+                onClick={() => router.push("/create-pool")}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300 inline-flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                <Plus className="w-4 h-4" />
+                Create Your First Pool
+              </button>
             </div>
-          </div>
-        </>
-      )}
+          ) : (
+            <>
+              {/* Grid View - mobile */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:hidden">
+                {filteredPools.map((pool) => (
+                  <PoolCard key={pool.poolId} pool={pool} />
+                ))}
+              </div>
+
+              {/* Table View - desktop */}
+              <div className="hidden md:block overflow-hidden">
+                <div className="overflow-x-auto rounded-2xl border border-gray-100">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Pool
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Target
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Pooled
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Progress
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Members
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Due Date
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Role
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredPools.map((pool) => (
+                        <PoolTableRow key={pool.poolId} pool={pool} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Count below table */}
+              <div className="flex items-center justify-end mt-4">
+                <p className="text-sm text-gray-600">
+                  Showing {filteredPools.length} of {pools.length} pools
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </DashboardLayout>
   );
 }

@@ -40,7 +40,7 @@ import LineChartComponent from "@/components/charts/LineChart";
 import RadialProgressChart from "@/components/charts/RadialProgressChart";
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [projectsExpanded, setProjectsExpanded] = useState(true);
@@ -63,6 +63,7 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
       router.push("/");
     } else {
@@ -163,6 +164,17 @@ export default function Dashboard() {
     await logout();
     router.push("/");
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return null;
@@ -543,7 +555,7 @@ export default function Dashboard() {
         {/* Dashboard Content */}
         <main className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8">
           {/* Metrics Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             <MetricCard
               title="Active Pools"
               value={dashboardData.metrics.activePools}

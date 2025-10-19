@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 function EditPoolPageContent() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
   const poolId = params.poolId;
@@ -48,6 +48,7 @@ function EditPoolPageContent() {
   const [pool, setPool] = useState(null);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
       router.push("/");
       return;
@@ -112,6 +113,21 @@ function EditPoolPageContent() {
       setInitialLoading(false);
     }
   };
+
+  if (authLoading) {
+    return (
+      <DashboardLayout title="Edit Pool" subtitle="Update your pool settings">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   if (!user) {
     return null;

@@ -9,7 +9,7 @@ import { Analytics } from "@vercel/analytics/next";
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [showComingSoonPopup, setShowComingSoonPopup] = useState(false);
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -37,16 +37,16 @@ export default function Home() {
 
   // Redirect based on authentication state
   useEffect(() => {
-    if (!loading) {
+    if (!authLoading) {
       if (user) {
         // User is authenticated, redirect to dashboard
         router.push("/dashboard");
       }
     }
-  }, [user, loading, router]);
+  }, [user, authLoading, router]);
 
   // Show loading state while checking authentication
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">

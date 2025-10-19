@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import DashboardLayout from '@/components/DashboardLayout';
-import { dashboardAPI, handleApiError } from '@/lib/api';
-import { 
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import DashboardLayout from "@/components/DashboardLayout";
+import { dashboardAPI, handleApiError } from "@/lib/api";
+import {
   ArrowUpRight,
   ArrowDownLeft,
   Search,
@@ -18,39 +18,40 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  RefreshCw
-} from 'lucide-react';
+  RefreshCw,
+} from "lucide-react";
 
 export default function TransactionsPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [dateRange, setDateRange] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [dateRange, setDateRange] = useState("all");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [minAmount, setMinAmount] = useState('');
-  const [maxAmount, setMaxAmount] = useState('');
-  const [poolId, setPoolId] = useState('');
+  const [minAmount, setMinAmount] = useState("");
+  const [maxAmount, setMaxAmount] = useState("");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  
+
   // Real data state
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterLoading, setFilterLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
     totalTransactions: 0,
     hasNextPage: false,
-    hasPrevPage: false
+    hasPrevPage: false,
   });
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
-      router.push('/');
+      router.push("/");
       return;
     }
 
@@ -60,7 +61,9 @@ export default function TransactionsPage() {
   const loadTransactions = async (page = 1) => {
     try {
       if (page === 1) {
-        setFilterLoading(true);
+        if (!isRefreshing) {
+          setFilterLoading(true);
+        }
       } else {
         setLoading(true);
       }
@@ -69,38 +72,40 @@ export default function TransactionsPage() {
       const options = {
         page,
         limit: 20,
-        ...(filterType !== 'all' && { type: filterType }),
-        ...(filterStatus !== 'all' && { status: filterStatus }),
+        ...(filterType !== "all" && { type: filterType }),
+        ...(filterStatus !== "all" && { status: filterStatus }),
         ...(searchTerm && { search: searchTerm }),
-        ...(dateRange !== 'all' && { dateRange }),
-        ...(dateRange === 'custom' && startDate && endDate && { 
-          startDate: startDate.toISOString(),
-          endDate: endDate.toISOString()
-        }),
+        ...(dateRange !== "all" && { dateRange }),
+        ...(dateRange === "custom" &&
+          startDate &&
+          endDate && {
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+          }),
         ...(minAmount && { minAmount: parseFloat(minAmount) }),
         ...(maxAmount && { maxAmount: parseFloat(maxAmount) }),
-        ...(poolId && { poolId })
       };
 
       const response = await dashboardAPI.getUserTransactions(options);
-      
+
       if (response.success) {
         setTransactions(response.data.transactions);
         setPagination(response.data.pagination);
       } else {
-        setError(response.message || 'Failed to load transactions');
+        setError(response.message || "Failed to load transactions");
       }
     } catch (err) {
-      console.error('Error loading transactions:', err);
-      setError(handleApiError(err, 'Failed to load transactions'));
+      console.error("Error loading transactions:", err);
+      setError(handleApiError(err, "Failed to load transactions"));
     } finally {
       setLoading(false);
       setFilterLoading(false);
+      setIsRefreshing(false);
     }
   };
 
   const handleFilterChange = () => {
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setPagination((prev) => ({ ...prev, currentPage: 1 }));
     setFilterLoading(true);
     loadTransactions(1);
   };
@@ -116,11 +121,25 @@ export default function TransactionsPage() {
 
   const handleDateRangeChange = (value) => {
     setDateRange(value);
-    if (value === 'custom') {
+    if (value === "custom") {
       // Don't auto-reload for custom date range
       return;
     }
     handleFilterChange();
+  };
+
+  // Pull to refresh: clear filters and reload list only
+  const handlePullToRefresh = async () => {
+    setSearchTerm("");
+    setFilterType("all");
+    setFilterStatus("all");
+    setDateRange("all");
+    setStartDate(null);
+    setEndDate(null);
+    setMinAmount("");
+    setMaxAmount("");
+    setIsRefreshing(true);
+    await loadTransactions(1);
   };
 
   const handleCustomDateChange = () => {
@@ -130,15 +149,14 @@ export default function TransactionsPage() {
   };
 
   const clearAllFilters = () => {
-    setSearchTerm('');
-    setFilterType('all');
-    setFilterStatus('all');
-    setDateRange('all');
+    setSearchTerm("");
+    setFilterType("all");
+    setFilterStatus("all");
+    setDateRange("all");
     setStartDate(null);
     setEndDate(null);
-    setMinAmount('');
-    setMaxAmount('');
-    setPoolId('');
+    setMinAmount("");
+    setMaxAmount("");
     setShowAdvancedFilters(false);
     handleFilterChange();
   };
@@ -147,6 +165,20 @@ export default function TransactionsPage() {
     loadTransactions(newPage);
   };
 
+  if (authLoading) {
+    return (
+      <DashboardLayout
+        title="Transactions"
+        subtitle="View your transaction history and activity"
+      >
+        <div className="text-center py-12">
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   if (!user) {
     return null;
   }
@@ -154,20 +186,23 @@ export default function TransactionsPage() {
   // Since filtering is now handled by the backend, we use the transactions directly
   const filteredTransactions = transactions;
 
-    
-
-
   const StatusBadge = ({ status }) => {
     const styles = {
-      success: { icon: CheckCircle, bg: 'bg-green-100', text: 'text-green-800' },
-      failed: { icon: XCircle, bg: 'bg-red-100', text: 'text-red-800' }
+      success: {
+        icon: CheckCircle,
+        bg: "bg-green-100",
+        text: "text-green-800",
+      },
+      failed: { icon: XCircle, bg: "bg-red-100", text: "text-red-800" },
     };
-    
+
     const style = styles[status];
     const Icon = style.icon;
-    
+
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${style.bg} ${style.text}`}>
+      <span
+        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${style.bg} ${style.text}`}
+      >
         <Icon className="w-3 h-3" />
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
@@ -176,16 +211,26 @@ export default function TransactionsPage() {
 
   const TypeBadge = ({ type }) => {
     const styles = {
-      deposit: { icon: ArrowDownLeft, bg: 'bg-blue-100', text: 'text-blue-800' },
-      withdrawal: { icon: ArrowUpRight, bg: 'bg-purple-100', text: 'text-purple-800' },
-      fee: { icon: AlertCircle, bg: 'bg-gray-100', text: 'text-gray-800' }
+      deposit: {
+        icon: ArrowDownLeft,
+        bg: "bg-blue-100",
+        text: "text-blue-800",
+      },
+      withdrawal: {
+        icon: ArrowUpRight,
+        bg: "bg-purple-100",
+        text: "text-purple-800",
+      },
+      fee: { icon: AlertCircle, bg: "bg-gray-100", text: "text-gray-800" },
     };
-    
+
     const style = styles[type];
     const Icon = style.icon;
-    
+
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${style.bg} ${style.text}`}>
+      <span
+        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${style.bg} ${style.text}`}
+      >
         <Icon className="w-3 h-3" />
         {type.charAt(0).toUpperCase() + type.slice(1)}
       </span>
@@ -194,15 +239,21 @@ export default function TransactionsPage() {
 
   const getPoolTypeIcon = (type) => {
     const poolTypes = {
-      general: { emoji: '💰', bg: 'bg-blue-100', text: 'text-blue-600' },
-      trip: { emoji: '🌴', bg: 'bg-green-100', text: 'text-green-600' },
-      business: { emoji: '💼', bg: 'bg-purple-100', text: 'text-purple-600' },
-      education: { emoji: '📚', bg: 'bg-orange-100', text: 'text-orange-600' },
-      event: { emoji: '🎉', bg: 'bg-pink-100', text: 'text-pink-600' },
-      goody: { emoji: '🎁', bg: 'bg-yellow-100', text: 'text-yellow-600' }
+      general: { emoji: "💰", bg: "bg-blue-100", text: "text-blue-600" },
+      trip: { emoji: "🌴", bg: "bg-green-100", text: "text-green-600" },
+      business: { emoji: "💼", bg: "bg-purple-100", text: "text-purple-600" },
+      education: { emoji: "📚", bg: "bg-orange-100", text: "text-orange-600" },
+      event: { emoji: "🎉", bg: "bg-pink-100", text: "text-pink-600" },
+      goody: { emoji: "🎁", bg: "bg-yellow-100", text: "text-yellow-600" },
     };
-    
-    return poolTypes[type] || { emoji: '🔧', bg: 'bg-gray-100', text: 'text-gray-600' };
+
+    return (
+      poolTypes[type] || {
+        emoji: "🔧",
+        bg: "bg-gray-100",
+        text: "text-gray-600",
+      }
+    );
   };
 
   const TransactionCard = ({ transaction }) => (
@@ -212,19 +263,25 @@ export default function TransactionsPage() {
           <div className="flex items-center gap-3 mb-2">
             <div className="flex items-center gap-2">
               {transaction.pools?.type && (
-                <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-sm ${getPoolTypeIcon(transaction.pools.type).bg}`}>
-                  <span className={getPoolTypeIcon(transaction.pools.type).text}>
+                <div
+                  className={`w-6 h-6 rounded-lg flex items-center justify-center text-sm ${
+                    getPoolTypeIcon(transaction.pools.type).bg
+                  }`}
+                >
+                  <span
+                    className={getPoolTypeIcon(transaction.pools.type).text}
+                  >
                     {getPoolTypeIcon(transaction.pools.type).emoji}
                   </span>
                 </div>
               )}
               <div>
-                <h3 
+                <h3
                   className="font-semibold text-gray-900 truncate hover:text-purple-600 cursor-pointer transition-colors"
                   onClick={() => router.push(`/pools/${transaction.pool_id}`)}
                   title="Click to view pool details"
                 >
-                  {transaction.pools?.name || 'Unknown Pool'}
+                  {transaction.pools?.name || "Unknown Pool"}
                 </h3>
                 {transaction.pools?.type && (
                   <span className="text-xs text-gray-500 capitalize">
@@ -236,7 +293,9 @@ export default function TransactionsPage() {
             <TypeBadge type={transaction.type} />
             <StatusBadge status={transaction.status} />
           </div>
-          <p className="text-sm text-gray-600 mb-2">{transaction.description || 'No description'}</p>
+          <p className="text-sm text-gray-600 mb-2">
+            {transaction.description || "No description"}
+          </p>
           <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-500">
             {transaction.reference_id && (
               <span>Ref: {transaction.reference_id}</span>
@@ -252,31 +311,38 @@ export default function TransactionsPage() {
           </div>
         </div>
         <div className="text-right sm:ml-4 mt-2 sm:mt-0 w-full sm:w-auto">
-          <p className={`text-lg font-bold ${
-            transaction.type === 'deposit' ? 'text-green-600' :
-            transaction.type === 'withdrawal' ? 'text-red-600' : 'text-gray-600'
-          }`}>
-            {transaction.type === 'withdrawal' ? '-' : '+'}KSh {parseFloat(transaction.amount).toLocaleString()}
+          <p
+            className={`text-lg font-bold ${
+              transaction.type === "deposit"
+                ? "text-green-600"
+                : transaction.type === "withdrawal"
+                ? "text-red-600"
+                : "text-gray-600"
+            }`}
+          >
+            {transaction.type === "withdrawal" ? "-" : "+"}KSh{" "}
+            {parseFloat(transaction.amount).toLocaleString()}
           </p>
           <p className="text-xs text-gray-500">
-            {new Date(transaction.created_at).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
+            {new Date(transaction.created_at).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
             })}
           </p>
         </div>
       </div>
-      
+
       {transaction.processed_at && (
         <div className="pt-3 border-t border-gray-100">
           <p className="text-xs text-gray-500">
-            Processed: {new Date(transaction.processed_at).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
+            Processed:{" "}
+            {new Date(transaction.processed_at).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
             })}
           </p>
         </div>
@@ -286,41 +352,31 @@ export default function TransactionsPage() {
 
   // Only include successful transactions in financial calculations
   // Failed transactions don't represent actual money movement
-  const successfulTransactions = filteredTransactions.filter(t => t.status === 'success');
-  
+  const successfulTransactions = filteredTransactions.filter(
+    (t) => t.status === "success"
+  );
+
   const totalAmount = successfulTransactions.reduce((sum, t) => {
-    if (t.type === 'deposit') return sum + parseFloat(t.amount);
-    if (t.type === 'withdrawal') return sum - parseFloat(t.amount);
+    if (t.type === "deposit") return sum + parseFloat(t.amount);
+    if (t.type === "withdrawal") return sum - parseFloat(t.amount);
     return sum;
   }, 0);
 
   const depositTotal = successfulTransactions
-    .filter(t => t.type === 'deposit')
+    .filter((t) => t.type === "deposit")
     .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
   const withdrawalTotal = successfulTransactions
-    .filter(t => t.type === 'withdrawal')
+    .filter((t) => t.type === "withdrawal")
     .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
   return (
-    <DashboardLayout 
+    <DashboardLayout
       title="Transactions"
       subtitle="View your transaction history and activity"
     >
-      {/* Header Actions */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => loadTransactions()}
-            disabled={loading}
-            className="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors flex items-center gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh</span>
-          </button>
-        </div>
-
-      </div>
+      {/* Header Spacer */}
+      <div className="mb-2" />
 
       {/* Error Display */}
       {error && (
@@ -347,7 +403,9 @@ export default function TransactionsPage() {
             </div>
             <div>
               <p className="text-sm text-gray-500">Total Deposits</p>
-              <p className="text-xl font-bold text-green-600">KSh {depositTotal.toLocaleString()}</p>
+              <p className="text-xl font-bold text-green-600">
+                KSh {depositTotal.toLocaleString()}
+              </p>
             </div>
           </div>
         </div>
@@ -358,7 +416,9 @@ export default function TransactionsPage() {
             </div>
             <div>
               <p className="text-sm text-gray-500">Total Withdrawals</p>
-              <p className="text-xl font-bold text-red-600">KSh {withdrawalTotal.toLocaleString()}</p>
+              <p className="text-xl font-bold text-red-600">
+                KSh {withdrawalTotal.toLocaleString()}
+              </p>
             </div>
           </div>
         </div>
@@ -369,12 +429,31 @@ export default function TransactionsPage() {
             </div>
             <div>
               <p className="text-sm text-gray-500">Net Amount</p>
-              <p className={`text-xl font-bold ${totalAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p
+                className={`text-xl font-bold ${
+                  totalAmount >= 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
                 KSh {Math.abs(totalAmount).toLocaleString()}
               </p>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Refresh below filters */}
+      <div className="flex items-center justify-end mb-4">
+        <button
+          onClick={handlePullToRefresh}
+          className="px-3 py-2 text-sm rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 flex items-center gap-2"
+          disabled={isRefreshing}
+          title="Refresh list"
+        >
+          <RefreshCw
+            className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
+          />
+          {isRefreshing ? "Refreshing..." : "Refresh"}
+        </button>
       </div>
 
       {/* Filters */}
@@ -389,7 +468,6 @@ export default function TransactionsPage() {
               onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
-
           </div>
           <select
             value={filterType}
@@ -435,7 +513,7 @@ export default function TransactionsPage() {
             className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700 font-medium"
           >
             <Filter className="w-4 h-4" />
-            {showAdvancedFilters ? 'Hide' : 'Show'} Advanced Filters
+            {showAdvancedFilters ? "Hide" : "Show"} Advanced Filters
           </button>
         </div>
 
@@ -444,22 +522,28 @@ export default function TransactionsPage() {
           <div className="mt-4 pt-4 border-t border-gray-200">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {/* Custom Date Range */}
-              {dateRange === 'custom' && (
+              {dateRange === "custom" && (
                 <>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Start Date
+                    </label>
                     <input
                       type="date"
-                      value={startDate ? startDate.toISOString().split('T')[0] : ''}
+                      value={
+                        startDate ? startDate.toISOString().split("T")[0] : ""
+                      }
                       onChange={(e) => setStartDate(new Date(e.target.value))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">End Date</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      End Date
+                    </label>
                     <input
                       type="date"
-                      value={endDate ? endDate.toISOString().split('T')[0] : ''}
+                      value={endDate ? endDate.toISOString().split("T")[0] : ""}
                       onChange={(e) => setEndDate(new Date(e.target.value))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
@@ -478,7 +562,9 @@ export default function TransactionsPage() {
 
               {/* Amount Range */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Min Amount (KSh)</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Min Amount (KSh)
+                </label>
                 <input
                   type="number"
                   placeholder="0"
@@ -488,24 +574,14 @@ export default function TransactionsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Max Amount (KSh)</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Max Amount (KSh)
+                </label>
                 <input
                   type="number"
                   placeholder="10000"
                   value={maxAmount}
                   onChange={(e) => setMaxAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-
-              {/* Pool Filter */}
-              <div className="sm:col-span-2 md:col-span-3 lg:col-span-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Pool ID (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="Enter pool ID to filter by specific pool"
-                  value={poolId}
-                  onChange={(e) => setPoolId(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -530,20 +606,51 @@ export default function TransactionsPage() {
         )}
       </div>
 
-              {/* Filter Summary */}
-        {!filterLoading && (searchTerm || filterType !== 'all' || filterStatus !== 'all' || dateRange !== 'all' || minAmount || maxAmount || poolId) && (
+      {/* Filter Summary */}
+      {!filterLoading &&
+        (searchTerm ||
+          filterType !== "all" ||
+          filterStatus !== "all" ||
+          dateRange !== "all" ||
+          minAmount ||
+          maxAmount) && (
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2 text-sm text-purple-800">
                 <Filter className="w-4 h-4" />
                 <span className="font-medium">Active Filters:</span>
-                {searchTerm && <span className="px-2 py-1 bg-purple-100 rounded text-xs">Search: "{searchTerm}"</span>}
-                {filterType !== 'all' && <span className="px-2 py-1 bg-purple-100 rounded text-xs">{filterType}</span>}
-                {filterStatus !== 'all' && <span className="px-2 py-1 bg-purple-100 rounded text-xs">{filterStatus}</span>}
-                {dateRange !== 'all' && <span className="px-2 py-1 bg-purple-100 rounded text-xs">{dateRange === 'custom' ? 'Custom Date' : `${dateRange} ago`}</span>}
-                {minAmount && <span className="px-2 py-1 bg-purple-100 rounded text-xs">Min: KSh {minAmount}</span>}
-                {maxAmount && <span className="px-2 py-1 bg-purple-100 rounded text-xs">Max: KSh {maxAmount}</span>}
-                {poolId && <span className="px-2 py-1 bg-purple-100 rounded text-xs">Pool: {poolId}</span>}
+                {searchTerm && (
+                  <span className="px-2 py-1 bg-purple-100 rounded text-xs">
+                    Search: "{searchTerm}"
+                  </span>
+                )}
+                {filterType !== "all" && (
+                  <span className="px-2 py-1 bg-purple-100 rounded text-xs">
+                    {filterType}
+                  </span>
+                )}
+                {filterStatus !== "all" && (
+                  <span className="px-2 py-1 bg-purple-100 rounded text-xs">
+                    {filterStatus}
+                  </span>
+                )}
+                {dateRange !== "all" && (
+                  <span className="px-2 py-1 bg-purple-100 rounded text-xs">
+                    {dateRange === "custom"
+                      ? "Custom Date"
+                      : `${dateRange} ago`}
+                  </span>
+                )}
+                {minAmount && (
+                  <span className="px-2 py-1 bg-purple-100 rounded text-xs">
+                    Min: KSh {minAmount}
+                  </span>
+                )}
+                {maxAmount && (
+                  <span className="px-2 py-1 bg-purple-100 rounded text-xs">
+                    Max: KSh {maxAmount}
+                  </span>
+                )}
               </div>
               <button
                 onClick={clearAllFilters}
@@ -555,13 +662,13 @@ export default function TransactionsPage() {
           </div>
         )}
 
-        {/* Filter Loading Indicator */}
-        {filterLoading && (
-          <div className="text-center py-8">
-            <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-            <p className="text-sm text-gray-600">Applying filters...</p>
-          </div>
-        )}
+      {/* Filter Loading Indicator */}
+      {filterLoading && (
+        <div className="text-center py-8">
+          <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+          <p className="text-sm text-gray-600">Applying filters...</p>
+        </div>
+      )}
 
       {/* Transactions List */}
       {loading ? (
@@ -569,12 +676,17 @@ export default function TransactionsPage() {
           <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading transactions...</p>
         </div>
-      ) : !filterLoading && (
-        <div className="space-y-4">
-          {filteredTransactions.map((transaction) => (
-            <TransactionCard key={transaction.transaction_id} transaction={transaction} />
-          ))}
-        </div>
+      ) : (
+        !filterLoading && (
+          <div className="space-y-4">
+            {filteredTransactions.map((transaction) => (
+              <TransactionCard
+                key={transaction.transaction_id}
+                transaction={transaction}
+              />
+            ))}
+          </div>
+        )
       )}
 
       {/* Pagination */}
@@ -587,11 +699,11 @@ export default function TransactionsPage() {
           >
             Previous
           </button>
-          
+
           <span className="px-4 py-2 text-sm text-gray-600">
             Page {pagination.currentPage} of {pagination.totalPages}
           </span>
-          
+
           <button
             onClick={() => handlePageChange(pagination.currentPage + 1)}
             disabled={!pagination.hasNextPage}
@@ -606,21 +718,27 @@ export default function TransactionsPage() {
       {!loading && !filterLoading && filteredTransactions.length === 0 && (
         <div className="text-center py-12">
           <ArrowUpRight className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No transactions found</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No transactions found
+          </h3>
           <p className="text-gray-500 mb-6">
             {transactions.length === 0
-              ? 'You haven\'t made any transactions yet. Start by joining a pool and making your first deposit!'
-              : 'No transactions match your current filters. Try adjusting your search or filter criteria.'
-            }
+              ? "You haven't made any transactions yet. Start by joining a pool and making your first deposit!"
+              : "No transactions match your current filters. Try adjusting your search or filter criteria."}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
-              onClick={() => router.push('/pools')}
+              onClick={() => router.push("/pools")}
               className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:shadow-lg transition-all duration-300"
             >
               View Pools
             </button>
-            {(searchTerm || filterType !== 'all' || filterStatus !== 'all' || dateRange !== 'all' || minAmount || maxAmount || poolId) && (
+            {(searchTerm ||
+              filterType !== "all" ||
+              filterStatus !== "all" ||
+              dateRange !== "all" ||
+              minAmount ||
+              maxAmount) && (
               <button
                 onClick={clearAllFilters}
                 className="bg-gray-100 text-gray-700 px-6 py-2 rounded-xl font-medium hover:bg-gray-200 transition-colors"

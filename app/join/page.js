@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 function JoinPageContent() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const inviteCode = searchParams.get("code");
@@ -92,7 +92,7 @@ function JoinPageContent() {
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50 to-slate-100 flex items-center justify-center">
         <div className="text-center">

@@ -11,15 +11,11 @@ import {
   Calendar,
   DollarSign,
   Target,
-  Users,
-  Settings,
-  Info,
-  Check,
   AlertCircle,
 } from "lucide-react";
 
 export default function CreatePoolPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   // Form state
@@ -31,8 +27,8 @@ export default function CreatePoolPage() {
     customType: "",
     endDate: "",
     withdrawalSettings: {
-      requires_approval: true,
-      auto_withdrawal: false,
+      requires_approval: false,
+      auto_withdrawal: true,
       approvers: ["creator", "admins"],
     },
   });
@@ -40,13 +36,27 @@ export default function CreatePoolPage() {
   // UI state
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
       router.push("/");
     }
-  }, [user, router]);
+  }, [user, authLoading, router]);
+
+  if (authLoading) {
+    return (
+      <DashboardLayout
+        title="Create New Pool"
+        subtitle="Set up a new pool for you and your team"
+      >
+        <div className="text-center py-12">
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   if (!user) {
     return null;
@@ -242,7 +252,7 @@ export default function CreatePoolPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Target Amount (KSh) *
+                  Target Amount *
                 </label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -348,30 +358,40 @@ export default function CreatePoolPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {poolTypes.map((type) => (
-                <button
-                  key={type.value}
-                  type="button"
-                  onClick={() => handleInputChange("type", type.value)}
-                  className={`p-4 border-2 rounded-lg text-left transition-all ${
-                    formData.type === type.value
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Pool Type
+              </label>
+              <div className="relative">
+                <select
+                  value={formData.type}
+                  onChange={(e) => handleInputChange("type", e.target.value)}
+                  className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 text-gray-900 shadow-sm"
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-2xl">{type.emoji}</span>
-                    <span className="font-medium text-gray-900">
-                      {type.label}
-                    </span>
-                    {formData.type === type.value && (
-                      <Check className="w-5 h-5 text-blue-600 ml-auto" />
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-500">{type.description}</p>
-                </button>
-              ))}
+                  {poolTypes.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+                <svg
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                >
+                  <path
+                    d="M6 8l4 4 4-4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                Choose the category that best fits your pool. Select "Other" to
+                specify a custom type.
+              </p>
             </div>
 
             {/* Custom Type Input */}
@@ -409,132 +429,7 @@ export default function CreatePoolPage() {
             )}
           </div>
 
-          {/* Advanced Settings */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <button
-              type="button"
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="flex items-center gap-3 mb-4 w-full text-left"
-            >
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Settings className="w-5 h-5 text-gray-600" />
-              </div>
-              <div className="flex-1">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Advanced Settings
-                </h2>
-                <p className="text-sm text-gray-500">
-                  Optional withdrawal and fee settings
-                </p>
-              </div>
-              <div
-                className={`transform transition-transform ${
-                  showAdvanced ? "rotate-180" : ""
-                }`}
-              >
-                <svg
-                  className="w-5 h-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </button>
-
-            {showAdvanced && (
-              <div className="space-y-6 border-t border-gray-100 pt-6">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h3 className="font-medium text-blue-900 mb-1">
-                        Withdrawal Processing
-                      </h3>
-                      <p className="text-sm text-blue-700">
-                        Choose how withdrawal requests will be handled in your
-                        pool. You can either require manual approval or allow
-                        automatic processing.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-4">
-                      Withdrawal Processing Method
-                    </label>
-                    <div className="space-y-3">
-                      <label className="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
-                        <input
-                          type="radio"
-                          name="withdrawalMethod"
-                          checked={
-                            formData.withdrawalSettings.requires_approval ===
-                            true
-                          }
-                          onChange={() =>
-                            handleInputChange("withdrawalSettings", {
-                              ...formData.withdrawalSettings,
-                              requires_approval: true,
-                              auto_withdrawal: false,
-                            })
-                          }
-                          className="mt-1 w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                        />
-                        <div className="flex-1">
-                          <span className="text-sm font-medium text-gray-900">
-                            Manual Approval Required
-                          </span>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Pool admins must review and approve each withdrawal
-                            request before it's processed. This provides extra
-                            security but requires manual intervention.
-                          </p>
-                        </div>
-                      </label>
-
-                      <label className="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
-                        <input
-                          type="radio"
-                          name="withdrawalMethod"
-                          checked={
-                            formData.withdrawalSettings.requires_approval ===
-                            false
-                          }
-                          onChange={() =>
-                            handleInputChange("withdrawalSettings", {
-                              ...formData.withdrawalSettings,
-                              requires_approval: false,
-                              auto_withdrawal: true,
-                            })
-                          }
-                          className="mt-1 w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                        />
-                        <div className="flex-1">
-                          <span className="text-sm font-medium text-gray-900">
-                            Automatic Processing
-                          </span>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Withdrawal requests are automatically processed
-                            without requiring admin approval. This is faster but
-                            provides less oversight.
-                          </p>
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Advanced Settings removed — withdrawal processing is automatic */}
 
           {/* Submit Error */}
           {errors.submit && (
