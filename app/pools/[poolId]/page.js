@@ -144,6 +144,20 @@ function PoolDetailPageContent() {
       const { pool, membership, members, transactions, insights } =
         response.data;
 
+      // Calculate percentage progress based strictly on pool currentBalance and targetAmount
+      const targetAmountNum = parseFloat(pool.targetAmount) || 0;
+      const currentBalanceNum = parseFloat(pool.currentBalance) || 0;
+      const computedPercentage =
+        targetAmountNum > 0
+          ? Math.min(
+              100,
+              Math.max(
+                0,
+                Math.round((currentBalanceNum / targetAmountNum) * 100)
+              )
+            )
+          : 0;
+
       setPoolData({
         poolId: pool.id,
         name: pool.name,
@@ -151,15 +165,7 @@ function PoolDetailPageContent() {
         status: pool.status,
         targetAmount: parseFloat(pool.targetAmount),
         currentBalance: parseFloat(pool.currentBalance),
-        percentage: insights?.overview?.progressPercentage
-          ? parseFloat(insights.overview.progressPercentage)
-          : pool.targetAmount > 0
-          ? Math.round(
-              (parseFloat(pool.currentBalance) /
-                parseFloat(pool.targetAmount)) *
-                100
-            )
-          : 0,
+        percentage: computedPercentage,
         memberCount: insights?.overview?.totalMembers || 0,
         dueDate: pool.endDate
           ? new Date(pool.endDate).toLocaleDateString("en-US", {
