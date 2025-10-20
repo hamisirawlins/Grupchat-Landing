@@ -191,7 +191,7 @@ export default function CombinedChart({ data, height = 200 }) {
 
   return (
     <div style={{ height: `${height}px`, width: "100%" }}>
-      <Chart type="bar" data={chartData} options={options} />
+      <Chart data={chartData} options={options} />
     </div>
   );
 }
