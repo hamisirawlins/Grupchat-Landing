@@ -1124,7 +1124,7 @@ function PoolDetailPageContent() {
                           {transaction.type}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {transaction.user?.displayName || "Unknown user"} •{" "}
+                          {transaction.user?.displayName || "Paybill deposit"} •{" "}
                           {formatRelativeDate(transaction.createdAt)}
                         </p>
                       </div>
