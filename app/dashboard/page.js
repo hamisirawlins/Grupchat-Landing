@@ -37,8 +37,10 @@ import {
 import BarChartComponent from "@/components/charts/BarChart";
 import DonutChartComponent from "@/components/charts/DonutChart";
 import LineChartComponent from "@/components/charts/LineChart";
-import CombinedChart from "@/components/charts/CombinedChart";
 import RadialProgressChart from "@/components/charts/RadialProgressChart";
+import PoolProgressChart from "@/components/charts/PoolProgressChart";
+import MonthlyContributionsChart from "@/components/charts/MonthlyContributionsChart";
+import TransactionTrendsChart from "@/components/charts/TransactionTrendsChart";
 
 export default function Dashboard() {
   const { user, logout, loading: authLoading } = useAuth();
@@ -596,7 +598,7 @@ export default function Dashboard() {
                     <FolderOpen className="w-4 h-4 text-white" />
                   </div>
                   <h2 className="text-xl font-semibold text-gray-900">
-                    Active Pools
+                    Recent Pools
                   </h2>
                 </div>
                 <button
@@ -648,23 +650,73 @@ export default function Dashboard() {
 
             {/* Analytics & Charts */}
             <div className="space-y-6 lg:space-y-8">
-              {/* Transaction Trends */}
+              {/* Pool Progress Overview */}
               <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-white/20 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-[#7a73ff] rounded-lg flex items-center justify-center">
-                      <TrendingUp className="w-4 h-4 text-white" />
+                      <BarChart3 className="w-4 h-4 text-white" />
                     </div>
                     <h3 className="font-semibold text-gray-900">
-                      Transaction Trends
+                      Pool Progress Overview
                     </h3>
                   </div>
-                  <span className="text-sm text-gray-500"></span>
                 </div>
                 <p className="text-sm text-gray-500 mb-4">
-                  Monthly pool contributions and transaction activity.
+                  Completion status of all pools.
                 </p>
-                <CombinedChart
+                <div className="flex justify-center">
+                  <PoolProgressChart
+                    completedPools={chartData.poolCompletion.completed}
+                    totalPools={chartData.poolCompletion.total}
+                    size={140}
+                  />
+                </div>
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-gray-600">
+                    {chartData.poolCompletion.completed} of{" "}
+                    {chartData.poolCompletion.total} pools completed
+                  </p>
+                </div>
+              </div>
+
+              {/* Monthly Contributions */}
+              <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-white/20 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                      <TrendingUp className="w-4 h-4 text-green-600" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900">
+                      Monthly Contributions
+                    </h3>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-500 mb-4">
+                  Total contributions received each month.
+                </p>
+                <MonthlyContributionsChart
+                  data={chartData.performanceMetrics}
+                  height={200}
+                />
+              </div>
+
+              {/* Transaction Trends */}
+              <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-white/20 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <BarChart className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <h3 className="font-semibold text-gray-900">
+                      Transaction Activity
+                    </h3>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-500 mb-4">
+                  Number of transactions processed each month.
+                </p>
+                <TransactionTrendsChart
                   data={chartData.performanceMetrics}
                   height={200}
                 />

@@ -447,9 +447,6 @@ function PoolDetailPageContent() {
         transactionId: response.data?.transactionId || "Pending",
       });
       setShowSuccessModal(true);
-
-      // Reload pool data to reflect changes
-      loadPoolData();
     } catch (err) {
       console.error("Deposit failed:", err);
       setDepositError(handleApiError(err, "Failed to initiate deposit"));
