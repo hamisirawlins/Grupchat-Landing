@@ -2621,12 +2621,14 @@ function PoolDetailPageContent() {
                         ) : (
                           <>
                             <li>
-                              1. The user will receive a pool invite notification
+                              1. The user will receive a pool invite
+                              notification
                             </li>
+                            <li>2. They can accept or ignore the invitation</li>
                             <li>
-                              2. They can accept or ignore the invitation
+                              3. Members will be notified when the new member
+                              accepts the invite
                             </li>
-                            <li>3. Members will be notified when the new member accepts the invite</li>
                             <li>
                               4. Once accepted, they'll be added to the pool
                             </li>
@@ -2764,8 +2766,8 @@ function PoolDetailPageContent() {
               {/* Footer Note */}
               {successData.type === "invitation" ? (
                 <p className="text-xs text-gray-500 mt-4">
-                  Link invitations expire in 3 days. Share them quickly to
-                  maximize member engagement.
+                  The invitation expires after 3 days. Share widely to maximize
+                  member engagement.
                 </p>
               ) : (
                 <p className="text-xs text-gray-500 mt-4">

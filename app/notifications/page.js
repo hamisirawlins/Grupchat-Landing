@@ -39,6 +39,12 @@ export default function NotificationsPage() {
   const [markingAsRead, setMarkingAsRead] = useState(new Set());
   const [markingAllAsRead, setMarkingAllAsRead] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [inviteModal, setInviteModal] = useState({
+    open: false,
+    notification: null,
+    submitting: false,
+    error: null,
+  });
 
   useEffect(() => {
     if (authLoading) return;
@@ -299,6 +305,23 @@ export default function NotificationsPage() {
               </p>
 
               {/* Transaction-specific actions */}
+              {notification.type === "pool_invite" && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() =>
+                      setInviteModal({
+                        open: true,
+                        notification,
+                        submitting: false,
+                        error: null,
+                      })
+                    }
+                    className="bg-[#7a73ff] text-white px-3 py-1 rounded-xl text-xs font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300"
+                  >
+                    View & Accept
+                  </button>
+                </div>
+              )}
               {notification.type === "deposit_failed" && (
                 <div className="flex items-center gap-2">
                   <button
@@ -631,6 +654,146 @@ export default function NotificationsPage() {
           >
             View Pool
           </button>
+        </div>
+      )}
+
+      {/* Invitation Accept Modal */}
+      {inviteModal.open && inviteModal.notification && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/30"
+            onClick={() =>
+              setInviteModal({
+                open: false,
+                notification: null,
+                submitting: false,
+                error: null,
+              })
+            }
+          ></div>
+          <div className="relative bg-white/90 backdrop-blur-xl rounded-2xl border border-[#b8b5ff] shadow-xl w-full max-w-md mx-4 p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Invitation to join {inviteModal.notification.data?.poolName}
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Invited by {inviteModal.notification.data?.inviterName}
+                </p>
+              </div>
+              <button
+                onClick={() =>
+                  setInviteModal({
+                    open: false,
+                    notification: null,
+                    submitting: false,
+                    error: null,
+                  })
+                }
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            {inviteModal.error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-3 py-2 text-sm mb-4">
+                {inviteModal.error}
+              </div>
+            )}
+
+            <div className="bg-[#f6f5ff] border border-[#e6e4ff] rounded-xl p-4 mb-4">
+              <p className="text-sm text-gray-700">
+                Accepting will add you to{" "}
+                <span className="font-semibold">
+                  {inviteModal.notification.data?.poolName}
+                </span>
+                .
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() =>
+                  setInviteModal({
+                    open: false,
+                    notification: null,
+                    submitting: false,
+                    error: null,
+                  })
+                }
+                className="px-4 py-2 rounded-xl font-medium transition-all duration-300 bg-[#f6f5ff] text-[#7a73ff] border border-[#b8b5ff] hover:bg-[#eaeaff]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    setInviteModal((prev) => ({
+                      ...prev,
+                      submitting: true,
+                      error: null,
+                    }));
+                    const invitationId =
+                      inviteModal.notification.data?.invitationId;
+                    const inviteCode =
+                      inviteModal.notification.data?.inviteCode;
+                    if (!invitationId && !inviteCode) {
+                      throw new Error("Missing invitation identifier");
+                    }
+                    const resp = await dashboardAPI.acceptInvitation(
+                      invitationId ? { invitationId } : { inviteCode }
+                    );
+                    if (!resp.success) {
+                      throw new Error(
+                        resp.message || "Failed to accept invitation"
+                      );
+                    }
+                    // Fire-and-forget: mark this notification as read in background
+                    const currentNotifId = inviteModal.notification.id;
+                    dashboardAPI
+                      .markNotificationAsRead(currentNotifId)
+                      .catch(() => {});
+
+                    const poolId = inviteModal.notification.data?.poolId;
+
+                    // Redirect immediately to the pool
+                    if (poolId) {
+                      router.push(`/pools/${poolId}`);
+                    }
+
+                    // Close modal after redirect trigger
+                    setInviteModal({
+                      open: false,
+                      notification: null,
+                      submitting: false,
+                      error: null,
+                    });
+                  } catch (e) {
+                    setInviteModal((prev) => ({
+                      ...prev,
+                      submitting: false,
+                      error: handleApiError(e, "Failed to accept invitation"),
+                    }));
+                  }
+                }}
+                disabled={inviteModal.submitting}
+                className="bg-[#7a73ff] text-white px-5 py-2 rounded-xl font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {inviteModal.submitting ? (
+                  <span className="inline-flex items-center gap-2">
+                    <RefreshCw className="w-4 h-4 animate-spin" /> Accepting...
+                  </span>
+                ) : (
+                  "Accept Invitation"
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </DashboardLayout>
