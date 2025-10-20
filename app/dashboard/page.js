@@ -90,6 +90,9 @@ export default function Dashboard() {
           totalTransactions: summary.totalTransactions,
           totalPooled: parseFloat(summary.totalContributed) || 0,
         },
+        notifications: {
+          unread: summary.unreadNotifications || 0,
+        },
       });
 
       // Get pools data separately for detailed pool information
@@ -217,7 +220,15 @@ export default function Dashboard() {
     { id: "homepage", label: "Homepage", icon: Home, active: true },
     { id: "pools", label: "Pools", icon: FolderOpen },
     { id: "transactions", label: "Transactions", icon: BarChart3 },
-    { id: "notifications", label: "Notifications", icon: Bell },
+    {
+      id: "notifications",
+      label: "Notifications",
+      icon: Bell,
+      badge:
+        dashboardData?.notifications?.unread > 0
+          ? Math.min(dashboardData.notifications.unread, 99)
+          : undefined,
+    },
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
@@ -236,7 +247,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-3">
-            <Icon className="w-5 h-5 text-white" />
+            <Icon className="w-5 h-5 text-[#7a73ff]" />
             <h3 className="text-gray-500 text-sm font-medium">{title}</h3>
           </div>
           <p className="text-3xl font-bold text-gray-900">{value}</p>
@@ -560,9 +571,9 @@ export default function Dashboard() {
               icon={FolderOpen}
             />
             <MetricCard
-              title="Total Members"
-              value={dashboardData.metrics.totalMembers}
-              icon={Users}
+              title="Unread Notifications"
+              value={dashboardData.notifications?.unread || 0}
+              icon={Bell}
             />
             <MetricCard
               title="Total Transactions"
