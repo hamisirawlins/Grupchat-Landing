@@ -659,13 +659,8 @@ export default function Dashboard() {
                       Transaction Trends
                     </h3>
                   </div>
-                  <select className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7a73ff] bg-white">
-                    <option>6 Months</option>
-                    <option>1 Year</option>
-                    <option>2 Years</option>
-                  </select>
+                  <span className="text-sm text-gray-500"></span>
                 </div>
-
                 <p className="text-sm text-gray-500 mb-4">
                   Monthly pool contributions and transaction activity.
                 </p>
