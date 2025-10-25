@@ -26,6 +26,7 @@ export default function CreatePoolPage() {
     type: "general",
     customType: "",
     endDate: "",
+    paymentMethod: "mpesa", // Default to M-Pesa
     withdrawalSettings: {
       requires_approval: false,
       auto_withdrawal: true,
@@ -79,10 +80,20 @@ export default function CreatePoolPage() {
       const amount = parseFloat(formData.targetAmount);
       if (isNaN(amount) || amount <= 0) {
         newErrors.targetAmount = "Target amount must be greater than 0";
-      } else if (amount < 100) {
-        newErrors.targetAmount = "Target amount must be at least KSh 100";
-      } else if (amount > 10000000) {
-        newErrors.targetAmount = "Target amount cannot exceed KSh 10,000,000";
+      } else if (formData.paymentMethod === "mpesa") {
+        // M-Pesa validation (Kenyan Shillings)
+        if (amount < 100) {
+          newErrors.targetAmount = "Target amount must be at least KSh 100";
+        } else if (amount > 10000000) {
+          newErrors.targetAmount = "Target amount cannot exceed KSh 10,000,000";
+        }
+      } else if (formData.paymentMethod === "paystack") {
+        // Paystack validation (USD)
+        if (amount < 1) {
+          newErrors.targetAmount = "Target amount must be at least $1";
+        } else if (amount > 100000) {
+          newErrors.targetAmount = "Target amount cannot exceed $100,000";
+        }
       }
     }
 
@@ -132,7 +143,11 @@ export default function CreatePoolPage() {
             ? formData.customType.trim()
             : formData.type,
         endDate: formData.endDate || null,
+        paymentMethod: formData.paymentMethod,
         withdrawalSettings: formData.withdrawalSettings,
+        // Paybill identifier will be auto-generated for M-Pesa pools, null for Paystack
+        paybillIdentifier:
+          formData.paymentMethod === "mpesa" ? null : undefined,
       };
 
       const response = await dashboardAPI.createPool(poolData);
@@ -148,10 +163,19 @@ export default function CreatePoolPage() {
   };
 
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      const newData = {
+        ...prev,
+        [field]: value,
+      };
+
+      // Clear target amount when payment method changes to avoid currency confusion
+      if (field === "paymentMethod" && prev.targetAmount) {
+        newData.targetAmount = "";
+      }
+
+      return newData;
+    });
 
     // Clear error when user starts typing
     if (errors[field]) {
@@ -281,10 +305,47 @@ export default function CreatePoolPage() {
                   </svg>
                 </div>
               </div>
+              {/* Payment Method */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Payment Method *
+                </label>
+                <div className="relative">
+                  <select
+                    value={formData.paymentMethod}
+                    onChange={(e) =>
+                      handleInputChange("paymentMethod", e.target.value)
+                    }
+                    className="w-full appearance-none bg-white border border-gray-300 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-[#7a73ff] transition-all duration-300 text-gray-900 shadow-sm"
+                  >
+                    <option value="mpesa">M-Pesa (2% fee)</option>
+                    <option value="paystack">USD Payment (5% fee)</option>
+                  </select>
+                  <svg
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                  >
+                    <path
+                      d="M6 8l4 4 4-4"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  {formData.paymentMethod === "mpesa"
+                    ? "M-Pesa: Phone-based payments, STK Push & Paybill (2% fee)"
+                    : "Paystack: Email-based payments, Bank transfers (5% fee)"}
+                </p>
+              </div>
               {/* Target Amount */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Target Amount *
+                  Target Amount * (
+                  {formData.paymentMethod === "mpesa" ? "KSh" : "USD"})
                 </label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#7a73ff]" />
@@ -299,10 +360,14 @@ export default function CreatePoolPage() {
                         ? "border-red-300 bg-red-50"
                         : "border-gray-300"
                     }`}
-                    placeholder="50000"
-                    min="100"
-                    max="10000000"
-                    step="100"
+                    placeholder={
+                      formData.paymentMethod === "mpesa" ? "50000" : "500"
+                    }
+                    min={formData.paymentMethod === "mpesa" ? "100" : "1"}
+                    max={
+                      formData.paymentMethod === "mpesa" ? "10000000" : "100000"
+                    }
+                    step={formData.paymentMethod === "mpesa" ? "100" : "0.01"}
                   />
                 </div>
                 {errors.targetAmount && (
