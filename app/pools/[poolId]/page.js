@@ -5,6 +5,9 @@ import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { dashboardAPI, handleApiError } from "@/lib/api";
+import { paystackIntegration } from "@/lib/paystack";
+import COUNTRIES from "@/lib/countries";
+import SearchableSelect from "@/components/SearchableSelect";
 import {
   ArrowLeft,
   Users,
@@ -45,6 +48,11 @@ function PoolDetailPageContent() {
     const roundedFee = Math.round(rawFee / 10) * 10;
     return roundedFee;
   };
+
+  // Helper to get currency symbol based on payment method
+  const getCurrencySymbol = () => {
+    return poolData?.paymentMethod === "paystack" ? "$" : "KSh";
+  };
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
@@ -72,14 +80,19 @@ function PoolDetailPageContent() {
   const [depositForm, setDepositForm] = useState({
     amount: "",
     phone: "",
+    email: "",
     description: "",
   });
   const [depositLoading, setDepositLoading] = useState(false);
   const [depositError, setDepositError] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState("stk"); // 'stk' or 'paybill'
+  const [paymentMethod, setPaymentMethod] = useState("stk"); // 'stk', 'paybill', or 'paystack'
   const [useProfilePhone, setUseProfilePhone] = useState(true); // Toggle for using profile phone vs manual input
+
+  // Paystack state
+  const [paystackPublicKey, setPaystackPublicKey] = useState(null);
+  const [paystackInitialized, setPaystackInitialized] = useState(false);
 
   // Withdrawal form state
   const [withdrawalForm, setWithdrawalForm] = useState({
@@ -89,11 +102,22 @@ function PoolDetailPageContent() {
     target: "",
     accountNumber: "",
     notes: "",
+    // Paystack fields
+    bankCode: "",
+    bankName: "",
+    accountName: "",
+    recipientCode: "",
   });
   const [withdrawalLoading, setWithdrawalLoading] = useState(false);
   const [withdrawalError, setWithdrawalError] = useState("");
   const [useWithdrawalProfilePhone, setUseWithdrawalProfilePhone] =
     useState(true);
+
+  // Paystack withdrawal state
+  const [withdrawalMethod, setWithdrawalMethod] = useState("mobile"); // 'mobile', 'till', 'paybill', 'paystack'
+  const [banksList, setBanksList] = useState([]);
+  const [banksLoading, setBanksLoading] = useState(false);
+  const [bankCountry, setBankCountry] = useState("US");
 
   // User profile state for phone number access
   const [userProfile, setUserProfile] = useState(null);
@@ -124,6 +148,40 @@ function PoolDetailPageContent() {
     }
   };
 
+  // Initialize Paystack
+  const initializePaystack = async () => {
+    try {
+      const response = await dashboardAPI.getPaystackPublicKey();
+      if (response.success) {
+        setPaystackPublicKey(response.data.public_key);
+        await paystackIntegration.initialize(response.data.public_key);
+        setPaystackInitialized(true);
+      }
+    } catch (error) {
+      console.error("Failed to initialize Paystack:", error);
+    }
+  };
+
+  // Load banks for Paystack withdrawals (by country code)
+  const loadBanks = async (country = "US") => {
+    try {
+      setBanksLoading(true);
+      setBanksList([]);
+      const response = await dashboardAPI.getPaystackBanks(country);
+      if (response && response.success) {
+        setBanksList(response.data.banks || []);
+      } else {
+        console.warn("No banks returned for country", country, response);
+        setBanksList([]);
+      }
+    } catch (error) {
+      console.error("Failed to load banks:", error);
+      setBanksList([]);
+    } finally {
+      setBanksLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Wait for auth resolution before redirecting or loading data
     if (authLoading) return;
@@ -133,7 +191,75 @@ function PoolDetailPageContent() {
     }
     loadPoolData();
     loadUserProfile(); // Load user profile for phone number access
+    initializePaystack(); // Initialize Paystack for Paystack pools
   }, [user, authLoading, router, poolId]);
+
+  // When pool data loads, ensure the deposit payment method defaults to the
+  // pool's configured payment method. For paystack pools we auto-select
+  // 'paystack' so the M-Pesa phone input won't be shown.
+  useEffect(() => {
+    if (!poolData) return;
+    if (poolData.paymentMethod === "paystack") {
+      setPaymentMethod("paystack");
+    } else {
+      // default to STK push for M-Pesa pools
+      setPaymentMethod("stk");
+    }
+  }, [poolData]);
+
+  // Load banks when withdrawal modal opens for Paystack pools
+  useEffect(() => {
+    if (
+      showWithdrawModal &&
+      poolData?.paymentMethod === "paystack" &&
+      bankCountry
+    ) {
+      loadBanks(bankCountry || "US");
+    }
+  }, [showWithdrawModal, poolData?.paymentMethod]);
+
+  // Infer a sensible default country for bank lookups. Priority:
+  // 1. poolData.country or poolData.countryCode (if available)
+  // 2. userProfile.country or userProfile.locale
+  // 3. browser locale (navigator.language)
+  // 4. fallback: 'KE' for M-Pesa pools, otherwise 'US'
+  const inferDefaultCountry = () => {
+    if (poolData?.countryCode) return poolData.countryCode;
+    if (poolData?.country) return poolData.country;
+    if (userProfile?.country) return userProfile.country;
+    if (userProfile?.locale) {
+      const parts = userProfile.locale.split(/[-_]/);
+      if (parts[1]) return parts[1].toUpperCase();
+    }
+    if (typeof navigator !== "undefined") {
+      const lang =
+        navigator.language || (navigator.languages && navigator.languages[0]);
+      if (lang) {
+        const parts = lang.split(/[-_]/);
+        if (parts[1]) return parts[1].toUpperCase();
+      }
+    }
+    return poolData?.paymentMethod === "mpesa" ? "KE" : "US";
+  };
+
+  // When poolData or userProfile loads, set a default bank country
+  useEffect(() => {
+    if (!poolData) return;
+    const defaultCountry = inferDefaultCountry();
+    setBankCountry(defaultCountry);
+  }, [poolData, userProfile]);
+
+  // When bankCountry changes while withdraw modal is open and pool is paystack,
+  // load banks for that country.
+  useEffect(() => {
+    if (
+      showWithdrawModal &&
+      poolData?.paymentMethod === "paystack" &&
+      bankCountry
+    ) {
+      loadBanks(bankCountry);
+    }
+  }, [bankCountry, showWithdrawModal, poolData?.paymentMethod]);
 
   const loadPoolData = async () => {
     try {
@@ -180,6 +306,7 @@ function PoolDetailPageContent() {
         role: membership ? membership.role : "member",
         creator: pool.creatorId || "Unknown",
         paybillIdentifier: pool.paybillIdentifier,
+        paymentMethod: pool.paymentMethod || "mpesa", // Default to mpesa for backward compatibility
         members,
         transactions,
         insights,
@@ -377,6 +504,18 @@ function PoolDetailPageContent() {
         }
       }
 
+      // For Paystack, email is required
+      if (paymentMethod === "paystack") {
+        if (!depositForm.email) {
+          setDepositError("Email is required for Paystack payments");
+          return;
+        }
+        if (!paystackIntegration.validateEmail(depositForm.email)) {
+          setDepositError("Please enter a valid email address");
+          return;
+        }
+      }
+
       const amount = parseFloat(depositForm.amount);
       if (isNaN(amount) || amount <= 0) {
         setDepositError("Please enter a valid amount");
@@ -384,7 +523,7 @@ function PoolDetailPageContent() {
       }
 
       if (amount < 10) {
-        setDepositError("Minimum deposit amount is KSh 10");
+        setDepositError(`Minimum deposit amount is ${getCurrencySymbol()} 10`);
         return;
       }
 
@@ -411,7 +550,7 @@ function PoolDetailPageContent() {
       if (paymentMethod === "paybill") {
         // Show success modal with paybill instructions
         setShowDepositModal(false);
-        setDepositForm({ amount: "", phone: "", description: "" });
+        setDepositForm({ amount: "", phone: "", email: "", description: "" });
         setUseProfilePhone(true);
 
         setSuccessData({
@@ -426,6 +565,34 @@ function PoolDetailPageContent() {
         return;
       }
 
+      // For Paystack payments
+      if (paymentMethod === "paystack") {
+        if (!paystackInitialized) {
+          setDepositError("Paystack is not initialized. Please try again.");
+          return;
+        }
+
+        // Initialize Paystack transaction
+        const response = await dashboardAPI.initializePaystackTransaction({
+          poolId: poolId,
+          email: depositForm.email,
+          amount: amount,
+          description: depositForm.description || `Deposit to ${poolData.name}`,
+        });
+
+        if (response.success) {
+          // Close modal and redirect to Paystack
+          setShowDepositModal(false);
+          setDepositForm({ amount: "", phone: "", email: "", description: "" });
+
+          // Redirect to Paystack payment page
+          window.location.href = response.data.authorization_url;
+        } else {
+          setDepositError(response.message || "Failed to initialize payment");
+        }
+        return;
+      }
+
       // Make API call for STK push
       const response = await dashboardAPI.makeDeposit(poolId, {
         amount: amount,
@@ -436,7 +603,7 @@ function PoolDetailPageContent() {
 
       // Success - close modal and show success dialog
       setShowDepositModal(false);
-      setDepositForm({ amount: "", phone: "", description: "" });
+      setDepositForm({ amount: "", phone: "", email: "", description: "" });
       setUseProfilePhone(true);
 
       // Show success modal with deposit details
@@ -516,14 +683,8 @@ function PoolDetailPageContent() {
 
     try {
       // Validate form
-      if (
-        !withdrawalForm.amount ||
-        !withdrawalForm.phone ||
-        !withdrawalForm.type
-      ) {
-        setWithdrawalError(
-          "Amount, phone number, and withdrawal type are required"
-        );
+      if (!withdrawalForm.amount) {
+        setWithdrawalError("Amount is required");
         return;
       }
 
@@ -534,7 +695,9 @@ function PoolDetailPageContent() {
       }
 
       if (amount < 10) {
-        setWithdrawalError("Minimum withdrawal amount is KSh 10");
+        setWithdrawalError(
+          `Minimum withdrawal amount is ${getCurrencySymbol()} 10`
+        );
         return;
       }
 
@@ -543,63 +706,152 @@ function PoolDetailPageContent() {
         return;
       }
 
-      // Validate phone number
-      const phoneSource = useWithdrawalProfilePhone
-        ? userProfile?.phone || ""
-        : withdrawalForm.phone;
-      const processedPhone = preprocessPhoneNumber(phoneSource);
-      if (!processedPhone.match(/^\+254[17]\d{8}$/)) {
-        setWithdrawalError("Please enter a valid Kenyan phone number");
-        return;
+      // For M-Pesa withdrawals
+      if (poolData?.paymentMethod === "mpesa") {
+        if (!withdrawalForm.phone || !withdrawalForm.type) {
+          setWithdrawalError("Phone number and withdrawal type are required");
+          return;
+        }
+
+        // Validate phone number
+        const phoneSource = useWithdrawalProfilePhone
+          ? userProfile?.phone || ""
+          : withdrawalForm.phone;
+        const processedPhone = preprocessPhoneNumber(phoneSource);
+        if (!processedPhone.match(/^\+254[17]\d{8}$/)) {
+          setWithdrawalError("Please enter a valid Kenyan phone number");
+          return;
+        }
+
+        // Validate type-specific fields
+        if (withdrawalForm.type === "till" && !withdrawalForm.target) {
+          setWithdrawalError("Till number is required for till withdrawal");
+          return;
+        }
+
+        if (
+          withdrawalForm.type === "paybill" &&
+          (!withdrawalForm.target || !withdrawalForm.accountNumber)
+        ) {
+          setWithdrawalError(
+            "Paybill number and account number are required for paybill withdrawal"
+          );
+          return;
+        }
+
+        // Make M-Pesa API call
+        const response = await dashboardAPI.initiateWithdrawal(poolId, {
+          amount: amount,
+          phone: processedPhone,
+          type: withdrawalForm.type,
+          target: withdrawalForm.target || null,
+          accountNumber: withdrawalForm.accountNumber || null,
+          notes: withdrawalForm.notes || `Withdrawal from ${poolData.name}`,
+        });
+
+        // Success - close modal and show success dialog
+        setShowWithdrawModal(false);
+        setWithdrawalForm({
+          amount: "",
+          phone: "",
+          type: "mobile",
+          target: "",
+          accountNumber: "",
+          notes: "",
+          bankCode: "",
+          bankName: "",
+          accountName: "",
+          recipientCode: "",
+        });
+
+        // Show success modal with withdrawal details
+        setSuccessData({
+          amount: amount,
+          phone: processedPhone,
+          poolName: poolData.name,
+          transactionId: response.data?.transactionId || "Pending",
+          type: "withdrawal",
+          withdrawalType: withdrawalForm.type,
+        });
+        setShowSuccessModal(true);
       }
 
-      // Validate type-specific fields
-      if (withdrawalForm.type === "till" && !withdrawalForm.target) {
-        setWithdrawalError("Till number is required for till withdrawal");
-        return;
+      // For Paystack withdrawals
+      if (poolData?.paymentMethod === "paystack") {
+        if (
+          !withdrawalForm.bankCode ||
+          !withdrawalForm.accountNumber ||
+          !withdrawalForm.accountName
+        ) {
+          setWithdrawalError(
+            "Bank, account number, and account name are required"
+          );
+          return;
+        }
+
+        // Create transfer recipient if not already created
+        let recipientCode = withdrawalForm.recipientCode;
+
+        if (!recipientCode) {
+          const recipientResponse =
+            await dashboardAPI.createPaystackTransferRecipient({
+              name: withdrawalForm.accountName,
+              account_number: withdrawalForm.accountNumber,
+              bank_code: withdrawalForm.bankCode,
+            });
+
+          if (recipientResponse.success) {
+            recipientCode = recipientResponse.data.recipient.recipient_code;
+          } else {
+            setWithdrawalError(
+              recipientResponse.message || "Failed to create transfer recipient"
+            );
+            return;
+          }
+        }
+
+        // Initiate transfer
+        const transferResponse = await dashboardAPI.initiatePaystackTransfer({
+          poolId: poolId,
+          amount: amount,
+          description:
+            withdrawalForm.notes || `Withdrawal from ${poolData.name}`,
+          recipient_code: recipientCode,
+        });
+
+        if (transferResponse.success) {
+          // Success - close modal and show success dialog
+          setShowWithdrawModal(false);
+          setWithdrawalForm({
+            amount: "",
+            phone: "",
+            type: "mobile",
+            target: "",
+            accountNumber: "",
+            notes: "",
+            bankCode: "",
+            bankName: "",
+            accountName: "",
+            recipientCode: "",
+          });
+
+          // Show success modal with withdrawal details
+          setSuccessData({
+            amount: amount,
+            poolName: poolData.name,
+            transactionId: transferResponse.data.transfer.transfer_code,
+            type: "withdrawal",
+            withdrawalType: "paystack",
+            bankName: withdrawalForm.bankName,
+            accountNumber: withdrawalForm.accountNumber,
+          });
+          setShowSuccessModal(true);
+        } else {
+          setWithdrawalError(
+            transferResponse.message || "Failed to initiate transfer"
+          );
+        }
       }
-
-      if (
-        withdrawalForm.type === "paybill" &&
-        (!withdrawalForm.target || !withdrawalForm.accountNumber)
-      ) {
-        setWithdrawalError(
-          "Paybill number and account number are required for paybill withdrawal"
-        );
-        return;
-      }
-
-      // Make API call
-      const response = await dashboardAPI.initiateWithdrawal(poolId, {
-        amount: amount,
-        phone: processedPhone,
-        type: withdrawalForm.type,
-        target: withdrawalForm.target || null,
-        accountNumber: withdrawalForm.accountNumber || null,
-        notes: withdrawalForm.notes || `Withdrawal from ${poolData.name}`,
-      });
-
-      // Success - close modal and show success dialog
-      setShowWithdrawModal(false);
-      setWithdrawalForm({
-        amount: "",
-        phone: "",
-        type: "mobile",
-        target: "",
-        accountNumber: "",
-        notes: "",
-      });
-
-      // Show success modal with withdrawal details
-      setSuccessData({
-        amount: amount,
-        phone: processedPhone,
-        poolName: poolData.name,
-        transactionId: response.data?.transactionId || "Pending",
-        type: "withdrawal",
-        withdrawalType: withdrawalForm.type,
-      });
-      setShowSuccessModal(true);
 
       // Reload pool data to reflect changes
       loadPoolData();
@@ -810,13 +1062,13 @@ function PoolDetailPageContent() {
             <div className="text-center p-3 bg-gray-50 rounded-xl">
               <p className="text-xs text-gray-500 mb-1">Target Amount</p>
               <p className="text-lg font-bold text-gray-900">
-                KSh {poolData.targetAmount.toLocaleString()}
+                {getCurrencySymbol()} {poolData.targetAmount.toLocaleString()}
               </p>
             </div>
             <div className="text-center p-3 bg-gray-50 rounded-xl">
               <p className="text-xs text-gray-500 mb-1">Current Balance</p>
               <p className="text-lg font-bold text-gray-900">
-                KSh {poolData.currentBalance.toLocaleString()}
+                {getCurrencySymbol()} {poolData.currentBalance.toLocaleString()}
               </p>
             </div>
             <div className="text-center p-3 bg-gray-50 rounded-xl">
@@ -828,7 +1080,7 @@ function PoolDetailPageContent() {
             <div className="text-center p-3 bg-gray-50 rounded-xl">
               <p className="text-xs text-gray-500 mb-1">Remaining</p>
               <p className="text-lg font-bold text-gray-900">
-                KSh{" "}
+                {getCurrencySymbol()}{" "}
                 {(
                   poolData.targetAmount - poolData.currentBalance
                 ).toLocaleString()}
@@ -858,7 +1110,12 @@ function PoolDetailPageContent() {
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => setShowDepositModal(true)}
+              onClick={() => {
+                setPaymentMethod(
+                  poolData?.paymentMethod === "paystack" ? "paystack" : "stk"
+                );
+                setShowDepositModal(true);
+              }}
               className="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               style={{ backgroundColor: "#7a73ff" }}
               onMouseEnter={(e) =>
@@ -965,19 +1222,19 @@ function PoolDetailPageContent() {
             <div className="flex justify-between items-center">
               <span className="text-gray-500 text-sm">Current</span>
               <span className="font-semibold text-gray-900">
-                KSh {poolData.currentBalance.toLocaleString()}
+                {getCurrencySymbol()} {poolData.currentBalance.toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-500 text-sm">Target</span>
               <span className="font-semibold text-gray-900">
-                KSh {poolData.targetAmount.toLocaleString()}
+                {getCurrencySymbol()} {poolData.targetAmount.toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-gray-100">
               <span className="text-gray-500 text-sm">Remaining</span>
               <span className="font-semibold" style={{ color: "#7a73ff" }}>
-                KSh{" "}
+                {getCurrencySymbol()}{" "}
                 {(
                   poolData.targetAmount - poolData.currentBalance
                 ).toLocaleString()}
@@ -1006,7 +1263,8 @@ function PoolDetailPageContent() {
                     Target
                   </p>
                   <p className="text-base font-bold text-gray-900">
-                    KSh {poolData.targetAmount.toLocaleString()}
+                    {getCurrencySymbol()}{" "}
+                    {poolData.targetAmount.toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -1025,7 +1283,8 @@ function PoolDetailPageContent() {
                     Pooled
                   </p>
                   <p className="text-base font-bold text-gray-900">
-                    KSh {poolData.currentBalance.toLocaleString()}
+                    {getCurrencySymbol()}{" "}
+                    {poolData.currentBalance.toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -1135,7 +1394,8 @@ function PoolDetailPageContent() {
                     <div className="flex items-center gap-2">
                       <div className="text-right">
                         <p className="font-semibold text-sm text-green-600">
-                          {transaction.type === "deposit" ? "+" : "-"}KSh{" "}
+                          {transaction.type === "deposit" ? "+" : "-"}
+                          {getCurrencySymbol()}{" "}
                           {transaction.amount.toLocaleString()}
                         </p>
                         {getStatusBadge(transaction.status)}
@@ -1211,7 +1471,7 @@ function PoolDetailPageContent() {
                     className="text-base font-bold"
                     style={{ color: "#7a73ff" }}
                   >
-                    KSh{" "}
+                    {getCurrencySymbol()}{" "}
                     {poolData.insights?.transactions?.totalDeposits
                       ? parseFloat(
                           poolData.insights.transactions.totalDeposits
@@ -1244,7 +1504,7 @@ function PoolDetailPageContent() {
                     className="text-base font-bold"
                     style={{ color: "#7a73ff" }}
                   >
-                    KSh{" "}
+                    {getCurrencySymbol()}{" "}
                     {poolData.insights?.transactions?.totalWithdrawals
                       ? parseFloat(
                           poolData.insights.transactions.totalWithdrawals
@@ -1263,7 +1523,7 @@ function PoolDetailPageContent() {
                 <div className="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
                   <span className="text-xs text-gray-600">Average Deposit</span>
                   <span className="font-semibold text-gray-900 text-xs">
-                    KSh{" "}
+                    {getCurrencySymbol()}{" "}
                     {poolData.insights?.trends?.averageContribution
                       ? parseFloat(
                           poolData.insights.trends.averageContribution
@@ -1374,7 +1634,8 @@ function PoolDetailPageContent() {
                             Required daily deposit rate:
                           </span>
                           <span className="font-medium text-blue-900">
-                            KSh {poolData.insights.trends.requiredDailyRate}
+                            {getCurrencySymbol()}{" "}
+                            {poolData.insights.trends.requiredDailyRate}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -1382,7 +1643,8 @@ function PoolDetailPageContent() {
                             Current daily deposit rate (7-day avg):
                           </span>
                           <span className="font-medium text-blue-900">
-                            KSh {poolData.insights.trends.currentDailyRate}
+                            {getCurrencySymbol()}{" "}
+                            {poolData.insights.trends.currentDailyRate}
                           </span>
                         </div>
                       </div>
@@ -1491,14 +1753,14 @@ function PoolDetailPageContent() {
                           <td className="py-2 px-2 text-right">
                             <span className="text-xs font-medium text-green-600">
                               {contributed > 0
-                                ? `KSh ${contributed.toLocaleString()}`
+                                ? `${getCurrencySymbol()} ${contributed.toLocaleString()}`
                                 : "-"}
                             </span>
                           </td>
                           <td className="py-2 px-2 text-right">
                             <span className="text-xs font-medium text-red-600">
                               {withdrawn > 0
-                                ? `KSh ${withdrawn.toLocaleString()}`
+                                ? `${getCurrencySymbol()} ${withdrawn.toLocaleString()}`
                                 : "-"}
                             </span>
                           </td>
@@ -1549,9 +1811,18 @@ function PoolDetailPageContent() {
                   type="button"
                   onClick={() => {
                     setShowDepositModal(false);
-                    setDepositForm({ amount: "", phone: "", description: "" });
+                    setDepositForm({
+                      amount: "",
+                      phone: "",
+                      email: "",
+                      description: "",
+                    });
                     setDepositError("");
-                    setPaymentMethod("stk");
+                    setPaymentMethod(
+                      poolData?.paymentMethod === "paystack"
+                        ? "paystack"
+                        : "stk"
+                    );
                     setUseProfilePhone(true);
                   }}
                   className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
@@ -1586,53 +1857,86 @@ function PoolDetailPageContent() {
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Payment Method
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("stk")}
-                    className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                      paymentMethod === "stk"
-                        ? "border-[#7a73ff] bg-[#f6f5ff] text-[#7a73ff]"
-                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Smartphone className="w-5 h-5" />
-                      <div className="text-left">
-                        <p className="font-medium">STK Push</p>
-                        <p className="text-xs opacity-70">Instant payment</p>
+                <div
+                  className={`grid gap-3 ${
+                    poolData?.paymentMethod === "paystack"
+                      ? "grid-cols-1"
+                      : "grid-cols-2"
+                  }`}
+                >
+                  {poolData?.paymentMethod === "mpesa" && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod("stk")}
+                        className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                          paymentMethod === "stk"
+                            ? "border-[#7a73ff] bg-[#f6f5ff] text-[#7a73ff]"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Smartphone className="w-5 h-5" />
+                          <div className="text-left">
+                            <p className="font-medium">STK Push</p>
+                            <p className="text-xs opacity-70">
+                              Instant payment
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod("paybill")}
+                        className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                          paymentMethod === "paybill"
+                            ? "border-[#7a73ff] bg-[#f6f5ff] text-[#7a73ff]"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <CreditCard className="w-5 h-5" />
+                          <div className="text-left">
+                            <p className="font-medium">Paybill</p>
+                            <p className="text-xs opacity-70">Manual payment</p>
+                          </div>
+                        </div>
+                      </button>
+                    </>
+                  )}
+                  {poolData?.paymentMethod === "paystack" && (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("paystack")}
+                      className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                        paymentMethod === "paystack"
+                          ? "border-[#7a73ff] bg-[#f6f5ff] text-[#7a73ff]"
+                          : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <CreditCard className="w-5 h-5" />
+                        <div className="text-left">
+                          <p className="font-medium">Paystack</p>
+                          <p className="text-xs opacity-70">
+                            Card/Bank payment
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("paybill")}
-                    className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                      paymentMethod === "paybill"
-                        ? "border-[#7a73ff] bg-[#f6f5ff] text-[#7a73ff]"
-                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <CreditCard className="w-5 h-5" />
-                      <div className="text-left">
-                        <p className="font-medium">Paybill</p>
-                        <p className="text-xs opacity-70">Manual payment</p>
-                      </div>
-                    </div>
-                  </button>
+                    </button>
+                  )}
                 </div>
               </div>
 
-              {/* Amount Input - Only for STK Push */}
-              {paymentMethod === "stk" && (
+              {/* Amount Input - For STK Push and Paystack */}
+              {(paymentMethod === "stk" || paymentMethod === "paystack") && (
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Amount (KSh) *
+                    Amount ({getCurrencySymbol()}) *
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
-                      KSh
+                      {getCurrencySymbol()}
                     </span>
                     <input
                       type="number"
@@ -1651,7 +1955,32 @@ function PoolDetailPageContent() {
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Minimum amount: KSh 10
+                    Minimum amount: {getCurrencySymbol()} 10
+                  </p>
+                </div>
+              )}
+
+              {/* Email Input - Only for Paystack */}
+              {paymentMethod === "paystack" && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    value={depositForm.email}
+                    onChange={(e) =>
+                      setDepositForm({
+                        ...depositForm,
+                        email: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-3 border border-[#b8b5ff] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-[#7a73ff] transition-all duration-300 placeholder-gray-500 text-gray-900"
+                    placeholder="Enter your email address"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    We'll send payment confirmation to this email
                   </p>
                 </div>
               )}
@@ -1822,9 +2151,18 @@ function PoolDetailPageContent() {
                   type="button"
                   onClick={() => {
                     setShowDepositModal(false);
-                    setDepositForm({ amount: "", phone: "", description: "" });
+                    setDepositForm({
+                      amount: "",
+                      phone: "",
+                      email: "",
+                      description: "",
+                    });
                     setDepositError("");
-                    setPaymentMethod("stk");
+                    setPaymentMethod(
+                      poolData?.paymentMethod === "paystack"
+                        ? "paystack"
+                        : "stk"
+                    );
                     setUseProfilePhone(true);
                   }}
                   className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
@@ -2045,8 +2383,8 @@ function PoolDetailPageContent() {
                 <p className="text-sm text-[#7a73ff] mb-1">Inviting to</p>
                 <p className="font-semibold ">{poolData.name}</p>
                 <p className="text-xs mt-1">
-                  Current members: {poolData.memberCount} • Target: KSh{" "}
-                  {poolData.targetAmount.toLocaleString()}
+                  Current members: {poolData.memberCount} • Target:{" "}
+                  {getCurrencySymbol()} {poolData.targetAmount.toLocaleString()}
                 </p>
               </div>
 
@@ -2134,6 +2472,10 @@ function PoolDetailPageContent() {
                       target: "",
                       accountNumber: "",
                       notes: "",
+                      bankCode: "",
+                      bankName: "",
+                      accountName: "",
+                      recipientCode: "",
                     });
                     setWithdrawalError("");
                   }}
@@ -2167,11 +2509,11 @@ function PoolDetailPageContent() {
               {/* Amount Input */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Amount (KSh) *
+                  Amount ({getCurrencySymbol()}) *
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
-                    KSh
+                    {getCurrencySymbol()}
                   </span>
                   <input
                     type="number"
@@ -2191,7 +2533,7 @@ function PoolDetailPageContent() {
                   />
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Transaction fee: KSh{" "}
+                  Transaction fee: {getCurrencySymbol()}{" "}
                   {calculateWithdrawalFee(
                     parseFloat(withdrawalForm.amount),
                     poolData?.platform_fee_rate || 0.02
@@ -2199,120 +2541,222 @@ function PoolDetailPageContent() {
                 </p>
               </div>
 
-              {/* Withdrawal Type */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Withdrawal Type *
-                </label>
-                <select
-                  value={withdrawalForm.type}
-                  onChange={(e) =>
-                    setWithdrawalForm({
-                      ...withdrawalForm,
-                      type: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 text-gray-900"
-                  required
-                >
-                  <option value="mobile">Mobile Money (Send to Phone)</option>
-                  <option value="till" disabled>
-                    Send to Till Number (Coming Soon)
-                  </option>
-                  <option value="paybill" disabled>
-                    Send to Paybill (Coming Soon)
-                  </option>
-                </select>
-              </div>
-
-              {/* Phone Number Input */}
-              {withdrawalForm.type === "mobile" && (
+              {/* Withdrawal Type - Only for M-Pesa pools */}
+              {poolData?.paymentMethod === "mpesa" && (
                 <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      M-Pesa Phone Number *
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">
-                        Use profile phone
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setUseWithdrawalProfilePhone(
-                            !useWithdrawalProfilePhone
-                          )
-                        }
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                          useWithdrawalProfilePhone
-                            ? "bg-[#7a73ff]"
-                            : "bg-gray-200"
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            useWithdrawalProfilePhone
-                              ? "translate-x-5"
-                              : "translate-x-1"
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  </div>
-
-                  {useWithdrawalProfilePhone ? (
-                    <div className="bg-[#f6f5ff] border border-[#b8b5ff] rounded-xl p-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <Smartphone className="w-4 h-4 text-[#7a73ff]" />
-                          <span className="text-sm font-medium text-[#7a73ff]">
-                            {userProfile?.phone || "No phone number in profile"}
-                          </span>
-                        </div>
-                        {!userProfile?.phone && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setAddPhoneInput("");
-                              setAddPhoneError("");
-                              setShowAddPhoneModal(true);
-                            }}
-                            className="text-xs px-3 py-1.5 bg-[#7a73ff] text-white rounded-lg hover:bg-[#6961ff] transition-colors"
-                          >
-                            Add Phone
-                          </button>
-                        )}
-                      </div>
-                      {!userProfile?.phone && (
-                        <p className="text-xs text-[#7a73ff] mt-2">
-                          Please add a phone number to your profile or toggle to
-                          manual input
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <input
-                      type="tel"
-                      value={withdrawalForm.phone}
-                      onChange={(e) =>
-                        setWithdrawalForm({
-                          ...withdrawalForm,
-                          phone: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
-                      placeholder="0715234234 or 254715234234"
-                      required
-                    />
-                  )}
-
-                  <p className="text-xs text-gray-500 mt-1">
-                    {useWithdrawalProfilePhone
-                      ? "Using phone number from your profile"
-                      : "Enter your phone number in any format (0715234234, 715234234, or 254715234234)"}
-                  </p>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Withdrawal Type *
+                  </label>
+                  <select
+                    value={withdrawalForm.type}
+                    onChange={(e) =>
+                      setWithdrawalForm({
+                        ...withdrawalForm,
+                        type: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 text-gray-900"
+                    required
+                  >
+                    <option value="mobile">Mobile Money (Send to Phone)</option>
+                    <option value="till" disabled>
+                      Send to Till Number (Coming Soon)
+                    </option>
+                    <option value="paybill" disabled>
+                      Send to Paybill (Coming Soon)
+                    </option>
+                  </select>
                 </div>
               )}
+
+              {/* Bank Selection - Only for Paystack pools */}
+              {poolData?.paymentMethod === "paystack" && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Country *
+                  </label>
+                  <SearchableSelect
+                    options={COUNTRIES}
+                    value={bankCountry}
+                    onChange={(countryCode) => {
+                      setBankCountry(countryCode);
+                      setBanksList([]);
+                      setWithdrawalForm({
+                        ...withdrawalForm,
+                        bankCode: "",
+                        bankName: "",
+                      });
+                    }}
+                    placeholder="Search country"
+                    className="mb-2"
+                  />
+
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bank *
+                  </label>
+                  <SearchableSelect
+                    options={banksList.map((b) => ({
+                      name: b.name,
+                      code: b.code,
+                    }))}
+                    value={withdrawalForm.bankCode}
+                    onChange={(bankCode) => {
+                      const selectedBank = banksList.find(
+                        (bank) => bank.code === bankCode
+                      );
+                      setWithdrawalForm({
+                        ...withdrawalForm,
+                        bankCode: bankCode,
+                        bankName: selectedBank?.name || "",
+                      });
+                    }}
+                    placeholder={
+                      banksLoading ? "Loading banks..." : "Search bank"
+                    }
+                    className=""
+                  />
+                  {banksLoading && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Loading banks...
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Account Number - For Paystack pools */}
+              {poolData?.paymentMethod === "paystack" && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Account Number *
+                  </label>
+                  <input
+                    type="text"
+                    value={withdrawalForm.accountNumber}
+                    onChange={(e) =>
+                      setWithdrawalForm({
+                        ...withdrawalForm,
+                        accountNumber: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
+                    placeholder="Enter account number"
+                    required
+                  />
+                </div>
+              )}
+
+              {/* Account Name - For Paystack pools */}
+              {poolData?.paymentMethod === "paystack" && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Account Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={withdrawalForm.accountName}
+                    onChange={(e) =>
+                      setWithdrawalForm({
+                        ...withdrawalForm,
+                        accountName: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
+                    placeholder="Enter account holder name"
+                    required
+                  />
+                </div>
+              )}
+
+              {/* Phone Number Input - Only for M-Pesa pools */}
+              {poolData?.paymentMethod === "mpesa" &&
+                withdrawalForm.type === "mobile" && (
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        M-Pesa Phone Number *
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">
+                          Use profile phone
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setUseWithdrawalProfilePhone(
+                              !useWithdrawalProfilePhone
+                            )
+                          }
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                            useWithdrawalProfilePhone
+                              ? "bg-[#7a73ff]"
+                              : "bg-gray-200"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              useWithdrawalProfilePhone
+                                ? "translate-x-5"
+                                : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+
+                    {useWithdrawalProfilePhone ? (
+                      <div className="bg-[#f6f5ff] border border-[#b8b5ff] rounded-xl p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Smartphone className="w-4 h-4 text-[#7a73ff]" />
+                            <span className="text-sm font-medium text-[#7a73ff]">
+                              {userProfile?.phone ||
+                                "No phone number in profile"}
+                            </span>
+                          </div>
+                          {!userProfile?.phone && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAddPhoneInput("");
+                                setAddPhoneError("");
+                                setShowAddPhoneModal(true);
+                              }}
+                              className="text-xs px-3 py-1.5 bg-[#7a73ff] text-white rounded-lg hover:bg-[#6961ff] transition-colors"
+                            >
+                              Add Phone
+                            </button>
+                          )}
+                        </div>
+                        {!userProfile?.phone && (
+                          <p className="text-xs text-[#7a73ff] mt-2">
+                            Please add a phone number to your profile or toggle
+                            to manual input
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <input
+                        type="tel"
+                        value={withdrawalForm.phone}
+                        onChange={(e) =>
+                          setWithdrawalForm({
+                            ...withdrawalForm,
+                            phone: e.target.value,
+                          })
+                        }
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 placeholder-gray-500 text-gray-900"
+                        placeholder="0715234234 or 254715234234"
+                        required
+                      />
+                    )}
+
+                    <p className="text-xs text-gray-500 mt-1">
+                      {useWithdrawalProfilePhone
+                        ? "Using phone number from your profile"
+                        : "Enter your phone number in any format (0715234234, 715234234, or 254715234234)"}
+                    </p>
+                  </div>
+                )}
 
               {/* Conditional Fields Based on Type (non-mobile disabled in MVP) */}
               {withdrawalForm.type === "till" && (
@@ -2381,6 +2825,10 @@ function PoolDetailPageContent() {
                       target: "",
                       accountNumber: "",
                       notes: "",
+                      bankCode: "",
+                      bankName: "",
+                      accountName: "",
+                      recipientCode: "",
                     });
                     setWithdrawalError("");
                   }}
@@ -2498,7 +2946,8 @@ function PoolDetailPageContent() {
                       <div className="flex justify-between">
                         <span className="text-gray-500">Amount:</span>
                         <span className="font-medium text-gray-900">
-                          KSh {successData.amount.toLocaleString()}
+                          {getCurrencySymbol()}{" "}
+                          {successData.amount.toLocaleString()}
                         </span>
                       </div>
                       {successData.type === "withdrawal" ? (
@@ -2660,7 +3109,8 @@ function PoolDetailPageContent() {
                         <li>
                           5. Enter Amount:{" "}
                           <strong>
-                            KSh {successData.amount.toLocaleString()}
+                            {getCurrencySymbol()}{" "}
+                            {successData.amount.toLocaleString()}
                           </strong>
                         </li>
                         <li>6. Enter your M-Pesa PIN to complete</li>

@@ -34,6 +34,11 @@ export default function PoolsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
+  // Helper to get currency symbol based on payment method
+  const getCurrencySymbol = (paymentMethod) => {
+    return paymentMethod === "paystack" ? "$" : "KSh";
+  };
+
   // Filter and search state
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -96,6 +101,7 @@ export default function PoolsPage() {
             })
           : "No deadline",
         type: pool.type || "general",
+        paymentMethod: pool.payment_method || "mpesa", // Default to mpesa for backward compatibility
         createdAt: pool.created_at,
         role:
           pool.memberships && pool.memberships.length > 0
@@ -310,10 +316,12 @@ export default function PoolsPage() {
         {/* Amount pooled vs target */}
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500">
-            KSh {pool.currentBalance.toLocaleString()}
+            {getCurrencySymbol(pool.paymentMethod)}{" "}
+            {pool.currentBalance.toLocaleString()}
           </span>
           <span className="text-gray-400">
-            of KSh {pool.targetAmount.toLocaleString()}
+            of {getCurrencySymbol(pool.paymentMethod)}{" "}
+            {pool.targetAmount.toLocaleString()}
           </span>
         </div>
       </div>
@@ -359,10 +367,12 @@ export default function PoolsPage() {
         <StatusBadge status={pool.status} />
       </td>
       <td className="px-6 py-4 text-sm font-medium text-gray-900">
-        KSh {pool.targetAmount.toLocaleString()}
+        {getCurrencySymbol(pool.paymentMethod)}{" "}
+        {pool.targetAmount.toLocaleString()}
       </td>
       <td className="px-6 py-4 text-sm font-medium text-gray-900">
-        KSh {pool.currentBalance.toLocaleString()}
+        {getCurrencySymbol(pool.paymentMethod)}{" "}
+        {pool.currentBalance.toLocaleString()}
       </td>
       <td className="px-6 py-4">
         <div className="flex items-center gap-3">

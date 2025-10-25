@@ -18,6 +18,11 @@ import {
 function JoinPageContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+
+  // Helper to get currency symbol based on payment method
+  const getCurrencySymbol = (paymentMethod) => {
+    return paymentMethod === "paystack" ? "$" : "KSh";
+  };
   const searchParams = useSearchParams();
   const inviteCode = searchParams.get("code");
 
@@ -199,7 +204,8 @@ function JoinPageContent() {
                   <span className="text-gray-600">Target Amount</span>
                 </div>
                 <span className="font-semibold text-gray-900">
-                  KSh {pool?.targetAmount?.toLocaleString()}
+                  {getCurrencySymbol(pool?.paymentMethod)}{" "}
+                  {pool?.targetAmount?.toLocaleString()}
                 </span>
               </div>
 
