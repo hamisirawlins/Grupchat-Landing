@@ -1917,9 +1917,9 @@ function PoolDetailPageContent() {
                       <div className="flex items-center gap-3">
                         <CreditCard className="w-5 h-5" />
                         <div className="text-left">
-                          <p className="font-medium">Paystack</p>
+                          <p className="font-medium">Card</p>
                           <p className="text-xs opacity-70">
-                            Card/Bank payment
+                            Pay with Visa, MasterCard, etc.
                           </p>
                         </div>
                       </div>
@@ -2187,6 +2187,8 @@ function PoolDetailPageContent() {
                     </div>
                   ) : paymentMethod === "paybill" ? (
                     "Close"
+                  ) : poolData?.paymentMethod === "paystack" ? (
+                    "Pay with Paystack"
                   ) : (
                     "Send M-Pesa Request"
                   )}
