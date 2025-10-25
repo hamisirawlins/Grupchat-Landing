@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { Analytics } from "@vercel/analytics/next";
+import RotatingGlobe from "@/components/RotatingGlobe";
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -315,46 +316,12 @@ export default function Home() {
         </div>
       </motion.nav>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 overflow-x-hidden relative">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div
-            className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70"
-            animate={{
-              x: [0, 100, 0],
-              y: [0, -50, 0],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-          <motion.div
-            className="absolute -bottom-16 -left-32 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70"
-            animate={{
-              x: [0, -100, 0],
-              y: [0, 30, 0],
-            }}
-            transition={{
-              duration: 25,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-          <motion.div
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-50"
-            animate={{
-              scale: [1, 1.2, 1],
-              rotate: [0, 180, 360],
-            }}
-            transition={{
-              duration: 30,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        </div>
+      <div className="h-screen overflow-x-hidden relative">
+        {/* Rotating Globe Background */}
+        <RotatingGlobe />
+
+        {/* Dark Overlay for Text Readability */}
+        <div className="absolute inset-0 bg-black/40 z-0"></div>
 
         {/* Hero Section */}
         <motion.div
@@ -369,16 +336,16 @@ export default function Home() {
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 sm:mb-6"
               variants={itemVariants}
             >
-              <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent">
                 Powering Plans
               </span>
               <br />
-              <span className="text-gray-900">Beyond The Chat</span>
+              <span className="text-white">Beyond The Chat</span>
             </motion.h1>
 
             {/* Subtitle */}
             <motion.p
-              className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-6 sm:mb-8 leading-relaxed px-4"
+              className="text-base sm:text-lg md:text-xl text-gray-200 max-w-3xl mx-auto mb-6 sm:mb-8 leading-relaxed px-4"
               variants={itemVariants}
             >
               Transform your group chats into group activities. Pool funds with
@@ -413,61 +380,36 @@ export default function Home() {
               variants={itemVariants}
             >
               <motion.div
-                className="text-center p-6 bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg"
+                className="text-center p-6 bg-black/30 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20"
                 whileHover={{ y: -10, scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="text-4xl font-bold text-[#7a73ff] mb-2">
-                  10+
-                </div>
-                <div className="text-gray-600">Active Users</div>
+                <div className="text-4xl font-bold text-white mb-2">10+</div>
+                <div className="text-gray-200">Active Users</div>
               </motion.div>
 
               <motion.div
-                className="text-center p-6 bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg"
+                className="text-center p-6 bg-black/30 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20"
                 whileHover={{ y: -10, scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="text-4xl font-bold text-[#7a73ff] mb-2">
+                <div className="text-4xl font-bold text-white mb-2">
                   Ksh 250k+
                 </div>
-                <div className="text-gray-600">Pooled Successfully</div>
+                <div className="text-gray-200">Pooled Successfully</div>
               </motion.div>
 
               <motion.div
-                className="text-center p-6 bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg"
+                className="text-center p-6 bg-black/30 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20"
                 whileHover={{ y: -10, scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="text-4xl font-bold text-[#7a73ff] mb-2">
-                  20+
-                </div>
-                <div className="text-gray-600">Dreams Realized</div>
+                <div className="text-4xl font-bold text-white mb-2">20+</div>
+                <div className="text-gray-200">Dreams Realized</div>
               </motion.div>
             </motion.div>
           </div>
         </motion.div>
-
-        {/* Floating Elements */}
-        <div className="absolute inset-0 pointer-events-none">
-          <motion.div
-            className="absolute top-1/4 left-1/4 w-20 h-20 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-20"
-            variants={floatingVariants}
-            animate="float"
-          />
-          <motion.div
-            className="absolute top-1/3 right-1/4 w-16 h-16 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full opacity-20"
-            variants={floatingVariants}
-            animate="float"
-            style={{ animationDelay: "1s" }}
-          />
-          <motion.div
-            className="absolute bottom-1/4 left-1/3 w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full opacity-20"
-            variants={floatingVariants}
-            animate="float"
-            style={{ animationDelay: "2s" }}
-          />
-        </div>
 
         {/* Scroll Indicator */}
         <motion.div

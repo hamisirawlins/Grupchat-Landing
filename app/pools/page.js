@@ -316,10 +316,12 @@ export default function PoolsPage() {
         {/* Amount pooled vs target */}
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500">
-            KSh {pool.currentBalance.toLocaleString()}
+            {getCurrencySymbol(pool.paymentMethod)}{" "}
+            {pool.currentBalance.toLocaleString()}
           </span>
           <span className="text-gray-400">
-            of KSh {pool.targetAmount.toLocaleString()}
+            of {getCurrencySymbol(pool.paymentMethod)}{" "}
+            {pool.targetAmount.toLocaleString()}
           </span>
         </div>
       </div>

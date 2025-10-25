@@ -114,6 +114,11 @@ function EditPoolPageContent() {
     }
   };
 
+  // Helper to get currency symbol for this pool (paystack => $, otherwise KSh)
+  const getCurrencySymbol = (paymentMethod) => {
+    return paymentMethod === "paystack" ? "$" : "KSh";
+  };
+
   if (authLoading) {
     return (
       <DashboardLayout title="Edit Pool" subtitle="Update your pool settings">
@@ -299,7 +304,10 @@ function EditPoolPageContent() {
               <Info className="w-5 h-5 text-blue-600" />
               <div>
                 <p className="text-sm text-blue-800">
-                  <strong>Current Balance:</strong> KSh{" "}
+                  <strong>Current Balance:</strong>{" "}
+                  {getCurrencySymbol(
+                    pool?.payment_method || pool?.paymentMethod
+                  )}{" "}
                   {pool.currentBalance?.toLocaleString() || "0"} •
                   <strong>Members:</strong> {pool.memberCount || 0}
                 </p>
@@ -376,7 +384,11 @@ function EditPoolPageContent() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Target Amount (KSh) *
+                  Target Amount (
+                  {getCurrencySymbol(
+                    pool?.payment_method || pool?.paymentMethod
+                  )}
+                  ) *
                 </label>
                 <input
                   type="number"

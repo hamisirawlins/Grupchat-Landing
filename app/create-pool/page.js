@@ -319,7 +319,7 @@ export default function CreatePoolPage() {
                     className="w-full appearance-none bg-white border border-gray-300 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-[#7a73ff] transition-all duration-300 text-gray-900 shadow-sm"
                   >
                     <option value="mpesa">M-Pesa (2% fee)</option>
-                    <option value="paystack">USD Payment (5% fee)</option>
+                    <option value="paystack">$ Payment (5% fee)</option>
                   </select>
                   <svg
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
@@ -345,7 +345,7 @@ export default function CreatePoolPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Target Amount * (
-                  {formData.paymentMethod === "mpesa" ? "KSh" : "USD"})
+                  {formData.paymentMethod === "mpesa" ? "KSh" : "$"})
                 </label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#7a73ff]" />

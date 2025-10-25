@@ -6,6 +6,8 @@ import { useEffect, useState, Suspense } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { dashboardAPI, handleApiError } from "@/lib/api";
 import { paystackIntegration } from "@/lib/paystack";
+import COUNTRIES from "@/lib/countries";
+import SearchableSelect from "@/components/SearchableSelect";
 import {
   ArrowLeft,
   Users,
@@ -115,6 +117,7 @@ function PoolDetailPageContent() {
   const [withdrawalMethod, setWithdrawalMethod] = useState("mobile"); // 'mobile', 'till', 'paybill', 'paystack'
   const [banksList, setBanksList] = useState([]);
   const [banksLoading, setBanksLoading] = useState(false);
+  const [bankCountry, setBankCountry] = useState("US");
 
   // User profile state for phone number access
   const [userProfile, setUserProfile] = useState(null);
@@ -159,16 +162,21 @@ function PoolDetailPageContent() {
     }
   };
 
-  // Load banks for Paystack withdrawals
-  const loadBanks = async () => {
+  // Load banks for Paystack withdrawals (by country code)
+  const loadBanks = async (country = "US") => {
     try {
       setBanksLoading(true);
-      const response = await dashboardAPI.getPaystackBanks("US");
-      if (response.success) {
-        setBanksList(response.data.banks);
+      setBanksList([]);
+      const response = await dashboardAPI.getPaystackBanks(country);
+      if (response && response.success) {
+        setBanksList(response.data.banks || []);
+      } else {
+        console.warn("No banks returned for country", country, response);
+        setBanksList([]);
       }
     } catch (error) {
       console.error("Failed to load banks:", error);
+      setBanksList([]);
     } finally {
       setBanksLoading(false);
     }
@@ -186,16 +194,72 @@ function PoolDetailPageContent() {
     initializePaystack(); // Initialize Paystack for Paystack pools
   }, [user, authLoading, router, poolId]);
 
+  // When pool data loads, ensure the deposit payment method defaults to the
+  // pool's configured payment method. For paystack pools we auto-select
+  // 'paystack' so the M-Pesa phone input won't be shown.
+  useEffect(() => {
+    if (!poolData) return;
+    if (poolData.paymentMethod === "paystack") {
+      setPaymentMethod("paystack");
+    } else {
+      // default to STK push for M-Pesa pools
+      setPaymentMethod("stk");
+    }
+  }, [poolData]);
+
   // Load banks when withdrawal modal opens for Paystack pools
   useEffect(() => {
     if (
       showWithdrawModal &&
       poolData?.paymentMethod === "paystack" &&
-      banksList.length === 0
+      bankCountry
     ) {
-      loadBanks();
+      loadBanks(bankCountry || "US");
     }
   }, [showWithdrawModal, poolData?.paymentMethod]);
+
+  // Infer a sensible default country for bank lookups. Priority:
+  // 1. poolData.country or poolData.countryCode (if available)
+  // 2. userProfile.country or userProfile.locale
+  // 3. browser locale (navigator.language)
+  // 4. fallback: 'KE' for M-Pesa pools, otherwise 'US'
+  const inferDefaultCountry = () => {
+    if (poolData?.countryCode) return poolData.countryCode;
+    if (poolData?.country) return poolData.country;
+    if (userProfile?.country) return userProfile.country;
+    if (userProfile?.locale) {
+      const parts = userProfile.locale.split(/[-_]/);
+      if (parts[1]) return parts[1].toUpperCase();
+    }
+    if (typeof navigator !== "undefined") {
+      const lang =
+        navigator.language || (navigator.languages && navigator.languages[0]);
+      if (lang) {
+        const parts = lang.split(/[-_]/);
+        if (parts[1]) return parts[1].toUpperCase();
+      }
+    }
+    return poolData?.paymentMethod === "mpesa" ? "KE" : "US";
+  };
+
+  // When poolData or userProfile loads, set a default bank country
+  useEffect(() => {
+    if (!poolData) return;
+    const defaultCountry = inferDefaultCountry();
+    setBankCountry(defaultCountry);
+  }, [poolData, userProfile]);
+
+  // When bankCountry changes while withdraw modal is open and pool is paystack,
+  // load banks for that country.
+  useEffect(() => {
+    if (
+      showWithdrawModal &&
+      poolData?.paymentMethod === "paystack" &&
+      bankCountry
+    ) {
+      loadBanks(bankCountry);
+    }
+  }, [bankCountry, showWithdrawModal, poolData?.paymentMethod]);
 
   const loadPoolData = async () => {
     try {
@@ -734,7 +798,6 @@ function PoolDetailPageContent() {
               name: withdrawalForm.accountName,
               account_number: withdrawalForm.accountNumber,
               bank_code: withdrawalForm.bankCode,
-              bank_name: withdrawalForm.bankName,
             });
 
           if (recipientResponse.success) {
@@ -1047,7 +1110,12 @@ function PoolDetailPageContent() {
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => setShowDepositModal(true)}
+              onClick={() => {
+                setPaymentMethod(
+                  poolData?.paymentMethod === "paystack" ? "paystack" : "stk"
+                );
+                setShowDepositModal(true);
+              }}
               className="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               style={{ backgroundColor: "#7a73ff" }}
               onMouseEnter={(e) =>
@@ -1750,7 +1818,11 @@ function PoolDetailPageContent() {
                       description: "",
                     });
                     setDepositError("");
-                    setPaymentMethod("stk");
+                    setPaymentMethod(
+                      poolData?.paymentMethod === "paystack"
+                        ? "paystack"
+                        : "stk"
+                    );
                     setUseProfilePhone(true);
                   }}
                   className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
@@ -2086,7 +2158,11 @@ function PoolDetailPageContent() {
                       description: "",
                     });
                     setDepositError("");
-                    setPaymentMethod("stk");
+                    setPaymentMethod(
+                      poolData?.paymentMethod === "paystack"
+                        ? "paystack"
+                        : "stk"
+                    );
                     setUseProfilePhone(true);
                   }}
                   className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
@@ -2497,31 +2573,48 @@ function PoolDetailPageContent() {
               {poolData?.paymentMethod === "paystack" && (
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Country *
+                  </label>
+                  <SearchableSelect
+                    options={COUNTRIES}
+                    value={bankCountry}
+                    onChange={(countryCode) => {
+                      setBankCountry(countryCode);
+                      setBanksList([]);
+                      setWithdrawalForm({
+                        ...withdrawalForm,
+                        bankCode: "",
+                        bankName: "",
+                      });
+                    }}
+                    placeholder="Search country"
+                    className="mb-2"
+                  />
+
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Bank *
                   </label>
-                  <select
+                  <SearchableSelect
+                    options={banksList.map((b) => ({
+                      name: b.name,
+                      code: b.code,
+                    }))}
                     value={withdrawalForm.bankCode}
-                    onChange={(e) => {
+                    onChange={(bankCode) => {
                       const selectedBank = banksList.find(
-                        (bank) => bank.code === e.target.value
+                        (bank) => bank.code === bankCode
                       );
                       setWithdrawalForm({
                         ...withdrawalForm,
-                        bankCode: e.target.value,
+                        bankCode: bankCode,
                         bankName: selectedBank?.name || "",
                       });
                     }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300 text-gray-900"
-                    required
-                    disabled={banksLoading}
-                  >
-                    <option value="">Select Bank</option>
-                    {banksList.map((bank) => (
-                      <option key={bank.code} value={bank.code}>
-                        {bank.name}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder={
+                      banksLoading ? "Loading banks..." : "Search bank"
+                    }
+                    className=""
+                  />
                   {banksLoading && (
                     <p className="text-xs text-gray-500 mt-1">
                       Loading banks...
@@ -2853,7 +2946,8 @@ function PoolDetailPageContent() {
                       <div className="flex justify-between">
                         <span className="text-gray-500">Amount:</span>
                         <span className="font-medium text-gray-900">
-                          KSh {successData.amount.toLocaleString()}
+                          {getCurrencySymbol()}{" "}
+                          {successData.amount.toLocaleString()}
                         </span>
                       </div>
                       {successData.type === "withdrawal" ? (
@@ -3015,7 +3109,8 @@ function PoolDetailPageContent() {
                         <li>
                           5. Enter Amount:{" "}
                           <strong>
-                            KSh {successData.amount.toLocaleString()}
+                            {getCurrencySymbol()}{" "}
+                            {successData.amount.toLocaleString()}
                           </strong>
                         </li>
                         <li>6. Enter your M-Pesa PIN to complete</li>
