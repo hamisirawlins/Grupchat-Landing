@@ -170,10 +170,6 @@ function EditPoolPageContent() {
       const amount = parseFloat(formData.targetAmount);
       if (isNaN(amount) || amount <= 0) {
         newErrors.targetAmount = "Target amount must be greater than 0";
-      } else if (amount < 100) {
-        newErrors.targetAmount = "Target amount must be at least KSh 100";
-      } else if (amount > 10000000) {
-        newErrors.targetAmount = "Target amount cannot exceed KSh 10,000,000";
       }
     }
 
@@ -214,7 +210,7 @@ function EditPoolPageContent() {
     setLoading(true);
 
     try {
-      const updateData = {
+      const updatedPoolData = {
         name: formData.name.trim(),
         description: formData.description.trim(),
         targetAmount: parseFloat(formData.targetAmount),
@@ -226,9 +222,7 @@ function EditPoolPageContent() {
         withdrawalSettings: formData.withdrawalSettings,
       };
 
-      const response = await dashboardAPI.updatePool(poolId, updateData);
-
-      // Redirect back to the pool details
+      await dashboardAPI.updatePool(poolId, updatedPoolData);
       router.push(`/pools/${poolId}`);
     } catch (error) {
       console.error("Failed to update pool:", error);
@@ -320,24 +314,24 @@ function EditPoolPageContent() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Basic Information */}
+          {/* Unified Card: Basic Info + Pool Type */}
           <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <FolderOpen className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-[#b8b5ff] rounded-lg flex items-center justify-center">
+                <FolderOpen className="w-5 h-5 text-[#7a73ff]" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">
-                  Basic Information
+                  Pool Details
                 </h2>
                 <p className="text-sm text-gray-500">
-                  Essential details about your pool
+                  Update the details for your pool
                 </p>
               </div>
             </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="lg:col-span-2">
+              {/* Pool Name */}
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Pool Name *
                 </label>
@@ -345,50 +339,55 @@ function EditPoolPageContent() {
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
                     errors.name ? "border-red-300 bg-red-50" : "border-gray-300"
                   }`}
-                  placeholder="Enter pool name"
+                  placeholder="e.g., Team Vacation Fund, Office Equipment"
+                  maxLength={255}
                 />
                 {errors.name && (
-                  <p className="text-red-600 text-sm mt-1">{errors.name}</p>
-                )}
-              </div>
-
-              <div className="lg:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) =>
-                    handleInputChange("description", e.target.value)
-                  }
-                  rows={4}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none ${
-                    errors.description
-                      ? "border-red-300 bg-red-50"
-                      : "border-gray-300"
-                  }`}
-                  placeholder="Describe your pool's purpose and goals"
-                />
-                {errors.description && (
-                  <p className="text-red-600 text-sm mt-1">
-                    {errors.description}
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.name}
                   </p>
                 )}
-                <p className="text-gray-500 text-sm mt-1">
-                  {formData.description.length}/1000 characters
-                </p>
               </div>
-
+              {/* Pool Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Target Amount (
-                  {getCurrencySymbol(
-                    pool?.payment_method || pool?.paymentMethod
-                  )}
-                  ) *
+                  Pool Type
+                </label>
+                <div className="relative">
+                  <select
+                    value={formData.type}
+                    onChange={(e) => handleInputChange("type", e.target.value)}
+                    className="w-full appearance-none bg-white border border-gray-300 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-[#7a73ff] transition-all duration-300 text-gray-900 shadow-sm"
+                  >
+                    {poolTypes.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                  <svg
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                  >
+                    <path
+                      d="M6 8l4 4 4-4"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              </div>
+              {/* Target Amount */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Target Amount *
                 </label>
                 <input
                   type="number"
@@ -396,66 +395,21 @@ function EditPoolPageContent() {
                   onChange={(e) =>
                     handleInputChange("targetAmount", e.target.value)
                   }
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
                     errors.targetAmount
                       ? "border-red-300 bg-red-50"
                       : "border-gray-300"
                   }`}
-                  placeholder="0"
-                  min="100"
-                  step="100"
+                  placeholder="Enter target amount"
                 />
                 {errors.targetAmount && (
-                  <p className="text-red-600 text-sm mt-1">
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
                     {errors.targetAmount}
                   </p>
                 )}
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Pool Type *
-                </label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => handleInputChange("type", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                >
-                  {poolTypes.map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.emoji} {type.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {formData.type === "other" && (
-                <div className="lg:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Custom Type *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.customType}
-                    onChange={(e) =>
-                      handleInputChange("customType", e.target.value)
-                    }
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                      errors.customType
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
-                    placeholder="Specify your custom pool type"
-                    maxLength={50}
-                  />
-                  {errors.customType && (
-                    <p className="text-red-600 text-sm mt-1">
-                      {errors.customType}
-                    </p>
-                  )}
-                </div>
-              )}
-
+              {/* End Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   End Date
@@ -464,152 +418,30 @@ function EditPoolPageContent() {
                   type="date"
                   value={formData.endDate}
                   onChange={(e) => handleInputChange("endDate", e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
                     errors.endDate
                       ? "border-red-300 bg-red-50"
                       : "border-gray-300"
                   }`}
                 />
                 {errors.endDate && (
-                  <p className="text-red-600 text-sm mt-1">{errors.endDate}</p>
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.endDate}
+                  </p>
                 )}
-                <p className="text-gray-500 text-sm mt-1">
-                  Optional: Set a target completion date
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Withdrawal Settings */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <Settings className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Withdrawal Settings
-                </h2>
-                <p className="text-sm text-gray-500">
-                  Configure how members can withdraw funds
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <Check className="w-5 h-5 text-green-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      Require Approval
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      All withdrawals must be approved by pool admins
-                    </p>
-                  </div>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.withdrawalSettings.requires_approval}
-                    onChange={(e) => {
-                      const newValue = e.target.checked;
-                      handleInputChange("withdrawalSettings", {
-                        ...formData.withdrawalSettings,
-                        requires_approval: newValue,
-                        // If requiring approval, activate auto withdrawal (opposite)
-                        auto_withdrawal: !newValue,
-                      });
-                    }}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <DollarSign className="w-5 h-5 text-blue-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">Auto Withdrawal</p>
-                    <p className="text-sm text-gray-600">
-                      Allow members to withdraw without approval
-                    </p>
-                  </div>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.withdrawalSettings.auto_withdrawal}
-                    onChange={(e) => {
-                      const newValue = e.target.checked;
-                      handleInputChange("withdrawalSettings", {
-                        ...formData.withdrawalSettings,
-                        auto_withdrawal: newValue,
-                        // If auto withdrawal is enabled, activate require approval (opposite)
-                        requires_approval: !newValue,
-                      });
-                    }}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
-
-              <div className="p-4 bg-blue-50 rounded-xl">
-                <div className="flex items-start gap-3">
-                  <Info className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div className="text-sm text-blue-800">
-                    <p className="font-medium mb-1">
-                      Withdrawal Settings Note:
-                    </p>
-                    <ul className="space-y-1">
-                      <li>
-                        • <strong>Require Approval:</strong> All withdrawals
-                        need admin approval
-                      </li>
-                      <li>
-                        • <strong>Auto Withdrawal:</strong> Members can withdraw
-                        freely without approval
-                      </li>
-                      <li>
-                        • Pool creators and admins can always approve/deny
-                        withdrawals
-                      </li>
-                    </ul>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
 
           {/* Submit Button */}
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => router.push(`/pools/${poolId}`)}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-
+          <div className="flex justify-end">
             <button
               type="submit"
+              className="px-6 py-3 bg-[#7a73ff] text-white rounded-lg hover:bg-[#6a63e0] transition-colors"
               disabled={loading}
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
             >
-              {loading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Updating...
-                </>
-              ) : (
-                <>
-                  <Save className="w-5 h-5" />
-                  Update Pool
-                </>
-              )}
+              {loading ? "Saving..." : "Save Changes"}
             </button>
           </div>
 
