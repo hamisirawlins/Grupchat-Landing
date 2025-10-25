@@ -894,6 +894,21 @@ function PoolDetailPageContent() {
     }
   };
 
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const paymentStatus = queryParams.get("payment");
+    const reference = queryParams.get("reference");
+    const trxref = queryParams.get("trxref");
+
+    if (paymentStatus === "success" && reference) {
+      console.log("Paystack callback parameters:", {
+        paymentStatus,
+        reference,
+        trxref,
+      });
+    }
+  }, []);
+
   if (!user) {
     return null;
   }
@@ -3092,22 +3107,6 @@ function PoolDetailPageContent() {
                         } space-y-1`}
                       >
                         <li>1. Your withdrawal is being processed</li>
-                        <li>2. Funds will be sent to {successData.phone}</li>
-                        <li>3. You'll receive an M-Pesa confirmation SMS</li>
-                        <li>4. Processing may take a few minutes</li>
-                      </ol>
-                    ) : successData.paymentMethod === "paybill" ? (
-                      <ol className="text-xs text-blue-700 space-y-1">
-                        <li>1. Go to M-Pesa on your phone</li>
-                        <li>2. Select "Lipa na M-Pesa" → "Pay Bill"</li>
-                        <li>
-                          3. Enter Paybill Number:{" "}
-                          <strong>{successData.paybillNumber}</strong>
-                        </li>
-                        <li>
-                          4. Enter Account Number:{" "}
-                          <strong>{successData.accountNumber}</strong>
-                        </li>
                         <li>
                           5. Enter Amount:{" "}
                           <strong>
@@ -3123,6 +3122,7 @@ function PoolDetailPageContent() {
                     ) : (
                       <ol className="text-xs text-blue-700 space-y-1">
                         <li>1. Check your phone for M-Pesa notification</li>
+                        <li>2. Enter your M-Pesa PIN to complete payment</li>
                         <li>2. Enter your M-Pesa PIN to complete payment</li>
                         <li>3. You'll receive a confirmation SMS</li>
                         <li>4. Your pool balance will update automatically</li>
