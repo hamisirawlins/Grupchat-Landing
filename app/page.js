@@ -336,7 +336,7 @@ export default function Home() {
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 sm:mb-6"
               variants={itemVariants}
             >
-              <span className="bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-white via-blue-300 to-purple-300 bg-clip-text text-transparent">
                 Powering Plans
               </span>
               <br />
@@ -384,7 +384,7 @@ export default function Home() {
                 whileHover={{ y: -10, scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="text-4xl font-bold text-white mb-2">10+</div>
+                <div className="text-4xl font-bold text-white mb-2">2+</div>
                 <div className="text-gray-200">Active Users</div>
               </motion.div>
 
@@ -394,7 +394,7 @@ export default function Home() {
                 transition={{ type: "spring", stiffness: 300 }}
               >
                 <div className="text-4xl font-bold text-white mb-2">
-                  Ksh 250k+
+                  100K+
                 </div>
                 <div className="text-gray-200">Pooled Successfully</div>
               </motion.div>
