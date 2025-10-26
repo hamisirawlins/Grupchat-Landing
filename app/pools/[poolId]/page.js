@@ -275,13 +275,7 @@ function PoolDetailPageContent() {
       const currentBalanceNum = parseFloat(pool.currentBalance) || 0;
       const computedPercentage =
         targetAmountNum > 0
-          ? Math.min(
-              100,
-              Math.max(
-                0,
-                Math.round((currentBalanceNum / targetAmountNum) * 100)
-              )
-            )
+          ? Math.max(0, Math.round((currentBalanceNum / targetAmountNum) * 100))
           : 0;
 
       setPoolData({
@@ -1100,7 +1094,7 @@ function PoolDetailPageContent() {
               <div
                 className="h-2 rounded-full transition-all duration-500 ease-out"
                 style={{
-                  width: `${poolData.percentage}%`,
+                  width: `${Math.min(poolData.percentage, 100)}%`,
                   background: `linear-gradient(to right, #b8b5ff, #7a73ff)`,
                 }}
               />
@@ -1204,7 +1198,10 @@ function PoolDetailPageContent() {
                   fill="transparent"
                   strokeDasharray={`${2 * Math.PI * 40}`}
                   strokeDashoffset={`${
-                    2 * Math.PI * 40 * (1 - poolData.percentage / 100)
+                    2 *
+                    Math.PI *
+                    40 *
+                    (1 - Math.min(poolData.percentage, 100) / 100)
                   }`}
                   className="transition-all duration-1000 ease-out"
                   strokeLinecap="round"
@@ -3109,15 +3106,7 @@ function PoolDetailPageContent() {
                           <strong>{successData.accountNumber}</strong>
                         </li>
                         <li>
-                          5. Enter Amount:{" "}
-                          <strong>
-                            {getCurrencySymbol()}{" "}
-                            {successData.amount.toLocaleString()}
-                          </strong>
-                        </li>
-                        <li>6. Enter your M-Pesa PIN to complete</li>
-                        <li>
-                          7. Your pool balance will update after confirmation
+                          2. Your pool balance will update after confirmation
                         </li>
                       </ol>
                     ) : (
@@ -3187,7 +3176,9 @@ function PoolDetailPageContent() {
                 >
                   Close
                 </button>
-                {successData.type === "invitation" ? (
+
+                {/* Invitation flow: show invite button */}
+                {successData.type === "invitation" && (
                   <button
                     onClick={() => {
                       setShowSuccessModal(false);
@@ -3198,7 +3189,10 @@ function PoolDetailPageContent() {
                   >
                     Invite More Members
                   </button>
-                ) : (
+                )}
+
+                {/* Deposit flow: allow making another deposit; hide for withdrawals */}
+                {successData.type === "deposit" && (
                   <button
                     onClick={() => {
                       setShowSuccessModal(false);
@@ -3212,18 +3206,18 @@ function PoolDetailPageContent() {
                 )}
               </div>
 
-              {/* Footer Note */}
+              {/* Footer Note: only show context-specific notes */}
               {successData.type === "invitation" ? (
                 <p className="text-xs text-gray-500 mt-4">
                   The invitation expires after 3 days. Share widely to maximize
                   member engagement.
                 </p>
-              ) : (
+              ) : successData.type === "deposit" ? (
                 <p className="text-xs text-gray-500 mt-4">
                   Having trouble? The M-Pesa prompt may take up to 30 seconds to
                   appear.
                 </p>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

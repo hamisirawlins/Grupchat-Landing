@@ -348,7 +348,7 @@ export default function Dashboard() {
         <div className="w-full bg-[#e5e3ff] rounded-full h-2">
           <div
             className="h-2 rounded-full transition-all duration-500 ease-out bg-[#7a73ff]"
-            style={{ width: `${pool.percentage}%` }}
+            style={{ width: `${Math.min(pool.percentage, 100)}%` }}
           />
         </div>
       </div>
