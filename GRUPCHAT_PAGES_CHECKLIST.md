@@ -56,7 +56,7 @@
 |--------|------------|------|
 | **Google Play Store** | `https://play.google.com/store/apps/details?id=com.grupchat.app` | External |
 | **Apple App Store** | `https://apps.apple.com/app/grupchat/` | External |
-| **Web Access** | `https://app.grupchat.info` | External |
+| **Web Access** | `https://app.grupchat.net` | External |
 
 ### **Footer Links**
 | Link | Destination | Type |

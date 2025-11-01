@@ -176,7 +176,7 @@ export default function Home() {
                 transition={{ delay: 0.5 }}
               >
                 <motion.a
-                  href="https://app.grupchat.info"
+                  href="https://app.grupchat.net"
                   className="block w-full px-6 py-3 bg-[#7a73ff] text-white rounded-xl font-semibold hover:bg-[#7a73ff] transition-all duration-300 shadow-lg"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -1653,7 +1653,7 @@ export default function Home() {
             >
               <p className="text-gray-400 mb-4">Or access via web</p>
               <motion.a
-                href="https://app.grupchat.info"
+                href="https://app.grupchat.net"
                 className="inline-flex items-center px-6 py-3 border border-purple-500 text-purple-400 rounded-xl hover:bg-purple-500 hover:text-white transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

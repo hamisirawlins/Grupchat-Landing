@@ -64,6 +64,7 @@ function PoolDetailPageContent() {
   const [error, setError] = useState(null);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [showManualTransferModal, setShowManualTransferModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
 
   // Invite form state
@@ -112,6 +113,44 @@ function PoolDetailPageContent() {
   const [withdrawalError, setWithdrawalError] = useState("");
   const [useWithdrawalProfilePhone, setUseWithdrawalProfilePhone] =
     useState(true);
+
+  // Manual transfer state (for manual pools)
+  const [manualForm, setManualForm] = useState({
+    type: "deposit", // 'deposit' or 'withdrawal'
+    userId: "",
+    amount: "",
+    description: "",
+  });
+  const [manualLoading, setManualLoading] = useState(false);
+  const [manualError, setManualError] = useState("");
+
+  // Debug: track pool payment method and modal open state
+  useEffect(() => {
+    console.log(
+      "[ManualTransfer][debug] paymentMethod from poolData:",
+      poolData?.paymentMethod
+    );
+  }, [poolData?.paymentMethod]);
+
+  useEffect(() => {
+    console.log(
+      "[ManualTransfer][debug] showManualTransferModal:",
+      showManualTransferModal
+    );
+  }, [showManualTransferModal]);
+
+  const handleOpenManualTransfer = () => {
+    console.log("[ManualTransfer][debug] Record Transfer clicked", {
+      paymentMethod: poolData?.paymentMethod,
+      hasPoolData: !!poolData,
+    });
+    if (poolData?.paymentMethod !== "manual") {
+      console.warn(
+        "[ManualTransfer][debug] Pool is not manual; button should be hidden in this state"
+      );
+    }
+    setShowManualTransferModal(true);
+  };
 
   // Paystack withdrawal state
   const [withdrawalMethod, setWithdrawalMethod] = useState("mobile"); // 'mobile', 'till', 'paybill', 'paystack'
@@ -310,6 +349,56 @@ function PoolDetailPageContent() {
       setError(handleApiError(err, "Failed to load pool details"));
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle manual transfer submit
+  const handleManualSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setManualLoading(true);
+      setManualError("");
+
+      const amountNum = parseFloat(manualForm.amount);
+      if (!manualForm.userId) {
+        setManualError("Please select a pool member");
+        return;
+      }
+      if (!amountNum || isNaN(amountNum) || amountNum <= 0) {
+        setManualError("Please enter a valid amount");
+        return;
+      }
+
+      // Create manual transaction
+      const response = await dashboardAPI.recordManualTransaction(poolId, {
+        type: manualForm.type,
+        userId: manualForm.userId,
+        amount: amountNum,
+        description:
+          manualForm.description ||
+          (manualForm.type === "deposit"
+            ? `Manual deposit to ${poolData.name}`
+            : `Manual withdrawal from ${poolData.name}`),
+      });
+
+      if (!response.success) {
+        throw new Error(response.message || "Failed to record transfer");
+      }
+
+      // Reset and refresh
+      setShowManualTransferModal(false);
+      setManualForm({
+        type: "deposit",
+        userId: "",
+        amount: "",
+        description: "",
+      });
+      await loadPoolData();
+    } catch (err) {
+      console.error("Manual transfer failed:", err);
+      setManualError(handleApiError(err, "Failed to record transfer"));
+    } finally {
+      setManualLoading(false);
     }
   };
 
@@ -1103,39 +1192,60 @@ function PoolDetailPageContent() {
 
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => {
-                setPaymentMethod(
-                  poolData?.paymentMethod === "paystack" ? "paystack" : "stk"
-                );
-                setShowDepositModal(true);
-              }}
-              className="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-              style={{ backgroundColor: "#7a73ff" }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#6961ff")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "#7a73ff")
-              }
-            >
-              <ArrowUpRight className="w-4 h-4" />
-              Deposit
-            </button>
-            <button
-              onClick={() => setShowWithdrawModal(true)}
-              className="border-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-              style={{ borderColor: "#7a73ff", color: "#7a73ff" }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#f5f4ff")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
-            >
-              <ArrowDownLeft className="w-4 h-4" />
-              Withdraw
-            </button>
+            {poolData?.paymentMethod === "manual" ? (
+              <button
+                onClick={handleOpenManualTransfer}
+                className="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                style={{ backgroundColor: "#7a73ff" }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#6961ff")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#7a73ff")
+                }
+              >
+                <ArrowUpRight className="w-4 h-4" />
+                Record Transfer
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    setPaymentMethod(
+                      poolData?.paymentMethod === "paystack"
+                        ? "paystack"
+                        : "stk"
+                    );
+                    setShowDepositModal(true);
+                  }}
+                  className="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                  style={{ backgroundColor: "#7a73ff" }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#6961ff")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#7a73ff")
+                  }
+                >
+                  <ArrowUpRight className="w-4 h-4" />
+                  Deposit
+                </button>
+                <button
+                  onClick={() => setShowWithdrawModal(true)}
+                  className="border-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                  style={{ borderColor: "#7a73ff", color: "#7a73ff" }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#f5f4ff")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "transparent")
+                  }
+                >
+                  <ArrowDownLeft className="w-4 h-4" />
+                  Withdraw
+                </button>
+              </>
+            )}
             <button
               onClick={() => setShowInviteModal(true)}
               className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center gap-2"
@@ -1848,6 +1958,166 @@ function PoolDetailPageContent() {
                   <p className="text-sm text-red-600">{depositError}</p>
                 </div>
               )}
+
+              {/* Manual Transfer Modal (for manual pools) */}
+              {showManualTransferModal &&
+                // Debug render signal
+                (console.log(
+                  "[ManualTransfer][debug] Rendering manual transfer modal"
+                ),
+                (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl my-8 max-h-[90vh] overflow-y-auto">
+                      <form onSubmit={handleManualSubmit}>
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-[#b8b5ff] rounded-lg flex items-center justify-center">
+                              <Activity className="w-5 h-5 text-[#7a73ff]" />
+                            </div>
+                            <h2 className="text-xl font-semibold text-gray-900">
+                              Record Transfer
+                            </h2>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowManualTransferModal(false);
+                              setManualForm({
+                                type: "deposit",
+                                userId: "",
+                                amount: "",
+                                description: "",
+                              });
+                              setManualError("");
+                            }}
+                            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+
+                        {manualError && (
+                          <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+                            {manualError}
+                          </div>
+                        )}
+
+                        <div className="space-y-4">
+                          {/* Type */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Type
+                            </label>
+                            <select
+                              value={manualForm.type}
+                              onChange={(e) =>
+                                setManualForm({
+                                  ...manualForm,
+                                  type: e.target.value,
+                                })
+                              }
+                              className="w-full appearance-none bg-white border border-gray-300 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-[#7a73ff] transition-all duration-300 text-gray-900 shadow-sm"
+                            >
+                              <option value="deposit">Deposit</option>
+                              <option value="withdrawal">Withdrawal</option>
+                            </select>
+                          </div>
+
+                          {/* Member */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Member
+                            </label>
+                            <SearchableSelect
+                              value={manualForm.userId}
+                              onChange={(val) =>
+                                setManualForm({ ...manualForm, userId: val })
+                              }
+                              options={(poolData.members || []).map((m) => ({
+                                value: m.user_id,
+                                label:
+                                  m.users?.display_name ||
+                                  m.users?.email ||
+                                  "Member",
+                              }))}
+                              placeholder="Search member by name"
+                            />
+                          </div>
+
+                          {/* Amount */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Amount
+                            </label>
+                            <div className="relative">
+                              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#7a73ff]" />
+                              <input
+                                type="number"
+                                value={manualForm.amount}
+                                onChange={(e) =>
+                                  setManualForm({
+                                    ...manualForm,
+                                    amount: e.target.value,
+                                  })
+                                }
+                                className="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 border-gray-300"
+                                placeholder="e.g., 100"
+                                min="1"
+                                step="0.01"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Description (optional) */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Description (optional)
+                            </label>
+                            <input
+                              type="text"
+                              value={manualForm.description}
+                              onChange={(e) =>
+                                setManualForm({
+                                  ...manualForm,
+                                  description: e.target.value,
+                                })
+                              }
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent transition-all duration-300 text-gray-900 shadow-sm"
+                              placeholder="e.g., Cash contribution at meeting"
+                              maxLength={140}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3 mt-6">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowManualTransferModal(false);
+                              setManualForm({
+                                type: "deposit",
+                                userId: "",
+                                amount: "",
+                                description: "",
+                              });
+                              setManualError("");
+                            }}
+                            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={manualLoading}
+                            className="px-4 py-2 bg-[#7a73ff] text-white rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+                          >
+                            {manualLoading ? "Recording..." : "Record"}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                ))}
 
               {/* Payment Method Toggle */}
               <div className="mb-6">
@@ -3219,6 +3489,148 @@ function PoolDetailPageContent() {
                 </p>
               ) : null}
             </div>
+          </div>
+        </div>
+      )}
+      {/* Manual Transfer Modal */}
+      {showManualTransferModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 w-full max-w-md border border-white/20 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Record Transfer
+              </h2>
+              <button
+                onClick={() => {
+                  setShowManualTransferModal(false);
+                  setManualError("");
+                }}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 9.293l4.646-4.647a1 1 0 111.415 1.414L11.414 10.707l4.647 4.646a1 1 0 01-1.414 1.415L10 12.121l-4.646 4.647a1 1 0 01-1.415-1.415l4.647-4.646L3.94 5.06a1 1 0 011.415-1.414L10 9.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleManualSubmit} className="space-y-4">
+              {/* Member select */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Member *
+                </label>
+                <select
+                  value={manualForm.userId}
+                  onChange={(e) =>
+                    setManualForm((p) => ({ ...p, userId: e.target.value }))
+                  }
+                  className={`w-full px-4 py-3 border rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent ${
+                    manualError && !manualForm.userId
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
+                  }`}
+                >
+                  <option value="">Select member</option>
+                  {(poolData?.members || []).map((m) => (
+                    <option key={m.user?.id || m.id} value={m.user?.id || m.id}>
+                      {m.user?.displayName || m.user?.email || "Member"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Type *
+                </label>
+                <select
+                  value={manualForm.type}
+                  onChange={(e) =>
+                    setManualForm((p) => ({ ...p, type: e.target.value }))
+                  }
+                  className="w-full px-4 py-3 border rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent border-gray-300"
+                >
+                  <option value="deposit">Deposit</option>
+                  <option value="withdrawal">Withdrawal</option>
+                </select>
+              </div>
+
+              {/* Amount */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Amount *
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={manualForm.amount}
+                  onChange={(e) =>
+                    setManualForm((p) => ({ ...p, amount: e.target.value }))
+                  }
+                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent ${
+                    manualError && !manualForm.amount
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
+                  }`}
+                  placeholder={`e.g. 1000`}
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description (Optional)
+                </label>
+                <textarea
+                  value={manualForm.description}
+                  onChange={(e) =>
+                    setManualForm((p) => ({
+                      ...p,
+                      description: e.target.value,
+                    }))
+                  }
+                  className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent border-gray-300"
+                  rows={3}
+                />
+              </div>
+
+              {manualError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                  {manualError}
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowManualTransferModal(false);
+                    setManualError("");
+                  }}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={manualLoading}
+                  className="px-4 py-2 bg-[#7a73ff] text-white rounded-xl hover:bg-[#6961ff] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {manualLoading ? "Recording..." : "Record Transfer"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

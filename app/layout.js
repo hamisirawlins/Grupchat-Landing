@@ -17,11 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "GrupChat - Powering Plans Beyond The Chat",
   description: "Transform your group chats into powerful collaborations. Pool funds with friends and family seamlessly, turning dreams into reality.",
-  metadataBase: new URL('https://grupchat.info'),
+  metadataBase: new URL('https://grupchat.net'),
   openGraph: {
     title: "GrupChat - Powering Plans Beyond The Chat",
     description: "Transform your group chats into powerful collaborations. Pool funds with friends and family seamlessly, turning dreams into reality.",
-    url: 'https://grupchat.info',
+    url: 'https://grupchat.net',
     siteName: 'GrupChat',
     images: [
       {

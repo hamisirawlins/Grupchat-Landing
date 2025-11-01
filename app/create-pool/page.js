@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
+import SearchableSelect from "@/components/SearchableSelect";
 import { dashboardAPI, handleApiError } from "@/lib/api";
 import {
   ArrowLeft,
@@ -27,6 +28,7 @@ export default function CreatePoolPage() {
     customType: "",
     endDate: "",
     paymentMethod: "mpesa", // Default to M-Pesa
+    currency: "KES",
     withdrawalSettings: {
       requires_approval: false,
       auto_withdrawal: true,
@@ -37,6 +39,51 @@ export default function CreatePoolPage() {
   // UI state
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [currencyOptionsState, setCurrencyOptionsState] = useState([
+    { code: "KES", name: "KES — Kenyan Shilling", symbol: "KSh" },
+    { code: "USD", name: "USD — US Dollar", symbol: "$" },
+    { code: "NGN", name: "NGN — Nigerian Naira", symbol: "₦" },
+    { code: "GHS", name: "GHS — Ghanaian Cedi", symbol: "GH₵" },
+    { code: "ZAR", name: "ZAR — South African Rand", symbol: "R" },
+    { code: "UGX", name: "UGX — Ugandan Shilling", symbol: "USh" },
+  ]);
+
+  // Load full currency list from public/currencies.json for the searchable select
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadCurrencies() {
+      try {
+        const res = await fetch("/currencies.json");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        // Map to shape expected by SearchableSelect: { code, name, symbol }
+        const mapped = data
+          .map((c) => ({
+            code: c.code,
+            name: `${c.code} — ${c.name}`,
+            // prefer native symbol when available
+            symbol: c.symbol_native || c.symbol || "",
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        if (mounted && Array.isArray(mapped) && mapped.length > 0) {
+          setCurrencyOptionsState(mapped);
+        }
+      } catch (err) {
+        // If fetch fails, keep the small default set already in state
+        // Optionally you could set an error state here for telemetry
+        // console.warn("Failed to load currencies.json", err);
+      }
+    }
+
+    loadCurrencies();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -94,6 +141,10 @@ export default function CreatePoolPage() {
         } else if (amount > 100000) {
           newErrors.targetAmount = "Target amount cannot exceed $100,000";
         }
+      } else if (formData.paymentMethod === "manual") {
+        if (amount < 1) {
+          newErrors.targetAmount = "Target amount must be at least 1";
+        }
       }
     }
 
@@ -120,6 +171,10 @@ export default function CreatePoolPage() {
       newErrors.customType = "Custom type must be less than 50 characters";
     }
 
+    if (!formData.currency || !formData.currency.trim()) {
+      newErrors.currency = "Currency is required";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -144,10 +199,10 @@ export default function CreatePoolPage() {
             : formData.type,
         endDate: formData.endDate || null,
         paymentMethod: formData.paymentMethod,
+        currency: formData.currency,
         withdrawalSettings: formData.withdrawalSettings,
-        // Paybill identifier will be auto-generated for M-Pesa pools, null for Paystack
-        paybillIdentifier:
-          formData.paymentMethod === "mpesa" ? null : undefined,
+        // Paybill identifier will be auto-generated for all pools (backend)
+        paybillIdentifier: null,
       };
 
       const response = await dashboardAPI.createPool(poolData);
@@ -209,6 +264,29 @@ export default function CreatePoolPage() {
     { value: "event", label: "Event", description: "Events pool", emoji: "🎉" },
     { value: "other", label: "Other", description: "Custom pool", emoji: "🔧" },
   ];
+
+  const currencyOptions = currencyOptionsState;
+
+  // derive selected currency symbol for display in amount label/placeholder
+  const selectedCurrencyObj = currencyOptions.find(
+    (c) => c.code === formData.currency
+  );
+  const currencySymbol =
+    selectedCurrencyObj?.symbol ||
+    (formData.paymentMethod === "mpesa"
+      ? "KSh"
+      : formData.paymentMethod === "paystack"
+      ? "$"
+      : "");
+  const amountPlaceholderBase =
+    formData.paymentMethod === "mpesa"
+      ? "50000"
+      : formData.paymentMethod === "paystack"
+      ? "500"
+      : "1000";
+  const amountPlaceholder = `${
+    currencySymbol ? currencySymbol + " " : ""
+  }${amountPlaceholderBase}`;
 
   return (
     <DashboardLayout
@@ -319,7 +397,9 @@ export default function CreatePoolPage() {
                     className="w-full appearance-none bg-white border border-gray-300 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-[#7a73ff] transition-all duration-300 text-gray-900 shadow-sm"
                   >
                     <option value="mpesa">M-Pesa (2% fee)</option>
-                    <option value="paystack">$ Payment (5% fee)</option>
+                    <option value="manual">
+                      Manual (no processing, no fee)
+                    </option>
                   </select>
                   <svg
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
@@ -338,34 +418,55 @@ export default function CreatePoolPage() {
                 <p className="mt-1 text-xs text-gray-500">
                   {formData.paymentMethod === "mpesa"
                     ? "M-Pesa: Phone-based payments, STK Push & Paybill (2% fee)"
-                    : "Paystack: Email-based payments, Bank transfers (5% fee)"}
+                    : formData.paymentMethod === "paystack"
+                    ? "Paystack: Email-based payments, Bank transfers (5% fee)"
+                    : "Manual: Track deposits/withdrawals without payment processing (no fee)"}
                 </p>
               </div>
+              {/* Currency */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Currency *
+                </label>
+                <SearchableSelect
+                  value={formData.currency}
+                  onChange={(val) => handleInputChange("currency", val)}
+                  options={currencyOptions}
+                  placeholder="Select currency"
+                />
+                {errors.currency && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.currency}
+                  </p>
+                )}
+              </div>
+
               {/* Target Amount */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Target Amount * (
-                  {formData.paymentMethod === "mpesa" ? "KSh" : "$"})
+                  Target Amount *
                 </label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#7a73ff]" />
                   <input
                     type="number"
                     value={formData.targetAmount}
                     onChange={(e) =>
                       handleInputChange("targetAmount", e.target.value)
                     }
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
+                    className={`w-full pl-4 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent transition-colors placeholder-gray-500 text-gray-900 ${
                       errors.targetAmount
                         ? "border-red-300 bg-red-50"
                         : "border-gray-300"
                     }`}
-                    placeholder={
-                      formData.paymentMethod === "mpesa" ? "50000" : "500"
-                    }
+                    placeholder={amountPlaceholder}
                     min={formData.paymentMethod === "mpesa" ? "100" : "1"}
                     max={
-                      formData.paymentMethod === "mpesa" ? "10000000" : "100000"
+                      formData.paymentMethod === "mpesa"
+                        ? "10000000"
+                        : formData.paymentMethod === "paystack"
+                        ? "100000"
+                        : undefined
                     }
                     step={formData.paymentMethod === "mpesa" ? "100" : "0.01"}
                   />
@@ -377,6 +478,7 @@ export default function CreatePoolPage() {
                   </p>
                 )}
               </div>
+
               {/* End Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
