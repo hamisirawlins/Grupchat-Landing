@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { dashboardAPI, handleApiError } from "@/lib/api";
+import { loadCurrencyMap, getCurrencySymbolFromMap } from "@/lib/currency";
 import {
   ArrowLeft,
   FolderOpen,
@@ -114,10 +115,21 @@ function EditPoolPageContent() {
     }
   };
 
-  // Helper to get currency symbol for this pool (paystack => $, otherwise KSh)
-  const getCurrencySymbol = (paymentMethod) => {
-    return paymentMethod === "paystack" ? "$" : "KSh";
-  };
+  // Currency map (shared helper)
+  const [currencyMap, setCurrencyMap] = useState({});
+
+  useEffect(() => {
+    let mounted = true;
+    loadCurrencyMap()
+      .then((map) => {
+        if (mounted) setCurrencyMap(map);
+      })
+      .catch(() => {});
+    return () => (mounted = false);
+  }, []);
+
+  const getCurrencySymbol = (paymentMethod) =>
+    getCurrencySymbolFromMap(currencyMap, pool?.currency, paymentMethod);
 
   if (authLoading) {
     return (

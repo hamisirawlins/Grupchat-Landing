@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import SearchableSelect from "@/components/SearchableSelect";
 import { dashboardAPI, handleApiError } from "@/lib/api";
+import { loadCurrencyMap, getCurrencySymbolFromMap } from "@/lib/currency";
 import {
   ArrowLeft,
   FolderOpen,
@@ -123,29 +124,6 @@ export default function CreatePoolPage() {
 
     if (!formData.targetAmount) {
       newErrors.targetAmount = "Target amount is required";
-    } else {
-      const amount = parseFloat(formData.targetAmount);
-      if (isNaN(amount) || amount <= 0) {
-        newErrors.targetAmount = "Target amount must be greater than 0";
-      } else if (formData.paymentMethod === "mpesa") {
-        // M-Pesa validation (Kenyan Shillings)
-        if (amount < 100) {
-          newErrors.targetAmount = "Target amount must be at least KSh 100";
-        } else if (amount > 10000000) {
-          newErrors.targetAmount = "Target amount cannot exceed KSh 10,000,000";
-        }
-      } else if (formData.paymentMethod === "paystack") {
-        // Paystack validation (USD)
-        if (amount < 1) {
-          newErrors.targetAmount = "Target amount must be at least $1";
-        } else if (amount > 100000) {
-          newErrors.targetAmount = "Target amount cannot exceed $100,000";
-        }
-      } else if (formData.paymentMethod === "manual") {
-        if (amount < 1) {
-          newErrors.targetAmount = "Target amount must be at least 1";
-        }
-      }
     }
 
     if (formData.description && formData.description.length > 1000) {
@@ -268,16 +246,24 @@ export default function CreatePoolPage() {
   const currencyOptions = currencyOptionsState;
 
   // derive selected currency symbol for display in amount label/placeholder
-  const selectedCurrencyObj = currencyOptions.find(
-    (c) => c.code === formData.currency
+  // currency map state for symbol lookup
+  const [currencyMap, setCurrencyMap] = useState({});
+
+  useEffect(() => {
+    let mounted = true;
+    loadCurrencyMap()
+      .then((map) => {
+        if (mounted) setCurrencyMap(map);
+      })
+      .catch(() => {});
+    return () => (mounted = false);
+  }, []);
+
+  const currencySymbol = getCurrencySymbolFromMap(
+    currencyMap,
+    formData.currency,
+    formData.paymentMethod
   );
-  const currencySymbol =
-    selectedCurrencyObj?.symbol ||
-    (formData.paymentMethod === "mpesa"
-      ? "KSh"
-      : formData.paymentMethod === "paystack"
-      ? "$"
-      : "");
   const amountPlaceholderBase =
     formData.paymentMethod === "mpesa"
       ? "50000"
@@ -460,15 +446,8 @@ export default function CreatePoolPage() {
                         : "border-gray-300"
                     }`}
                     placeholder={amountPlaceholder}
-                    min={formData.paymentMethod === "mpesa" ? "100" : "1"}
-                    max={
-                      formData.paymentMethod === "mpesa"
-                        ? "10000000"
-                        : formData.paymentMethod === "paystack"
-                        ? "100000"
-                        : undefined
-                    }
-                    step={formData.paymentMethod === "mpesa" ? "100" : "0.01"}
+                    min={0}
+                    max={10000000}
                   />
                 </div>
                 {errors.targetAmount && (

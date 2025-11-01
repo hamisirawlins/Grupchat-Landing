@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { dashboardAPI, handleApiError } from "@/lib/api";
+import { loadCurrencyMap, getCurrencySymbolFromMap } from "@/lib/currency";
 import {
   FolderOpen,
   Plus,
@@ -34,10 +35,26 @@ export default function PoolsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Helper to get currency symbol based on payment method
-  const getCurrencySymbol = (paymentMethod) => {
-    return paymentMethod === "paystack" ? "$" : "KSh";
-  };
+  // Currency lookup map (loaded via shared helper)
+  const [currencyMap, setCurrencyMap] = useState({});
+
+  useEffect(() => {
+    let mounted = true;
+    loadCurrencyMap()
+      .then((map) => {
+        if (mounted) setCurrencyMap(map);
+      })
+      .catch(() => {
+        /* ignore - fallback will be used */
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Wrapper that keeps previous call signature (paymentMethod, currencyCode)
+  const getCurrencySymbol = (paymentMethod, currencyCode) =>
+    getCurrencySymbolFromMap(currencyMap, currencyCode, paymentMethod);
 
   // Filter and search state
   const [searchTerm, setSearchTerm] = useState("");
@@ -84,6 +101,7 @@ export default function PoolsPage() {
         status: pool.status,
         targetAmount: parseFloat(pool.target_amount),
         currentBalance: parseFloat(pool.current_balance),
+        currency: pool.currency,
         percentage:
           pool.target_amount > 0
             ? Math.round(
@@ -316,11 +334,11 @@ export default function PoolsPage() {
         {/* Amount pooled vs target */}
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500">
-            {getCurrencySymbol(pool.paymentMethod)}{" "}
+            {getCurrencySymbol(pool.paymentMethod, pool.currency)}{" "}
             {pool.currentBalance.toLocaleString()}
           </span>
           <span className="text-gray-400">
-            of {getCurrencySymbol(pool.paymentMethod)}{" "}
+            of {getCurrencySymbol(pool.paymentMethod, pool.currency)}{" "}
             {pool.targetAmount.toLocaleString()}
           </span>
         </div>
@@ -367,11 +385,11 @@ export default function PoolsPage() {
         <StatusBadge status={pool.status} />
       </td>
       <td className="px-6 py-4 text-sm font-medium text-gray-900">
-        {getCurrencySymbol(pool.paymentMethod)}{" "}
+        {getCurrencySymbol(pool.paymentMethod, pool.currency)}{" "}
         {pool.targetAmount.toLocaleString()}
       </td>
       <td className="px-6 py-4 text-sm font-medium text-gray-900">
-        {getCurrencySymbol(pool.paymentMethod)}{" "}
+        {getCurrencySymbol(pool.paymentMethod, pool.currency)}{" "}
         {pool.currentBalance.toLocaleString()}
       </td>
       <td className="px-6 py-4">
@@ -450,7 +468,7 @@ export default function PoolsPage() {
           Create Pool
         </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-sm hover:shadow-lg transition-all duration-300 group">
           <div className="flex items-center gap-3">
             <div
@@ -495,22 +513,7 @@ export default function PoolsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-sm hover:shadow-lg transition-all duration-300 group">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shadow-inner group-hover:shadow-sm transition-all duration-300"
-              style={{ backgroundColor: "#7a73ff" }}
-            >
-              <DollarSign className="w-5 h-5 text-white group-hover:scale-110 transition-transform duration-300" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-gray-500">Total Pooled</p>
-              <p className="text-lg font-bold text-gray-900">
-                KSh {stats.totalAmount.toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* Removed Total Pooled stat card (currency-dependent) */}
       </div>
 
       {/* Refresh above combined card */}

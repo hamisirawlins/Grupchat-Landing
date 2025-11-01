@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { dashboardAPI, handleApiError } from "@/lib/api";
+import { loadCurrencyMap, getCurrencySymbolFromMap } from "@/lib/currency";
 import {
   LogOut,
   User,
@@ -57,6 +58,22 @@ export default function Dashboard() {
   // Real data state
   const [dashboardData, setDashboardData] = useState(null);
   const [userPools, setUserPools] = useState([]);
+  const [currencyMap, setCurrencyMap] = useState({});
+
+  useEffect(() => {
+    let mounted = true;
+    loadCurrencyMap()
+      .then((map) => {
+        if (mounted) setCurrencyMap(map);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const getCurrencySymbol = (currencyCode, paymentMethod) =>
+    getCurrencySymbolFromMap(currencyMap, currencyCode, paymentMethod);
   const [chartData, setChartData] = useState({
     poolCompletion: { completed: 0, total: 0 },
     performanceMetrics: { labels: [], data: [] },
@@ -108,6 +125,8 @@ export default function Dashboard() {
           name: pool.name,
           description: pool.description,
           status: pool.status,
+          currency: pool.currency,
+          paymentMethod: pool.payment_method || "mpesa",
           targetAmount: parseFloat(pool.target_amount),
           currentBalance: parseFloat(pool.current_balance),
           percentage:
@@ -320,13 +339,15 @@ export default function Dashboard() {
         <div>
           <p className="text-gray-500 mb-1">Target</p>
           <p className="font-medium text-gray-900 text-xs sm:text-sm">
-            KSh {pool.targetAmount.toLocaleString()}
+            {getCurrencySymbol(pool.currency, pool.paymentMethod)}{" "}
+            {pool.targetAmount.toLocaleString()}
           </p>
         </div>
         <div>
           <p className="text-gray-500 mb-1">Pooled</p>
           <p className="font-medium text-gray-900 text-xs sm:text-sm">
-            KSh {pool.currentBalance.toLocaleString()}
+            {getCurrencySymbol(pool.currency, pool.paymentMethod)}{" "}
+            {pool.currentBalance.toLocaleString()}
           </p>
         </div>
         <div className="col-span-2 sm:col-span-1">
@@ -566,7 +587,7 @@ export default function Dashboard() {
         {/* Dashboard Content */}
         <main className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8">
           {/* Metrics Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
             <MetricCard
               title="Active Pools"
               value={dashboardData.metrics.activePools}
@@ -581,11 +602,6 @@ export default function Dashboard() {
               title="Total Transactions"
               value={dashboardData.metrics.totalTransactions}
               icon={BarChart}
-            />
-            <MetricCard
-              title="Total Pooled (KSh)"
-              value={dashboardData.metrics.totalPooled.toLocaleString()}
-              icon={TrendingUp}
             />
           </div>
 

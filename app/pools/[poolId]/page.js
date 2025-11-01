@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { dashboardAPI, handleApiError } from "@/lib/api";
+import { loadCurrencyMap, getCurrencySymbolFromMap } from "@/lib/currency";
 import { paystackIntegration } from "@/lib/paystack";
 import COUNTRIES from "@/lib/countries";
 import SearchableSelect from "@/components/SearchableSelect";
@@ -49,10 +50,29 @@ function PoolDetailPageContent() {
     return roundedFee;
   };
 
-  // Helper to get currency symbol based on payment method
-  const getCurrencySymbol = () => {
-    return poolData?.paymentMethod === "paystack" ? "$" : "KSh";
-  };
+  // Currency lookup map (loaded via shared helper)
+  const [currencyMap, setCurrencyMap] = useState({});
+
+  useEffect(() => {
+    let mounted = true;
+    loadCurrencyMap()
+      .then((map) => {
+        if (mounted) setCurrencyMap(map);
+      })
+      .catch(() => {
+        /* ignore - fallback will be used */
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const getCurrencySymbol = () =>
+    getCurrencySymbolFromMap(
+      currencyMap,
+      poolData?.currency,
+      poolData?.paymentMethod
+    );
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
@@ -124,26 +144,10 @@ function PoolDetailPageContent() {
   const [manualLoading, setManualLoading] = useState(false);
   const [manualError, setManualError] = useState("");
 
-  // Debug: track pool payment method and modal open state
-  useEffect(() => {
-    console.log(
-      "[ManualTransfer][debug] paymentMethod from poolData:",
-      poolData?.paymentMethod
-    );
-  }, [poolData?.paymentMethod]);
-
-  useEffect(() => {
-    console.log(
-      "[ManualTransfer][debug] showManualTransferModal:",
-      showManualTransferModal
-    );
-  }, [showManualTransferModal]);
+  // Debug hooks removed (no-op) to avoid noisy console output in production
 
   const handleOpenManualTransfer = () => {
-    console.log("[ManualTransfer][debug] Record Transfer clicked", {
-      paymentMethod: poolData?.paymentMethod,
-      hasPoolData: !!poolData,
-    });
+    // Record Transfer clicked (handled internally) - debug logging removed
     if (poolData?.paymentMethod !== "manual") {
       console.warn(
         "[ManualTransfer][debug] Pool is not manual; button should be hidden in this state"
@@ -322,6 +326,7 @@ function PoolDetailPageContent() {
         name: pool.name,
         description: pool.description,
         status: pool.status,
+        currency: pool.currency,
         targetAmount: parseFloat(pool.targetAmount),
         currentBalance: parseFloat(pool.currentBalance),
         percentage: computedPercentage,

@@ -14,15 +14,27 @@ import {
   UserPlus,
   AlertTriangle,
 } from "lucide-react";
+import { loadCurrencyMap, getCurrencySymbolFromMap } from "@/lib/currency";
 
 function JoinPageContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Helper to get currency symbol based on payment method
-  const getCurrencySymbol = (paymentMethod) => {
-    return paymentMethod === "paystack" ? "$" : "KSh";
-  };
+  // Currency map
+  const [currencyMap, setCurrencyMap] = useState({});
+
+  useEffect(() => {
+    let mounted = true;
+    loadCurrencyMap()
+      .then((map) => {
+        if (mounted) setCurrencyMap(map);
+      })
+      .catch(() => {});
+    return () => (mounted = false);
+  }, []);
+
+  const getCurrencySymbol = (paymentMethod) =>
+    getCurrencySymbolFromMap(currencyMap, pool?.currency, paymentMethod);
   const searchParams = useSearchParams();
   const inviteCode = searchParams.get("code");
 

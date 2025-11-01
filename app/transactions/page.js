@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { dashboardAPI, handleApiError } from "@/lib/api";
+import { loadCurrencyMap, getCurrencySymbolFromMap } from "@/lib/currency";
 import {
   ArrowUpRight,
   ArrowDownLeft,
@@ -37,6 +38,7 @@ export default function TransactionsPage() {
   // Real data state
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currencyMap, setCurrencyMap] = useState({});
   const [filterLoading, setFilterLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
@@ -55,7 +57,16 @@ export default function TransactionsPage() {
       return;
     }
 
+    // load currency map for symbol lookups
+    let mounted = true;
+    loadCurrencyMap()
+      .then((map) => {
+        if (mounted) setCurrencyMap(map);
+      })
+      .catch(() => {});
+
     loadTransactions();
+    return () => (mounted = false);
   }, [user, router]);
 
   const loadTransactions = async (page = 1) => {
@@ -310,7 +321,14 @@ export default function TransactionsPage() {
         </div>
         <div className="text-right sm:ml-4 mt-2 sm:mt-0 w-full sm:w-auto">
           <p className="text-lg font-bold text-green-600">
-            {transaction.type === "withdrawal" ? "-" : "+"}KSh{" "}
+            {transaction.type === "withdrawal" ? "-" : "+"}
+            {getCurrencySymbolFromMap(
+              currencyMap,
+              transaction.pools?.currency || transaction.currency,
+              transaction.pools?.payment_method ||
+                transaction.payment_method ||
+                transaction.paymentMethod
+            )}{" "}
             {parseFloat(transaction.amount).toLocaleString()}
           </p>
           <p className="text-xs text-gray-500">
@@ -384,48 +402,7 @@ export default function TransactionsPage() {
         </div>
       )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center">
-              <ArrowDownLeft className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Total Deposits</p>
-              <p className="text-xl font-bold text-[#7a73ff]">
-                KSh {depositTotal.toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center">
-              <ArrowUpRight className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Total Withdrawals</p>
-              <p className="text-xl font-bold text-[#7a73ff]">
-                KSh {withdrawalTotal.toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Net Amount</p>
-              <p className="text-xl font-bold text-[#7a73ff]">
-                KSh {Math.abs(totalAmount).toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Stats removed (currency-dependent) */}
 
       {/* Refresh below filters */}
       {/* <div className="flex items-center justify-end mb-4">
@@ -534,12 +511,30 @@ export default function TransactionsPage() {
                 )}
                 {minAmount && (
                   <span className="px-2 py-1 bg-purple-100 rounded text-xs">
-                    Min: KSh {minAmount}
+                    Min:{" "}
+                    {getCurrencySymbolFromMap(
+                      currencyMap,
+                      successfulTransactions[0]?.pools?.currency ||
+                        successfulTransactions[0]?.currency,
+                      successfulTransactions[0]?.pools?.payment_method ||
+                        successfulTransactions[0]?.payment_method ||
+                        successfulTransactions[0]?.paymentMethod
+                    )}{" "}
+                    {minAmount}
                   </span>
                 )}
                 {maxAmount && (
                   <span className="px-2 py-1 bg-purple-100 rounded text-xs">
-                    Max: KSh {maxAmount}
+                    Max:{" "}
+                    {getCurrencySymbolFromMap(
+                      currencyMap,
+                      successfulTransactions[0]?.pools?.currency ||
+                        successfulTransactions[0]?.currency,
+                      successfulTransactions[0]?.pools?.payment_method ||
+                        successfulTransactions[0]?.payment_method ||
+                        successfulTransactions[0]?.paymentMethod
+                    )}{" "}
+                    {maxAmount}
                   </span>
                 )}
               </div>
