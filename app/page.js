@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { Analytics } from "@vercel/analytics/next";
 import RotatingGlobe from "@/components/RotatingGlobe";
+import SplashCursor from "@/components/SplashCursor";
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -320,6 +320,9 @@ export default function Home() {
         {/* Rotating Globe Background */}
         <RotatingGlobe />
 
+        {/* Splash cursor visual (renders a full-screen canvas behind the hero content) */}
+        <SplashCursor />
+
         {/* Dark Overlay for Text Readability */}
         <div className="absolute inset-0 bg-black/40 z-0"></div>
 
@@ -384,8 +387,8 @@ export default function Home() {
                 whileHover={{ y: -10, scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="text-4xl font-bold text-white mb-2">2+</div>
-                <div className="text-gray-200">Active Users</div>
+                <div className="text-4xl font-bold text-white mb-2">20+</div>
+                <div className="text-gray-200">Dreams Realized</div>
               </motion.div>
 
               <motion.div
@@ -393,9 +396,7 @@ export default function Home() {
                 whileHover={{ y: -10, scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="text-4xl font-bold text-white mb-2">
-                  100K+
-                </div>
+                <div className="text-4xl font-bold text-white mb-2">500K+</div>
                 <div className="text-gray-200">Pooled Successfully</div>
               </motion.div>
 
@@ -404,8 +405,8 @@ export default function Home() {
                 whileHover={{ y: -10, scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="text-4xl font-bold text-white mb-2">20+</div>
-                <div className="text-gray-200">Dreams Realized</div>
+                <div className="text-4xl font-bold text-white mb-2">120+</div>
+                <div className="text-gray-200">Countries</div>
               </motion.div>
             </motion.div>
           </div>
