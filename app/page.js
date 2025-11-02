@@ -579,11 +579,11 @@ export default function Home() {
               </div>
               <div className="mt-8">
                 <h3 className="text-xl font-semibold text-white group-hover:text-blue-300 transition-colors duration-300 mb-2">
-                  Seamless M-Pesa Integration
+                  Seamless Integrations
                 </h3>
                 <p className="text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
-                  Direct M-Pesa integration for instant deposits and
-                  withdrawals. No need to switch apps.
+                  Direct integrations for instant deposits and withdrawals. No
+                  need to switch apps.
                 </p>
               </div>
             </motion.div>
@@ -730,7 +730,7 @@ export default function Home() {
                           >
                             <div className="flex justify-between items-center mb-2">
                               <div className="text-white text-sm font-medium">
-                                Trip to Mombasa
+                                Trip to Bali
                               </div>
                               <div className="text-green-400 text-xs">75%</div>
                             </div>
@@ -743,7 +743,7 @@ export default function Home() {
                               />
                             </div>
                             <div className="text-gray-300 text-xs mt-2">
-                              KSh 15,000 / KSh 20,000
+                              15,000 / 20,000
                             </div>
                           </motion.div>
 
@@ -771,7 +771,7 @@ export default function Home() {
                               />
                             </div>
                             <div className="text-gray-300 text-xs mt-2">
-                              KSh 2,250 / KSh 5,000
+                              2,250 / 5,000
                             </div>
                           </motion.div>
                         </div>
@@ -943,11 +943,12 @@ export default function Home() {
                   </motion.svg>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-300 mb-2">
-                  Seamless M-Pesa
+                  Built for people
                 </h3>
                 <p className="text-gray-600 group-hover:text-gray-700 transition-colors duration-300">
-                  Direct integration with M-Pesa means instant deposits and
-                  withdrawals. No manual tracking needed.
+                  Our vision is to create a world where group financial
+                  activities are seamless and enjoyable. Our goal is to empower
+                  communities to achieve more together.
                 </p>
               </div>
             </motion.div>
@@ -1253,12 +1254,12 @@ export default function Home() {
                         />
                       </svg>
                     </div>
-                    <h3 className="text-xl font-semibold text-white group-hover:text-blue-300 transition-colors duration-300 mb-2">
-                      Use your M-Pesa Phone Number
+                    <h3 className="text-xl font-semibold text-white group-hover:text-purple-300 transition-colors duration-300 mb-2">
+                      Invite Your Pool Members
                     </h3>
                     <p className="text-gray-300 group-hover:text-gray-200 transition-colors duration-300">
-                      Use your existing M-Pesa Phone Number to transact.Enjoy
-                      instant deposits and withdrawals.
+                      Add pool members seamlessly - friends or family anywhere
+                      across the planet. Everyone stays in the loop.
                     </p>
                   </motion.div>
                 </div>
@@ -1435,12 +1436,12 @@ export default function Home() {
                 question:
                   "Can I withdraw my contribution before the goal is reached?",
                 answer:
-                  "Yes, you can withdraw your contribution at any time before the goal is reached. Simply request a withdrawal through the app and receive your money back via M-Pesa instantly.",
+                  "Yes, you can withdraw your transacted contributions at any time before the goal is reached. Simply request a withdrawal from pools created with payment providers like M-Pesa. For manually tracked pools, withdrawals can also be updated, ensuring consistent updates to team members.",
               },
               {
                 question: "How much does GrupChat cost?",
                 answer:
-                  "GrupChat is free to use! You can create groups, plan events, and pool contributions without any upfront cost. We only charge a small transaction fee (less than 2%) to keep things running smoothly and securely.",
+                  "GrupChat is free to use! You can create groups, plan events, and pool contributions without any upfront cost. We only charge a small withdrawal transaction fee (2 - 5%) to keep things running smoothly. Feel free to also share a coffee ☕, it helps us provide better value.",
               },
               {
                 question: "Can I create multiple pools?",
@@ -1448,7 +1449,8 @@ export default function Home() {
                   "Absolutely! You can create as many pools as you want and participate in multiple pools created by your friends and family.",
               },
               {
-                question: "Do all group members need to have the app?",
+                question:
+                  "Do all group members need to have installed the app?",
                 answer:
                   "No, not all group members need to download the GrupChat apps to participate in pools. They can easily access the web app free of charge and still participate in pools. This ensures transparency and security within the pool and group.",
               },
@@ -1748,6 +1750,25 @@ export default function Home() {
                     </svg>
                   </motion.a>
                 ))}
+              </div>
+              {/* Donate / Support Button */}
+              <div className="mt-6">
+                <a
+                  href={"https://buymeacoffee.com/grupchat"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-4 py-2 bg-yellow-400 text-black rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-200"
+                >
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden
+                  >
+                    <path d="M18 8h1a3 3 0 110 6h-1v1a3 3 0 11-6 0v-1H8a3 3 0 110-6h4V6a2 2 0 012-2h2a2 2 0 012 2v2zm-2 0V6h-2v2h2zM8 10a1 1 0 100 2h4v-2H8z" />
+                  </svg>
+                  Top Up Our Coffee
+                </a>
               </div>
             </motion.div>
 
