@@ -103,7 +103,6 @@ export default function SignIn() {
         setError(data.message || "Sign in failed");
       }
     } catch (error) {
-      console.error("Google sign in error:", error);
       setError(error.message || "Sign in failed");
     } finally {
       setIsLoading(false);
