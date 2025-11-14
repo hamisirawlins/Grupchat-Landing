@@ -168,6 +168,9 @@ function DashboardLayoutContent({ children, title, subtitle }) {
       });
 
       if (response.success) {
+        // Reload profile data from Supabase to update client-side state
+        await loadProfileData();
+        
         setProfileSuccess(true);
         setTimeout(() => {
           setProfileSuccess(false);

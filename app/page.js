@@ -198,6 +198,9 @@ export default function Home() {
         </motion.div>
       )}
 
+      {/* Splash cursor visual (renders a full-screen canvas behind all content) */}
+      <SplashCursor />
+
       {/* Navigation */}
       <motion.nav
         className="sticky top-0 z-50 bg-white/10 backdrop-blur-2xl border-b border-white/20 shadow-2xl shadow-purple-500/10"
@@ -319,9 +322,6 @@ export default function Home() {
       <div className="h-screen overflow-x-hidden relative">
         {/* Rotating Globe Background */}
         <RotatingGlobe />
-
-        {/* Splash cursor visual (renders a full-screen canvas behind the hero content) */}
-        <SplashCursor />
 
         {/* Dark Overlay for Text Readability */}
         <div className="absolute inset-0 bg-black/40 z-0"></div>

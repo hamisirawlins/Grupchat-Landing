@@ -1243,12 +1243,12 @@ function SplashCursor({
   ]);
 
   return (
-    // place behind UI (hero has z-10) so content remains readable and interactive
-    <div className="fixed top-0 left-0 z-0 pointer-events-none w-full h-full">
+    // place above everything in z-stack, but with pointer-events-none so it doesn't block interactions
+    <div className="fixed top-0 left-0 z-[9999] pointer-events-none w-full h-screen">
       <canvas
         ref={canvasRef}
         id="fluid"
-        className="w-screen h-screen block"
+        className="w-full h-full block"
       ></canvas>
     </div>
   );
