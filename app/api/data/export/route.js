@@ -21,7 +21,7 @@ export async function POST(request) {
       );
     }
 
-    // Send email notification to grupchatinfo@gmail.com
+    // Send email notification to info@grupchat.net
     await emailService.sendDataExportRequest(email, format.toLowerCase());
 
     console.log(`Data export request sent for: ${email} in ${format} format`);

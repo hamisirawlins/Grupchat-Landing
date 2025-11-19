@@ -185,7 +185,7 @@ export default function PrivacyPolicy() {
                     </li>
                   </ul>
                   <p className="mt-4">
-                    To exercise these rights, please visit our <Link href="/manage-data" className="text-purple-600 underline hover:text-purple-700">data management page</Link> or contact us at <a href="mailto:grupchatinfo@gmail.com" className="text-purple-600 underline hover:text-purple-700">grupchatinfo@gmail.com</a>.
+                    To exercise these rights, please visit our <Link href="/manage-data" className="text-purple-600 underline hover:text-purple-700">data management page</Link> or contact us at <a href="mailto:info@grupchat.net" className="text-purple-600 underline hover:text-purple-700">info@grupchat.net</a>.
                   </p>
                 </section>
 
@@ -212,7 +212,7 @@ export default function PrivacyPolicy() {
                 <section>
                   <h2 className="text-2xl font-semibold text-gray-900 mb-4">Contact Us</h2>
                   <p className="leading-relaxed">
-                    If you have any questions or concerns about this privacy policy or our data practices, please contact us at <a href="mailto:grupchatinfo@gmail.com" className="text-purple-600 underline hover:text-purple-700">grupchatinfo@gmail.com</a>.
+                    If you have any questions or concerns about this privacy policy or our data practices, please contact us at <a href="mailto:info@grupchat.net" className="text-purple-600 underline hover:text-purple-700">info@grupchat.net</a>.
                   </p>
                 </section>
               </motion.div>

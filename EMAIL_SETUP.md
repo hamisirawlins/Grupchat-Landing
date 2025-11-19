@@ -4,7 +4,7 @@ This document explains how to configure email functionality for data management 
 
 ## Overview
 
-The application sends email notifications to `grupchatinfo@gmail.com` when users submit:
+The application sends email notifications to `info@grupchat.net` when users submit:
 - Account deletion requests
 - Data export requests  
 - Data correction requests
@@ -34,22 +34,22 @@ EMAIL_PASS=your_gmail_app_password
 ### Account Deletion
 - **Endpoint**: `POST /api/data/delete-account`
 - **Body**: `{ email, reason, confirmation, additionalComments }`
-- **Email sent to**: `grupchatinfo@gmail.com`
+- **Email sent to**: `info@grupchat.net`
 
 ### Data Export
 - **Endpoint**: `POST /api/data/export` 
 - **Body**: `{ email, format }`
-- **Email sent to**: `grupchatinfo@gmail.com`
+- **Email sent to**: `info@grupchat.net`
 
 ### Data Correction
 - **Endpoint**: `POST /api/data/correction`
 - **Body**: `{ email, type, description }`
-- **Email sent to**: `grupchatinfo@gmail.com`
+- **Email sent to**: `info@grupchat.net`
 
 ### Bug Reports
 - **Endpoint**: `POST /api/bug-report`
 - **Body**: `{ name, email, bugType, description, steps, device, priority }`
-- **Email sent to**: `grupchatinfo@gmail.com`
+- **Email sent to**: `info@grupchat.net`
 
 ## Email Templates
 

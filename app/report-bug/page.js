@@ -353,8 +353,8 @@ export default function ReportBug() {
                   <h3 className="font-semibold text-blue-900 mb-2">Alternative Contact</h3>
                   <p className="text-blue-800">
                     If you're having trouble with this form, you can send your bug report directly to{' '}
-                    <a href="mailto:grupchatinfo@gmail.com" className="underline hover:text-blue-600">
-                      grupchatinfo@gmail.com
+                    <a href="mailto:info@grupchat.net" className="underline hover:text-blue-600">
+                      info@grupchat.net
                     </a>
                   </p>
                 </div>

@@ -39,7 +39,7 @@ export async function POST(request) {
       );
     }
 
-    // Send email notification to grupchatinfo@gmail.com
+    // Send email notification to info@grupchat.net
     await emailService.sendBugReport(
       name,
       email,
