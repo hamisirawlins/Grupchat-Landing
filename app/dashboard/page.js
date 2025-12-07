@@ -530,6 +530,23 @@ export default function Dashboard() {
           ))}
         </nav>
 
+        {/* Coffee Support Button */}
+        <div className="px-4 pb-4">
+          <a
+            href="https://buymeacoffee.com/grupchat"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="coffee-cta inline-flex items-center justify-center w-full px-4 py-2.5 bg-yellow-400 text-black rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-200 shadow-md hover:shadow-lg"
+          >
+            <span className="coffee-chip">
+              <span aria-hidden className="coffee-chip__emoji">
+                ☕️
+              </span>
+              Top Up Our Coffee
+            </span>
+          </a>
+        </div>
+
         {/* User Profile Section - Sticky to Bottom */}
         <div className="p-4 border-t border-white/20 bg-white/50 backdrop-blur-sm">
           <div className="flex items-center justify-between">

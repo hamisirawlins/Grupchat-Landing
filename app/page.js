@@ -4,17 +4,28 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import RotatingGlobe from "@/components/RotatingGlobe";
 import SplashCursor from "@/components/SplashCursor";
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [showComingSoonPopup, setShowComingSoonPopup] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     setIsLoaded(true);
+  }, []);
+
+  // Handle scroll detection for navbar
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Handle escape key to close popup
@@ -201,134 +212,231 @@ export default function Home() {
       {/* Splash cursor visual (renders a full-screen canvas behind all content) */}
       <SplashCursor />
 
-      {/* Navigation */}
+      {/* Floating Navigation */}
       <motion.nav
-        className="sticky top-0 z-50 bg-white/10 backdrop-blur-2xl border-b border-white/20 shadow-2xl shadow-purple-500/10"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)",
-          backdropFilter: "blur(20px) saturate(180%)",
-          WebkitBackdropFilter: "blur(20px) saturate(180%)",
-        }}
-        initial={{ y: -50, opacity: 0 }}
+        className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-6xl mx-auto px-4 sm:px-6 transition-all duration-300 ${
+          isScrolled
+            ? "bg-purple-50/90 backdrop-blur-xl border border-purple-200/50 shadow-lg rounded-2xl"
+            : "bg-purple-100/80 backdrop-blur-2xl border border-purple-200/40 shadow-2xl shadow-purple-500/10 rounded-2xl"
+        }`}
+        initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
+        transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <motion.div
-              className="flex items-center space-x-2 flex-shrink-0"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400 }}
+        <div className="flex items-center justify-between h-14 sm:h-16">
+          {/* Logo */}
+          <motion.a
+            href="/"
+            className="flex items-center space-x-2 flex-shrink-0"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400 }}
+          >
+            <img
+              src="/logo.png"
+              alt="GrupChat Logo"
+              className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+            />
+            <span
+              className={`text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent ${
+                isScrolled ? "" : "drop-shadow-lg"
+              }`}
             >
-              <img
-                src="/logo.png"
-                alt="GrupChat Logo"
-                className="w-16 h-16 sm:w-18 sm:h-18 object-contain"
-              />
-              <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                GrupChat
-              </span>
-            </motion.div>
+              GrupChat
+            </span>
+          </motion.a>
 
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-8">
-              <motion.a
-                href="#features"
-                className="text-gray-800 hover:text-purple-600 transition-colors font-medium relative px-3 py-1 rounded-lg"
-                style={{
-                  textShadow:
-                    "0 1px 2px rgba(255, 255, 255, 0.8), 0 0 8px rgba(255, 255, 255, 0.5)",
-                  background: "rgba(255, 255, 255, 0.1)",
-                  backdropFilter: "blur(10px)",
-                }}
-                whileHover={{ y: -2, scale: 1.05 }}
-              >
-                Features
-              </motion.a>
-              <motion.a
-                href="#how-it-works"
-                className="text-gray-800 hover:text-purple-600 transition-colors font-medium relative px-3 py-1 rounded-lg"
-                style={{
-                  textShadow:
-                    "0 1px 2px rgba(255, 255, 255, 0.8), 0 0 8px rgba(255, 255, 255, 0.5)",
-                  background: "rgba(255, 255, 255, 0.1)",
-                  backdropFilter: "blur(10px)",
-                }}
-                whileHover={{ y: -2, scale: 1.05 }}
-              >
-                How it Works
-              </motion.a>
-            </div>
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-1">
+            <motion.a
+              href="#features"
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-700 hover:text-purple-700 hover:bg-purple-100/50"
+              whileHover={{ y: -1 }}
+              whileTap={{ y: 0 }}
+            >
+              Features
+            </motion.a>
+            <motion.a
+              href="#how-it-works"
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-700 hover:text-purple-700 hover:bg-purple-100/50"
+              whileHover={{ y: -1 }}
+              whileTap={{ y: 0 }}
+            >
+              How it Works
+            </motion.a>
+            <motion.a
+              href="#faq"
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-700 hover:text-purple-700 hover:bg-purple-100/50"
+              whileHover={{ y: -1 }}
+              whileTap={{ y: 0 }}
+            >
+              FAQ
+            </motion.a>
+          </div>
 
-            {/* Desktop Auth Buttons */}
-            <div className="hidden sm:flex items-center space-x-3">
+          {/* Desktop Auth Buttons */}
+          <div className="hidden sm:flex items-center space-x-3">
+            <motion.a
+              href="/sign-in"
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-700 hover:text-purple-700 hover:bg-purple-100/50"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Sign In
+            </motion.a>
+            <motion.a
+              href="/sign-up"
+              className="px-5 py-2 bg-[#7a73ff] text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-sm font-semibold"
+              whileHover={{
+                scale: 1.05,
+                boxShadow: "0 10px 25px -5px rgba(122, 115, 255, 0.4)",
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Get Started
+            </motion.a>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="sm:hidden p-2 rounded-lg transition-colors text-gray-700 hover:bg-purple-100/50"
+            aria-label="Toggle menu"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              {mobileMenuOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              )}
+            </svg>
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        <motion.div
+          className="lg:hidden overflow-hidden"
+          initial={false}
+          animate={{
+            height: mobileMenuOpen ? "auto" : 0,
+            opacity: mobileMenuOpen ? 1 : 0,
+          }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
+          <div className="py-4 space-y-2 border-t border-gray-200/50 mt-2">
+            <motion.a
+              href="#features"
+              className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+              whileTap={{ scale: 0.98 }}
+            >
+              Features
+            </motion.a>
+            <motion.a
+              href="#how-it-works"
+              className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+              whileTap={{ scale: 0.98 }}
+            >
+              How it Works
+            </motion.a>
+            <motion.a
+              href="#faq"
+              className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+              whileTap={{ scale: 0.98 }}
+            >
+              FAQ
+            </motion.a>
+            <div className="pt-2 space-y-2 border-t border-gray-200/50">
               <motion.a
                 href="/sign-in"
-                className="px-4 py-2 text-gray-800 hover:text-purple-600 transition-colors text-sm font-medium rounded-lg"
-                style={{
-                  textShadow:
-                    "0 1px 2px rgba(255, 255, 255, 0.8), 0 0 8px rgba(255, 255, 255, 0.5)",
-                  background: "rgba(255, 255, 255, 0.1)",
-                  backdropFilter: "blur(10px)",
-                }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors text-center"
+                onClick={() => setMobileMenuOpen(false)}
+                whileTap={{ scale: 0.98 }}
               >
                 Sign In
               </motion.a>
               <motion.a
                 href="/sign-up"
-                className="px-4 py-2 bg-[#7a73ff] text-white rounded-full shadow-lg hover:bg-[#7a73ff] transition-all duration-300 inline-block text-sm font-medium"
-                whileHover={{
-                  scale: 1.05,
-                  boxShadow:
-                    "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-                }}
-                whileTap={{ scale: 0.95 }}
+                className="block px-4 py-2 bg-[#7a73ff] text-white rounded-lg text-sm font-semibold text-center shadow-md hover:shadow-lg transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+                whileTap={{ scale: 0.98 }}
               >
                 Get Started
               </motion.a>
             </div>
-
-            {/* Mobile Auth Buttons */}
-            <div className="flex sm:hidden items-center space-x-2">
-              <motion.a
-                href="/sign-in"
-                className="px-3 py-1.5 text-gray-700 hover:text-purple-600 transition-colors text-sm font-medium"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Sign In
-              </motion.a>
-              <motion.a
-                href="/sign-up"
-                className="px-3 py-1.5 bg-[#7a73ff] text-white rounded-full shadow-lg hover:bg-[#7a73ff] transition-all duration-300 inline-block text-sm font-medium"
-                whileHover={{
-                  scale: 1.05,
-                  boxShadow:
-                    "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-                }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Join
-              </motion.a>
-            </div>
           </div>
-        </div>
+        </motion.div>
       </motion.nav>
 
-      <div className="h-screen overflow-x-hidden relative">
-        {/* Rotating Globe Background */}
-        <RotatingGlobe />
-
-        {/* Dark Overlay for Text Readability */}
-        <div className="absolute inset-0 bg-black/40 z-0"></div>
+      <div className="min-h-screen overflow-x-hidden relative bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20">
+        {/* Light Background with Gradient Sections */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Gradient Blobs */}
+          <motion.div
+            className="absolute top-20 left-10 w-96 h-96 bg-gradient-to-br from-purple-200/40 to-blue-200/40 rounded-full blur-3xl"
+            animate={{
+              x: [0, 30, 0],
+              y: [0, -20, 0],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          <motion.div
+            className="absolute top-40 right-20 w-80 h-80 bg-gradient-to-br from-blue-200/40 to-indigo-200/40 rounded-full blur-3xl"
+            animate={{
+              x: [0, -25, 0],
+              y: [0, 25, 0],
+              scale: [1, 1.15, 1],
+            }}
+            transition={{
+              duration: 25,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          <motion.div
+            className="absolute bottom-32 left-1/3 w-72 h-72 bg-gradient-to-br from-purple-300/30 to-pink-200/30 rounded-full blur-3xl"
+            animate={{
+              x: [0, 20, 0],
+              y: [0, -30, 0],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{
+              duration: 18,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          {/* Small gradient accent sections */}
+          <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-transparent rounded-2xl blur-xl" />
+          <div className="absolute bottom-1/4 left-1/4 w-24 h-24 bg-gradient-to-br from-blue-400/20 to-transparent rounded-2xl blur-xl" />
+          <div className="absolute top-1/2 left-1/2 w-40 h-40 bg-gradient-to-br from-indigo-300/15 to-transparent rounded-3xl blur-2xl" />
+        </div>
 
         {/* Hero Section */}
         <motion.div
-          className="relative z-10 px-4 pt-6 pb-8 sm:px-6 sm:pt-10 sm:pb-12 lg:px-12 lg:pt-16 lg:pb-20"
+          className="relative z-10 px-4 pt-24 pb-8 sm:px-6 sm:pt-28 sm:pb-12 lg:px-12 lg:pt-32 lg:pb-20"
           variants={containerVariants}
           initial="hidden"
           animate={isLoaded ? "visible" : "hidden"}
@@ -339,16 +447,16 @@ export default function Home() {
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 sm:mb-6"
               variants={itemVariants}
             >
-              <span className="bg-gradient-to-r from-white via-blue-300 to-purple-300 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 Powering Plans
               </span>
               <br />
-              <span className="text-white">Beyond The Chat</span>
+              <span className="text-gray-900">Beyond The Chat</span>
             </motion.h1>
 
             {/* Subtitle */}
             <motion.p
-              className="text-base sm:text-lg md:text-xl text-gray-200 max-w-3xl mx-auto mb-6 sm:mb-8 leading-relaxed px-4"
+              className="text-base sm:text-lg md:text-xl text-gray-700 max-w-3xl mx-auto mb-6 sm:mb-8 leading-relaxed px-4"
               variants={itemVariants}
             >
               Transform your group chats into group activities. Pool funds with
@@ -383,30 +491,30 @@ export default function Home() {
               variants={itemVariants}
             >
               <motion.div
-                className="text-center p-6 bg-black/30 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20"
+                className="text-center p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 hover:border-purple-300/50 transition-all"
                 whileHover={{ y: -10, scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="text-4xl font-bold text-white mb-2">20+</div>
-                <div className="text-gray-200">Dreams Realized</div>
+                <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">20+</div>
+                <div className="text-gray-700 font-medium">Dreams Realized</div>
               </motion.div>
 
               <motion.div
-                className="text-center p-6 bg-black/30 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20"
+                className="text-center p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 hover:border-purple-300/50 transition-all"
                 whileHover={{ y: -10, scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="text-4xl font-bold text-white mb-2">500K+</div>
-                <div className="text-gray-200">Pooled Successfully</div>
+                <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">500K+</div>
+                <div className="text-gray-700 font-medium">Pooled Successfully</div>
               </motion.div>
 
               <motion.div
-                className="text-center p-6 bg-black/30 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20"
+                className="text-center p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 hover:border-purple-300/50 transition-all"
                 whileHover={{ y: -10, scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="text-4xl font-bold text-white mb-2">120+</div>
-                <div className="text-gray-200">Countries</div>
+                <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">120+</div>
+                <div className="text-gray-700 font-medium">Countries</div>
               </motion.div>
             </motion.div>
           </div>
@@ -425,7 +533,7 @@ export default function Home() {
             transition={{ duration: 2, repeat: Infinity }}
           >
             <motion.div
-              className="w-1 h-3 bg-gray-400 rounded-full mt-2"
+              className="w-1 h-3 bg-gradient-to-b from-purple-500 to-blue-500 rounded-full mt-2"
               animate={{ y: [0, 12, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
@@ -1757,17 +1865,14 @@ export default function Home() {
                   href={"https://buymeacoffee.com/grupchat"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center px-4 py-2 bg-yellow-400 text-black rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-200"
+                  className="coffee-cta inline-flex items-center px-4 py-2 bg-yellow-400 text-black rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-200"
                 >
-                  <svg
-                    className="w-5 h-5 mr-2"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    aria-hidden
-                  >
-                    <path d="M18 8h1a3 3 0 110 6h-1v1a3 3 0 11-6 0v-1H8a3 3 0 110-6h4V6a2 2 0 012-2h2a2 2 0 012 2v2zm-2 0V6h-2v2h2zM8 10a1 1 0 100 2h4v-2H8z" />
-                  </svg>
-                  Top Up Our Coffee
+                  <span className="coffee-chip">
+                    <span aria-hidden className="coffee-chip__emoji">
+                      ☕️
+                    </span>
+                    Top Up Our Coffee
+                  </span>
                 </a>
               </div>
             </motion.div>
