@@ -16,6 +16,7 @@ function SplashCursor({
   COLOR_UPDATE_SPEED = 10,
   BACK_COLOR = { r: 0.5, g: 0, b: 0 },
   TRANSPARENT = true,
+  contained = false,
 }) {
   const canvasRef = useRef(null);
 
@@ -1244,7 +1245,7 @@ function SplashCursor({
 
   return (
     // place above everything in z-stack, but with pointer-events-none so it doesn't block interactions
-    <div className="fixed top-0 left-0 z-[9999] pointer-events-none w-full h-screen">
+    <div className={`${contained ? 'absolute' : 'fixed'} top-0 left-0 z-[9999] pointer-events-none w-full ${contained ? 'h-full' : 'h-screen'}`}>
       <canvas
         ref={canvasRef}
         id="fluid"

@@ -209,9 +209,6 @@ export default function Home() {
         </motion.div>
       )}
 
-      {/* Splash cursor visual (renders a full-screen canvas behind all content) */}
-      <SplashCursor />
-
       {/* Floating Navigation */}
       <motion.nav
         className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-6xl mx-auto px-4 sm:px-6 transition-all duration-300 ${
@@ -386,6 +383,9 @@ export default function Home() {
       </motion.nav>
 
       <div className="min-h-screen overflow-x-hidden relative bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20">
+        {/* Splash cursor visual (only in hero section) */}
+        <SplashCursor contained={true} />
+        
         {/* Light Background with Gradient Sections */}
         <div className="absolute inset-0 overflow-hidden">
           {/* Gradient Blobs */}
