@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 
 export default function RateApp() {
@@ -46,90 +47,61 @@ export default function RateApp() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 relative overflow-hidden">
-      {/* Background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute top-0 left-1/4 w-96 h-96 bg-yellow-200/30 rounded-full blur-3xl"
-          animate={{
-            x: [0, 50, 0],
-            y: [0, -30, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute bottom-0 right-1/4 w-80 h-80 bg-orange-200/30 rounded-full blur-3xl"
-          animate={{
-            x: [0, -50, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-      </div>
-
-      <div className="relative z-10">
-        {/* Navigation */}
-        <motion.nav
-          className="px-6 py-6 lg:px-12"
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
-              <img 
-                src="/logo.png" 
-                alt="GrupChat Logo" 
-                className="w-10 h-10 object-contain"
+    <div className="min-h-screen bg-white">
+      <nav className="sticky top-0 z-50 w-full bg-transparent">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
+          <div className="flex h-12 sm:h-14 items-center justify-between rounded-full bg-gray-100/80 backdrop-blur-xl px-3 sm:px-6 border border-gray-200/50 w-full sm:w-2/3 md:w-1/2 lg:w-1/3 mx-auto">
+            <Link href="/" className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+              <Image
+                src="/logo.png"
+                alt="GrupChat"
+                width={28}
+                height={28}
+                className="h-6 w-6 sm:h-7 sm:w-7"
               />
-              <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              <span className="text-sm sm:text-base font-semibold text-black whitespace-nowrap">
                 GrupChat
               </span>
             </Link>
-            
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <div className="flex items-center gap-3 sm:gap-6">
               <Link
-                href="/"
-                className="inline-flex items-center px-4 py-2 text-gray-700 hover:text-purple-600 transition-colors duration-300"
+                href="/sign-in"
+                className="text-xs sm:text-sm font-semibold text-purple-700 transition-colors hover:text-purple-800 whitespace-nowrap"
               >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Back to Home
+                Log in
               </Link>
-            </motion.div>
+              <Link
+                href="/sign-up"
+                className="rounded-full bg-purple-600 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-bold text-white transition-colors hover:bg-purple-700 whitespace-nowrap"
+              >
+                Join for free
+              </Link>
+            </div>
           </div>
-        </motion.nav>
+        </div>
+      </nav>
 
-        {/* Content */}
+      <section className="px-4 sm:px-6 lg:px-8 pt-8 sm:pt-16 pb-12 sm:pb-16">
         <motion.main
-          className="max-w-3xl mx-auto px-6 py-12 lg:px-12"
+          className="max-w-3xl mx-auto"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
         >
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-purple-200/50 shadow-xl">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 md:p-12 border border-gray-200 shadow-sm">
             <motion.div
               className="text-center mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
               </div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">Rate The App</h1>
-              <p className="text-lg text-gray-600">
+              <h1 className="text-3xl sm:text-4xl font-bold text-black mb-3">Rate The App</h1>
+              <p className="text-base sm:text-lg text-gray-500">
                 We value your feedback! Please rate GrupChat and let us know how we can improve.
               </p>
             </motion.div>
@@ -142,8 +114,8 @@ export default function RateApp() {
               >
                 {/* Star Rating */}
                 <div className="text-center mb-8">
-                  <motion.h2
-                    className="text-2xl font-semibold text-gray-900 mb-4"
+                    <motion.h2
+                    className="text-2xl font-semibold text-black mb-4"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.6 }}
@@ -170,7 +142,7 @@ export default function RateApp() {
                   
                   {rating > 0 && (
                     <motion.p
-                      className="text-gray-600"
+                      className="text-gray-500"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4 }}
@@ -189,7 +161,7 @@ export default function RateApp() {
                   transition={{ duration: 0.6, delay: 0.8 }}
                 >
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-2">
+                    <label htmlFor="email" className="block text-sm font-semibold text-black mb-2">
                       Email Address (Optional)
                     </label>
                     <input
@@ -197,13 +169,13 @@ export default function RateApp() {
                       id="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-600 transition-colors text-black placeholder-gray-400"
                       placeholder="Enter your email (optional)"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="feedback" className="block text-sm font-medium text-gray-900 mb-2">
+                    <label htmlFor="feedback" className="block text-sm font-semibold text-black mb-2">
                       Your Feedback
                     </label>
                     <textarea
@@ -211,7 +183,7 @@ export default function RateApp() {
                       rows={5}
                       value={feedback}
                       onChange={(e) => setFeedback(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-300"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-600 transition-colors text-black placeholder-gray-400"
                       placeholder="Tell us what you love about GrupChat or how we can improve..."
                     />
                   </div>
@@ -219,7 +191,7 @@ export default function RateApp() {
                   <motion.button
                     type="submit"
                     disabled={rating === 0}
-                    className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-4 px-8 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-purple-600 text-white py-4 px-8 rounded-full font-semibold text-lg shadow-sm hover:bg-purple-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     whileHover={rating > 0 ? { scale: 1.02, y: -2 } : {}}
                     whileTap={rating > 0 ? { scale: 0.98 } : {}}
                   >
@@ -229,12 +201,12 @@ export default function RateApp() {
 
                 {/* App Store Links */}
                 <motion.div
-                  className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl border border-purple-200"
+                  className="mt-8 p-6 bg-purple-50 rounded-2xl border border-purple-200"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.9 }}
                 >
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+                  <h3 className="text-lg font-semibold text-black mb-4 text-center">
                     Love GrupChat? Rate us on the app stores!
                   </h3>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -242,7 +214,7 @@ export default function RateApp() {
                       href="https://play.google.com/store/apps/details?id=com.grupchat.app"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center px-6 py-3 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                      className="flex items-center justify-center px-6 py-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 text-black"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -256,7 +228,7 @@ export default function RateApp() {
                       href="https://apps.apple.com/app/grupchat/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center px-6 py-3 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                      className="flex items-center justify-center px-6 py-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 text-black"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -280,7 +252,7 @@ export default function RateApp() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Thank You!</h2>
+                <h2 className="text-2xl font-bold text-black mb-4">Thank You!</h2>
                 <div className="flex justify-center space-x-1 mb-4">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <svg
@@ -293,12 +265,12 @@ export default function RateApp() {
                     </svg>
                   ))}
                 </div>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-500 mb-6">
                   Your {rating}-star rating has been submitted successfully. We appreciate your feedback!
                 </p>
                 <Link
                   href="/"
-                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-300"
+                  className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors duration-300"
                 >
                   Return to Home
                 </Link>
@@ -306,20 +278,20 @@ export default function RateApp() {
             )}
 
             <motion.div
-              className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-2xl"
+              className="mt-8 p-6 bg-purple-50 border border-purple-200 rounded-2xl"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 1.0 }}
             >
               <div className="flex items-start space-x-3">
-                <svg className="w-6 h-6 text-blue-600 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-purple-600 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div>
-                  <h3 className="font-semibold text-blue-900 mb-2">Alternative Contact</h3>
-                  <p className="text-blue-800">
+                  <h3 className="font-semibold text-black mb-2">Alternative Contact</h3>
+                  <p className="text-gray-600">
                     You can also send your feedback directly to{' '}
-                    <a href="mailto:info@grupchat.net" className="underline hover:text-blue-600">
+                    <a href="mailto:info@grupchat.net" className="underline hover:text-purple-700">
                       info@grupchat.net
                     </a>
                   </p>
@@ -328,7 +300,7 @@ export default function RateApp() {
             </motion.div>
           </div>
         </motion.main>
-      </div>
+      </section>
     </div>
   );
 }
