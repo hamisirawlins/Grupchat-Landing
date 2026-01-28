@@ -11,6 +11,7 @@ export default function SearchableSelect({
   options = [],
   value = "",
   onChange = () => {},
+  onQueryChange = () => {},
   placeholder = "Search...",
   className = "",
 }) {
@@ -46,6 +47,10 @@ export default function SearchableSelect({
     // reset highlight when filtered changes
     setHighlight(0);
   }, [query]);
+
+  useEffect(() => {
+    onQueryChange(query);
+  }, [query, onQueryChange]);
 
   const handleKeyDown = (e) => {
     if (!open) return;

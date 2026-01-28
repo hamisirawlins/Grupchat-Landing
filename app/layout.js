@@ -1,6 +1,7 @@
 import { Figtree } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import PageTransition from "@/components/PageTransition";
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
@@ -50,7 +51,7 @@ export default function RootLayout({ children }) {
         className={`${figtree.variable} antialiased`}
       >
         <AuthProvider>
-          {children}
+          <PageTransition>{children}</PageTransition>
         </AuthProvider>
         <Analytics />
         <SpeedInsights />

@@ -53,7 +53,7 @@ export default function RateApp() {
           <div className="flex h-12 sm:h-14 items-center justify-between rounded-full bg-gray-100/80 backdrop-blur-xl px-3 sm:px-6 border border-gray-200/50 w-full sm:w-2/3 md:w-1/2 lg:w-1/3 mx-auto">
             <Link href="/" className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
               <Image
-                src="/logo.png"
+                src="/logo.png" 
                 alt="GrupChat"
                 width={28}
                 height={28}
@@ -114,7 +114,7 @@ export default function RateApp() {
               >
                 {/* Star Rating */}
                 <div className="text-center mb-8">
-                    <motion.h2
+                  <motion.h2
                     className="text-2xl font-semibold text-black mb-4"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

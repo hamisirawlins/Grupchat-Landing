@@ -1,260 +1,241 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
-import { dashboardAPI, handleApiError } from "@/lib/api";
+import DashboardLoading from "@/components/dashboard/DashboardLoading";
+import DashboardSidebar from "@/components/navigation/DashboardSidebar";
 import {
-  User,
+  BarChart3,
   Bell,
-  Smartphone,
+  FolderOpen,
+  Home,
   Mail,
-  Volume2,
-  Save,
-  CheckCircle,
-  AlertCircle,
-  ArrowLeft,
-  Eye,
-  EyeOff,
-  Info,
+  Menu,
+  MessageSquare,
+  Settings,
+  ShieldCheck,
+  UploadCloud,
+  User,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  feedbackAPI,
+  handleApiError,
+  notificationPreferencesAPI,
+  uploadsAPI,
+  usersAPI,
+} from "@/lib/api";
 
 export default function SettingsPage() {
-  const { user, loading: authLoading } = useAuth();
+  const {
+    user,
+    profile,
+    refreshProfile,
+    logout,
+    loading: authLoading,
+  } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("settings");
+  const [displayName, setDisplayName] = useState(user?.displayName || "");
+  const [username, setUsername] = useState("");
+  const [profileImage, setProfileImage] = useState(null);
+  const [profilePreview, setProfilePreview] = useState("");
+  const [notifyApp, setNotifyApp] = useState(true);
+  const [notifyEmail, setNotifyEmail] = useState(true);
+  const [feedback, setFeedback] = useState("");
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState("");
+  const [profileSuccess, setProfileSuccess] = useState("");
+  const [preferencesError, setPreferencesError] = useState("");
+  const [feedbackStatus, setFeedbackStatus] = useState("");
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
 
-  // Form state
-  const [formData, setFormData] = useState({
-    // Profile section
-    displayName: "",
-    phone: "",
-    language: "en",
-    timezone: "Africa/Nairobi",
-
-    // Notification section
-    in_app: true,
-    fcm: true,
-    email: true,
-  });
-
-  // Phone number formatting state
-  const [phoneDisplay, setPhoneDisplay] = useState("");
-  const [phoneError, setPhoneError] = useState("");
-
-  // Load settings function
-  const loadSettings = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Load profile settings
-      const profileResponse = await dashboardAPI.getUserProfile();
-      if (profileResponse.success) {
-        const userData = profileResponse.data.user;
-        const phone = userData.phone || "";
-
-        setFormData((prev) => ({
-          ...prev,
-          displayName: userData.displayName || "",
-          phone: phone,
-        }));
-
-        // Format phone for display (remove + and show local format)
-        if (phone) {
-          setPhoneDisplay(formatPhoneForDisplay(phone));
-        }
-      }
-
-      // Load notification settings
-      const notificationResponse = await dashboardAPI.getNotificationSettings();
-      if (notificationResponse.success) {
-        setFormData((prev) => ({
-          ...prev,
-          in_app: notificationResponse.data.in_app ?? true,
-          fcm: notificationResponse.data.fcm ?? true,
-          email: notificationResponse.data.email ?? true,
-        }));
-      }
-
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to load settings:", error);
-      setError("Failed to load settings");
-      setLoading(false);
-    }
-  };
-
-  // Phone number formatting functions
-  const formatPhoneForDisplay = (internationalPhone) => {
-    if (!internationalPhone) return "";
-
-    // Remove + and convert to local format
-    const cleanPhone = internationalPhone.replace("+", "");
-
-    // Handle Kenya numbers (254)
-    if (cleanPhone.startsWith("254")) {
-      return "0" + cleanPhone.substring(3);
-    }
-
-    // Handle other countries (add more as needed)
-    if (cleanPhone.startsWith("1")) {
-      // US/Canada
-      return cleanPhone;
-    }
-
-    return cleanPhone;
-  };
-
-  const formatPhoneForAPI = (localPhone) => {
-    if (!localPhone) return "";
-
-    // Convert local format to international
-    let internationalPhone = localPhone;
-
-    // Handle Kenya numbers (0 -> +254)
-    if (localPhone.startsWith("0")) {
-      internationalPhone = "+254" + localPhone.substring(1);
-    } else if (localPhone.startsWith("254")) {
-      internationalPhone = "+" + localPhone;
-    } else if (!localPhone.startsWith("+")) {
-      // Assume it's a local number, add +254 for Kenya
-      internationalPhone = "+254" + localPhone;
-    }
-
-    return internationalPhone;
-  };
-
-  const validatePhone = (phone) => {
-    if (!phone) return "Phone number is required";
-
-    const digits = phone.replace(/\D/g, "");
-
-    // Kenya mobile number validation
-    if (digits.startsWith("254")) {
-      // International format: +254712345678
-      if (digits.length !== 12) {
-        return "Kenya international number must be 12 digits (254 + 9 digits)";
-      }
-      // Validate that the part after 254 is a valid mobile prefix
-      const mobilePart = digits.substring(3);
-      if (!/^[17]\d{8}$/.test(mobilePart)) {
-        return "Invalid Kenya mobile number format after 254";
-      }
-    } else if (digits.startsWith("07") || digits.startsWith("01")) {
-      // Local format: 0712345678 or 0112345678
-      if (digits.length !== 10) {
-        return "Kenya local number must be 10 digits (07XX XXX XXX)";
-      }
-      // Validate mobile prefixes (07) and landline prefixes (01)
-      if (digits.startsWith("07")) {
-        // Mobile: 07XX XXX XXX
-        if (!/^07[17]\d{7}$/.test(digits)) {
-          return "Invalid Kenya mobile number format (07XX XXX XXX)";
-        }
-      } else if (digits.startsWith("01")) {
-        // Landline: 01XX XXX XXX
-        if (!/^01\d{8}$/.test(digits)) {
-          return "Invalid Kenya landline number format (01XX XXX XXX)";
-        }
-      }
-    } else {
-      return "Please enter a valid Kenya phone number starting with 07, 01, or +254";
-    }
-
-    if (/^0+$/.test(digits)) {
-      return "Phone number cannot be all zeros";
-    }
-
-    return "";
-  };
-
-  const handlePhoneChange = (value) => {
-    setFormData((prev) => ({ ...prev, phone: value }));
-    setPhoneDisplay(value);
-
-    const error = validatePhone(value);
-    setPhoneError(error);
-  };
-
-  // Save settings function
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-      setError(null);
-      setSuccessMessage("");
-
-      // Validate phone number
-      const phoneError = validatePhone(formData.phone);
-      if (phoneError) {
-        setError(phoneError);
-        setSaving(false);
-        return;
-      }
-
-      // Format phone for API
-      const internationalPhone = formatPhoneForAPI(formData.phone);
-
-      // Save profile settings
-      const profileResponse = await dashboardAPI.updateProfile({
-        displayName: formData.displayName,
-        phone: internationalPhone,
-      });
-
-      if (!profileResponse.success) {
-        throw new Error(profileResponse.message || "Failed to update profile");
-      }
-
-      // Save notification settings
-      const notificationResponse =
-        await dashboardAPI.updateNotificationSettings({
-          in_app: formData.in_app,
-          fcm: formData.fcm,
-          email: formData.email,
-        });
-
-      if (!notificationResponse.success) {
-        throw new Error(
-          notificationResponse.message || "Failed to update notifications"
-        );
-      }
-
-      setSuccessMessage("Settings saved successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (error) {
-      console.error("Failed to save settings:", error);
-      setError(handleApiError(error, "Failed to save settings"));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Load settings on component mount
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
       router.push("/");
       return;
     }
+  }, [authLoading, user, router]);
 
-    loadSettings();
-  }, [user, authLoading, router]);
+  useEffect(() => {
+    if (!profile) return;
+    if (typeof profile.displayName === "string") {
+      setDisplayName(profile.displayName);
+    }
+    if (profile.username) {
+      setUsername(profile.username);
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (!profileImage) {
+      setProfilePreview("");
+      return;
+    }
+    const previewUrl = URL.createObjectURL(profileImage);
+    setProfilePreview(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [profileImage]);
+
+  const handleUpdateProfile = async () => {
+    setProfileLoading(true);
+    setProfileError("");
+    setProfileSuccess("");
+    try {
+      const response = await usersAPI.updateMe({ username, displayName });
+      if (response?.data?.username) {
+        setUsername(response.data.username);
+      }
+      if (typeof response?.data?.displayName === "string") {
+        setDisplayName(response.data.displayName);
+      }
+      await refreshProfile();
+      setProfileSuccess("Profile updated.");
+    } catch (error) {
+      setProfileError(handleApiError(error, "Unable to update profile."));
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const getImageDimensions = (file) =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve({ width: img.width, height: img.height });
+      img.onerror = () => resolve({ width: null, height: null });
+      img.src = URL.createObjectURL(file);
+    });
+
+  const fileToDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Unable to read file"));
+      reader.readAsDataURL(file);
+    });
+
+  const uploadAvatarImage = async (file) => {
+    setAvatarUploading(true);
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      const uploadResponse = await uploadsAPI.uploadImage({
+        dataUrl,
+        fileName: file.name,
+        contentType: file.type,
+        folder: "users/profile",
+      });
+      const uploaded = uploadResponse?.data;
+      const { width, height } = await getImageDimensions(file);
+
+      await usersAPI.uploadAvatar({
+        url: uploaded?.url,
+        thumbnailUrl: null,
+        mimeType: uploaded?.contentType || file.type,
+        bytes: uploaded?.bytes || file.size,
+        width,
+        height,
+        storagePath: uploaded?.storagePath,
+      });
+      await refreshProfile();
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
+  const handleProfileImageSelect = async (event) => {
+    const file = event.target.files?.[0] || null;
+    if (!file) return;
+    setProfileImage(file);
+    setProfileSuccess("");
+    try {
+      await uploadAvatarImage(file);
+    } catch (error) {
+      setProfileError(handleApiError(error, "Unable to upload profile image."));
+    }
+  };
+
+  const handlePreferenceUpdate = async (payload) => {
+    setPreferencesError("");
+    try {
+      await notificationPreferencesAPI.updatePreferences(payload);
+    } catch (error) {
+      setPreferencesError(
+        handleApiError(error, "Unable to update preferences."),
+      );
+    }
+  };
+
+  const handleSubmitFeedback = async () => {
+    setFeedbackStatus("");
+    setFeedbackLoading(true);
+    try {
+      await feedbackAPI.submitFeedback({ message: feedback });
+      setFeedback("");
+      setFeedbackStatus("Feedback sent. Thank you!");
+    } catch (error) {
+      setFeedbackStatus(handleApiError(error, "Unable to send feedback."));
+    } finally {
+      setFeedbackLoading(false);
+    }
+  };
+
+  const initials = useMemo(() => {
+    const source =
+      displayName ||
+      username ||
+      user?.displayName ||
+      user?.email?.split("@")[0] ||
+      ";)";
+    return source
+      .split(" ")
+      .map((part) => part.charAt(0))
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  }, [displayName, username, user]);
+
+  const avatarUrl = profilePreview || profile?.avatarUrl || "";
+  const hasAvatar = Boolean(avatarUrl);
+
+  const primaryNavItems = [
+    { id: "homepage", label: "Overview", icon: Home },
+    { id: "plans", label: "Plans", icon: FolderOpen },
+    { id: "plot", label: "Plot", icon: BarChart3 },
+    { id: "notifications", label: "Notifications", icon: Bell },
+  ];
+
+  const accountNavItems = [
+    { id: "settings", label: "Settings", icon: Settings },
+  ];
+
+  const handlePrimaryNavClick = (item) => {
+    if (item.id === "homepage") {
+      setActiveTab(item.id);
+      router.push("/dashboard");
+      return;
+    }
+    router.push(`/${item.id}`);
+  };
+
+  const handleAccountNavClick = (item) => {
+    setActiveTab(item.id);
+    router.push(`/${item.id}`);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/");
+  };
 
   if (authLoading) {
     return (
-      <DashboardLayout
-        title="Settings"
-        subtitle="Manage your account preferences"
-      >
-        <div className="text-center py-12">
-          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </DashboardLayout>
+      <DashboardLoading
+        title="Loading settings"
+        subtitle="Preparing your preferences."
+      />
     );
   }
 
@@ -262,226 +243,303 @@ export default function SettingsPage() {
     return null;
   }
 
-  if (loading) {
-    return (
-      <DashboardLayout
-        title="Settings"
-        subtitle="Manage your account preferences"
-      >
-        <div className="text-center py-12">
-          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading settings...</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   return (
-    <DashboardLayout
-      title="Settings"
-      subtitle="Manage your account preferences and settings"
-    >
-      <div className="max-w-6xl mx-auto px-4">
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50/80 backdrop-blur-xl border border-red-200/50 rounded-xl">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-red-500" />
-              <p className="text-red-700">{error}</p>
-            </div>
-          </div>
-        )}
+    <div className="min-h-screen bg-gradient-to-b from-[#f7f4ff] via-white to-[#eef2ff] flex overflow-hidden relative">
+      <DashboardSidebar
+        mobileMenuOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        primaryNavItems={primaryNavItems}
+        accountNavItems={accountNavItems}
+        activeTab={activeTab}
+        onPrimaryNavClick={handlePrimaryNavClick}
+        onAccountNavClick={handleAccountNavClick}
+        onLogout={handleLogout}
+        user={user}
+        profile={profile}
+      />
 
-        {/* Success Message */}
-        {successMessage && (
-          <div className="mb-6 p-4 bg-green-50/80 backdrop-blur-xl border border-green-200/50 rounded-xl">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-500" />
-              <p className="text-green-700">{successMessage}</p>
-            </div>
-          </div>
-        )}
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSave();
-          }}
-          className="space-y-8 w-full lg:w-3/4 lg:mx-auto"
+      <main className="flex-1 lg:ml-80 min-w-0 relative">
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className="lg:hidden fixed top-6 left-6 z-30 h-11 w-11 rounded-full bg-white/90 shadow-lg border border-white/40 text-gray-600 flex items-center justify-center"
+          aria-label="Open navigation"
         >
-          {/* Profile Section */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-xl border border-white/20 p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Profile Information
-                </h3>
-                <p className="text-sm text-gray-500">
-                  Update your personal details and payment number
-                </p>
-              </div>
-            </div>
+          <Menu className="w-5 h-5" />
+        </button>
 
-            <div className="space-y-4">
+        <div className="px-6 sm:px-10 lg:px-16 pt-20 sm:pt-24 pb-16 lg:pb-20 space-y-10">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+              Settings
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 mt-2">
+              Personalize your experience
+            </h1>
+            <p className="text-sm text-gray-500 mt-2 max-w-2xl">
+              Update your profile, manage notifications, and stay connected with
+              your crew.
+            </p>
+          </div>
+
+          <section className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 sm:p-8">
+            <div className="flex items-start justify-between gap-6 flex-wrap">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div
+                    className={`h-16 w-16 rounded-2xl text-white flex items-center justify-center text-lg font-semibold overflow-hidden ${
+                      hasAvatar ? "bg-transparent" : "bg-[#7a73ff]"
+                    }`}
+                  >
+                    {hasAvatar ? (
+                      <img
+                        src={avatarUrl}
+                        alt="Profile"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      initials
+                    )}
+                  </div>
+                  <label
+                    className={`absolute -bottom-2 -right-2 bg-white border border-gray-200 rounded-full p-2 shadow-sm cursor-pointer ${
+                      avatarUploading ? "opacity-60 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <UploadCloud className="w-4 h-4 text-[#6b63ff]" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfileImageSelect}
+                      disabled={avatarUploading}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Your profile
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Update your username and profile image.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleUpdateProfile}
+                disabled={profileLoading || avatarUploading}
+                className={`inline-flex items-center gap-2 px-5 py-2 rounded-full text-white text-sm font-semibold shadow-md transition-shadow ${
+                  profileLoading || avatarUploading
+                    ? "bg-[#b8b5ff] cursor-not-allowed"
+                    : "bg-[#7a73ff] hover:shadow-lg"
+                }`}
+              >
+                {avatarUploading || profileLoading ? (
+                  <span className="inline-flex items-center gap-2">
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
+                    Updating...
+                  </span>
+                ) : (
+                  <>
+                    <User className="w-4 h-4" />
+                    Update profile
+                  </>
+                )}
+              </button>
+            </div>
+            {avatarUploading && (
+              <p className="mt-4 text-sm text-gray-500">
+                Uploading profile image...
+              </p>
+            )}
+            {profileError && (
+              <p className="mt-4 text-sm text-red-500">{profileError}</p>
+            )}
+            {profileSuccess && (
+              <p className="mt-4 text-sm text-green-600">{profileSuccess}</p>
+            )}
+
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Display Name
+                  Display name
                 </label>
                 <input
                   type="text"
-                  value={formData.displayName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, displayName: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Enter your display name"
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                  placeholder="Enter your name"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#7a73ff]"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
+                  Username
                 </label>
                 <input
-                  type="tel"
-                  value={phoneDisplay}
-                  onChange={(e) => handlePhoneChange(e.target.value)}
-                  className={`w-full px-4 py-3 border bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent ${
-                    phoneError ? "border-red-300" : "border-[#b8b5ff]"
-                  }`}
-                  placeholder="e.g., 0712345678"
+                  type="text"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  placeholder="Enter your username"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#7a73ff]"
                 />
-                {phoneError && (
-                  <p className="text-sm text-red-600 mt-1">{phoneError}</p>
-                )}
-                <p className="text-xs text-[#7a73ff] mt-1">e.g., 0712345678</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Notifications Section */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-xl border border-[#b8b5ff] p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center">
-                <Bell className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Notifications
-                </h3>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Account email
+                </label>
+                <input
+                  type="email"
+                  value={user.email}
+                  disabled
+                  className="w-full px-4 py-3 border border-gray-200 rounded-2xl bg-gray-50 text-gray-500"
+                />
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 sm:p-8">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-[#f3f1ff] text-[#6b63ff] flex items-center justify-center">
+                <Bell className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Notification preferences
+                </h2>
                 <p className="text-sm text-gray-500">
-                  Choose how you want to be notified
+                  Choose how you want to be notified.
                 </p>
               </div>
             </div>
 
-            <div className="space-y-4">
-              {/* <div className="flex items-center justify-between p-4 bg-[#f6f5ff] backdrop-blur-xl rounded-xl">
+            <div className="mt-6 space-y-4">
+              <div className="flex items-center justify-between p-4 rounded-2xl border border-gray-200 bg-[#f6f5ff]">
                 <div className="flex items-center gap-3">
-                  <Volume2 className="w-5 h-5 text-[#7a73ff]" />
+                  <ShieldCheck className="w-5 h-5 text-[#7a73ff]" />
                   <div>
-                    <p className="font-medium text-[#7a73ff]">
-                      In-App Notifications
-                    </p>
+                    <p className="font-medium text-gray-900">App alerts</p>
                     <p className="text-sm text-gray-500">
-                      Receive notifications within the app
+                      Get real-time notifications inside GrupChat.
                     </p>
                   </div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={formData.in_app}
-                    onChange={(e) =>
-                      setFormData({ ...formData, in_app: e.target.checked })
-                    }
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-[#b8b5ff] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#7a73ff] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#b8b5ff] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#7a73ff]"></div>
-                </label>
-              </div> */}
-
-              <div className="flex items-center justify-between p-4 bg-[#f6f5ff] backdrop-blur-xl rounded-xl">
-                <div className="flex items-center gap-3">
-                  <Smartphone className="w-5 h-5 text-[#7a73ff]" />
-                  <div>
-                    <p className="font-medium text-[#7a73ff]">
-                      Push Notifications
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Receive notifications on your device
-                    </p>
-                  </div>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.fcm}
-                    onChange={(e) =>
-                      setFormData({ ...formData, fcm: e.target.checked })
-                    }
+                    checked={notifyApp}
+                    onChange={(event) => {
+                      const nextValue = event.target.checked;
+                      setNotifyApp(nextValue);
+                      handlePreferenceUpdate({ appEnabled: nextValue });
+                    }}
                     className="sr-only peer"
                   />
                   <div className="w-11 h-6 bg-[#b8b5ff] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#7a73ff] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#b8b5ff] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#7a73ff]"></div>
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-[#f6f5ff] backdrop-blur-xl rounded-xl">
+              <div className="flex items-center justify-between p-4 rounded-2xl border border-gray-200 bg-[#f6f5ff]">
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-[#7a73ff]" />
                   <div>
-                    <p className="font-medium text-[#7a73ff]">
-                      Email Notifications
-                    </p>
+                    <p className="font-medium text-gray-900">Email updates</p>
                     <p className="text-sm text-gray-500">
-                      Receive notifications via email
+                      Receive summaries and invites via email.
                     </p>
                   </div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.checked })
-                    }
+                    checked={notifyEmail}
+                    onChange={(event) => {
+                      const nextValue = event.target.checked;
+                      setNotifyEmail(nextValue);
+                      handlePreferenceUpdate({ emailEnabled: nextValue });
+                    }}
                     className="sr-only peer"
                   />
                   <div className="w-11 h-6 bg-[#b8b5ff] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#7a73ff] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#b8b5ff] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#7a73ff]"></div>
                 </label>
               </div>
             </div>
-          </div>
+            {preferencesError && (
+              <p className="mt-4 text-sm text-red-500">{preferencesError}</p>
+            )}
+          </section>
 
-          {/* Save Button */}
-          <div className="sticky bottom-4 pt-4">
-            <button
-              type="submit"
-              disabled={saving || phoneError}
-              className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
-                saving || phoneError
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-[#7a73ff] text-white hover:bg-[#6961ff] hover:shadow-lg"
-              }`}
-            >
-              {saving ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-5 h-5" />
-                  Save All Changes
-                </>
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 sm:p-8 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#f3f1ff] text-[#6b63ff] flex items-center justify-center">
+                  <MessageSquare className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Feedback
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Tell us what would make GrupChat better.
+                  </p>
+                </div>
+              </div>
+              <textarea
+                value={feedback}
+                onChange={(event) => setFeedback(event.target.value)}
+                placeholder="Share your thoughts..."
+                className="min-h-[140px] w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#7a73ff]"
+              />
+              <button
+                onClick={handleSubmitFeedback}
+                disabled={feedbackLoading}
+                className={`inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full text-white text-sm font-semibold transition-shadow ${
+                  feedbackLoading
+                    ? "bg-slate-700/60 cursor-not-allowed"
+                    : "bg-[#0b2239] hover:shadow-md"
+                }`}
+              >
+                {feedbackLoading ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
+                    Sending...
+                  </>
+                ) : (
+                  "Send feedback"
+                )}
+              </button>
+              {feedbackStatus && (
+                <p className="text-sm text-gray-500">{feedbackStatus}</p>
               )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </DashboardLayout>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 sm:p-8 flex flex-col gap-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#fff4e6] text-[#f97316] flex items-center justify-center">
+                  <Settings className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Support
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Need help? We are ready when you are.
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <button className="w-full inline-flex items-center justify-between px-4 py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-700 hover:border-gray-300">
+                  Help center
+                  <span className="text-gray-400">→</span>
+                </button>
+                <button className="w-full inline-flex items-center justify-between px-4 py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-700 hover:border-gray-300">
+                  Contact support
+                  <span className="text-gray-400">→</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
   );
 }

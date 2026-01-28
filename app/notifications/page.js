@@ -1,383 +1,293 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
-import { dashboardAPI, handleApiError } from "@/lib/api";
+import DashboardLoading from "@/components/dashboard/DashboardLoading";
+import DashboardSidebar from "@/components/navigation/DashboardSidebar";
 import {
+  BarChart3,
   Bell,
-  Check,
-  Trash2,
-  Settings,
-  ArrowLeft,
-  Users,
+  CheckCircle2,
   FolderOpen,
-  ArrowUpRight,
-  ArrowDownLeft,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  Filter,
-  MoreHorizontal,
-  RefreshCw,
+  Home,
+  Menu,
+  Settings,
+  Sparkles,
+  Users,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  handleApiError,
+  invitationsAPI,
+  notificationsAPI,
+  plansAPI,
+} from "@/lib/api";
+import SearchableSelect from "@/components/SearchableSelect";
 
 export default function NotificationsPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, logout, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [filter, setFilter] = useState("all");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("notifications");
   const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [notificationSettings, setNotificationSettings] = useState({
-    in_app: true,
-    fcm: true,
-    email: true,
-  });
-  const [showSettings, setShowSettings] = useState(false);
-  const [markingAsRead, setMarkingAsRead] = useState(new Set());
-  const [markingAllAsRead, setMarkingAllAsRead] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(null);
-  const [inviteModal, setInviteModal] = useState({
-    open: false,
-    notification: null,
-    submitting: false,
-    error: null,
-  });
+  const [invitations, setInvitations] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [loadingInvitations, setLoadingInvitations] = useState(false);
+  const [notificationsError, setNotificationsError] = useState("");
+  const [invitesError, setInvitesError] = useState("");
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [invitePlanId, setInvitePlanId] = useState("");
+  const [inviteUsername, setInviteUsername] = useState("");
+  const [inviteStatus, setInviteStatus] = useState("");
+  const [planOptions, setPlanOptions] = useState([]);
+  const [planSearch, setPlanSearch] = useState("");
+  const [planSearchLoading, setPlanSearchLoading] = useState(false);
+  const [markingAllRead, setMarkingAllRead] = useState(false);
+  const [sendingInvite, setSendingInvite] = useState(false);
+  const [acceptingInviteId, setAcceptingInviteId] = useState(null);
+  const [decliningInviteId, setDecliningInviteId] = useState(null);
+  const [revokingInviteId, setRevokingInviteId] = useState(null);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
       router.push("/");
+    }
+  }, [authLoading, user, router]);
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+    fetchNotifications();
+    fetchInvitations();
+    fetchUnreadCount();
+  }, [authLoading, user]);
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+    const timeoutId = setTimeout(() => {
+      fetchPlanOptions(planSearch);
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [planSearch, authLoading, user]);
+
+  const toDateValue = (value) => {
+    if (!value) return null;
+    if (typeof value === "string") return new Date(value);
+    if (typeof value?.seconds === "number")
+      return new Date(value.seconds * 1000);
+    if (typeof value?._seconds === "number")
+      return new Date(value._seconds * 1000);
+    return null;
+  };
+
+  const formatTime = (value) => {
+    const date = toDateValue(value);
+    if (!date || Number.isNaN(date.getTime())) return "Recently";
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const fetchNotifications = async () => {
+    setLoadingNotifications(true);
+    setNotificationsError("");
+    try {
+      const response = await notificationsAPI.getNotifications({
+        limit: 50,
+        offset: 0,
+      });
+      setNotifications(response?.data ?? []);
+    } catch (error) {
+      setNotificationsError(
+        handleApiError(error, "Unable to load notifications."),
+      );
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await notificationsAPI.getUnreadCount();
+      setUnreadCount(response?.data?.count ?? 0);
+    } catch (error) {
+      setNotificationsError(
+        handleApiError(error, "Unable to load unread count."),
+      );
+    }
+  };
+
+  const fetchInvitations = async () => {
+    setLoadingInvitations(true);
+    setInvitesError("");
+    try {
+      const response = await invitationsAPI.getPendingInvitations();
+      setInvitations(response?.data ?? []);
+    } catch (error) {
+      setInvitesError(handleApiError(error, "Unable to load invitations."));
+    } finally {
+      setLoadingInvitations(false);
+    }
+  };
+
+  const fetchPlanOptions = async (searchValue) => {
+    setPlanSearchLoading(true);
+    try {
+      const response = await plansAPI.getPlans({
+        limit: 10,
+        page: 1,
+        search: searchValue || undefined,
+      });
+      const plans = response?.data?.plans ?? [];
+      setPlanOptions(
+        plans.map((plan) => ({
+          name: plan.name || "Untitled plan",
+          code: plan.id,
+        })),
+      );
+    } catch (error) {
+      setInviteStatus(handleApiError(error, "Unable to load plans."));
+    } finally {
+      setPlanSearchLoading(false);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    setMarkingAllRead(true);
+    try {
+      await notificationsAPI.markAllAsRead();
+      fetchNotifications();
+      fetchUnreadCount();
+    } catch (error) {
+      setNotificationsError(
+        handleApiError(error, "Unable to mark notifications as read."),
+      );
+    } finally {
+      setMarkingAllRead(false);
+    }
+  };
+
+  const handleMarkRead = async (notificationId) => {
+    try {
+      await notificationsAPI.markAsRead(notificationId);
+      fetchNotifications();
+      fetchUnreadCount();
+    } catch (error) {
+      setNotificationsError(
+        handleApiError(error, "Unable to mark notification as read."),
+      );
+    }
+  };
+
+  const handleAcceptInvite = async (invitationId) => {
+    setAcceptingInviteId(invitationId);
+    try {
+      await invitationsAPI.acceptInvitation(invitationId);
+      fetchInvitations();
+    } catch (error) {
+      setInvitesError(handleApiError(error, "Unable to accept invitation."));
+    } finally {
+      setAcceptingInviteId(null);
+    }
+  };
+
+  const handleDeclineInvite = async (invitationId) => {
+    setDecliningInviteId(invitationId);
+    try {
+      await invitationsAPI.declineInvitation(invitationId);
+      fetchInvitations();
+    } catch (error) {
+      setInvitesError(handleApiError(error, "Unable to decline invitation."));
+    } finally {
+      setDecliningInviteId(null);
+    }
+  };
+
+  const handleRevokeInvite = async (invitationId) => {
+    setRevokingInviteId(invitationId);
+    try {
+      await invitationsAPI.revokeInvitation(invitationId);
+      fetchInvitations();
+    } catch (error) {
+      setInvitesError(handleApiError(error, "Unable to revoke invitation."));
+    } finally {
+      setRevokingInviteId(null);
+    }
+  };
+
+  const handleInviteByUsername = async () => {
+    setInviteStatus("");
+    if (!invitePlanId.trim() || !inviteUsername.trim()) {
+      setInviteStatus("Plan and username are required.");
       return;
     }
-    loadNotifications();
-    loadNotificationSettings();
-  }, [user, authLoading, router]);
-
-  const loadNotifications = async () => {
+    setSendingInvite(true);
     try {
-      setLoading(true);
-      setError(null);
-      setSuccessMessage(null);
-
-      const response = await dashboardAPI.getNotifications({ limit: 100 });
-
-      if (response.success) {
-        // Transform backend data to frontend format
-        // Handle nested data structure: response.data.data contains the actual notifications
-        const notificationsData = response.data.data || response.data || [];
-
-        // Ensure notificationsData is an array
-        if (!Array.isArray(notificationsData)) {
-          console.error(
-            "Notifications data is not an array:",
-            notificationsData
-          );
-          setError("Invalid notifications data format");
-          return;
-        }
-
-        const transformedNotifications = notificationsData.map(
-          (notification) => ({
-            id: notification.id,
-            type: notification.type || "general",
-            title: notification.title || "Notification",
-            message:
-              notification.message ||
-              notification.description ||
-              "You have a new notification",
-            data: notification.data || {},
-            readAt: notification.read_at,
-            createdAt: notification.created_at,
-          })
-        );
-
-        setNotifications(transformedNotifications);
-      } else {
-        setError(response.message || "Failed to load notifications");
-      }
-    } catch (error) {
-      console.error("Failed to load notifications:", error);
-      setError(handleApiError(error, "Failed to load notifications"));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadNotificationSettings = async () => {
-    try {
-      const response = await dashboardAPI.getNotificationSettings();
-      if (response.success) {
-        setNotificationSettings(response.data);
-      }
-    } catch (error) {
-      console.error("Failed to load notification settings:", error);
-      // Don't show error for settings, use defaults
-    }
-  };
-
-  const filteredNotifications = notifications.filter((notification) => {
-    if (filter === "unread") return !notification.readAt;
-    return true;
-  });
-
-  const unreadCount = notifications.filter((n) => !n.readAt).length;
-
-  const markAsRead = async (notificationId) => {
-    try {
-      setMarkingAsRead((prev) => new Set(prev).add(notificationId));
-      setError(null);
-      setSuccessMessage(null);
-
-      const response = await dashboardAPI.markNotificationAsRead(
-        notificationId
-      );
-
-      if (response.success) {
-        // Update local state
-        setNotifications((prev) =>
-          prev.map((notif) =>
-            notif.id === notificationId
-              ? { ...notif, readAt: new Date().toISOString() }
-              : notif
-          )
-        );
-        setSuccessMessage("Notification marked as read");
-        setTimeout(() => setSuccessMessage(null), 3000);
-      } else {
-        setError(response.message || "Failed to mark notification as read");
-      }
-    } catch (error) {
-      console.error("Failed to mark notification as read:", error);
-      setError(handleApiError(error, "Failed to mark notification as read"));
-    } finally {
-      setMarkingAsRead((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(notificationId);
-        return newSet;
+      await invitationsAPI.inviteByUsername({
+        planId: invitePlanId.trim(),
+        inviteeUsername: inviteUsername.trim(),
       });
-    }
-  };
-
-  const markAllAsRead = async () => {
-    try {
-      setMarkingAllAsRead(true);
-      setError(null);
-      setSuccessMessage(null);
-
-      const response = await dashboardAPI.markAllNotificationsAsRead();
-
-      if (response.success) {
-        const now = new Date().toISOString();
-        setNotifications((prev) =>
-          prev.map((notif) =>
-            !notif.readAt ? { ...notif, readAt: now } : notif
-          )
-        );
-        setSuccessMessage(
-          `Marked ${response.data?.updatedCount || "all"} notifications as read`
-        );
-        setTimeout(() => setSuccessMessage(null), 3000);
-      } else {
-        setError(
-          response.message || "Failed to mark all notifications as read"
-        );
-      }
+      setInvitePlanId("");
+      setInviteUsername("");
+      setInviteStatus("Invite sent.");
+      fetchInvitations();
     } catch (error) {
-      console.error("Failed to mark all notifications as read:", error);
-      setError(
-        handleApiError(error, "Failed to mark all notifications as read")
-      );
+      setInviteStatus(handleApiError(error, "Unable to send invite."));
     } finally {
-      setMarkingAllAsRead(false);
+      setSendingInvite(false);
     }
   };
 
-  const updateSettings = async (newSettings) => {
-    try {
-      const response = await dashboardAPI.updateNotificationSettings(
-        newSettings
-      );
-
-      if (response.success) {
-        setNotificationSettings(newSettings);
-        setShowSettings(false);
+  const notificationGroups = useMemo(() => {
+    const updates = [];
+    const reminders = [];
+    notifications.forEach((item) => {
+      if (item.type === "reminder") {
+        reminders.push(item);
+      } else {
+        updates.push(item);
       }
-    } catch (error) {
-      console.error("Failed to update notification settings:", error);
-      // Show error toast or handle gracefully
+    });
+    return { updates, reminders };
+  }, [notifications]);
+
+  const primaryNavItems = [
+    { id: "homepage", label: "Overview", icon: Home },
+    { id: "plans", label: "Plans", icon: FolderOpen },
+    { id: "plot", label: "Plot", icon: BarChart3 },
+    { id: "notifications", label: "Notifications", icon: Bell, active: true },
+  ];
+
+  const accountNavItems = [
+    { id: "settings", label: "Settings", icon: Settings },
+  ];
+
+  const handlePrimaryNavClick = (item) => {
+    if (item.id === "homepage") {
+      setActiveTab(item.id);
+      router.push("/dashboard");
+      return;
     }
+    router.push(`/${item.id}`);
   };
 
-  const getNotificationIcon = (type) => {
-    const iconMap = {
-      pool_invite: Users,
-      deposit: ArrowDownLeft,
-      withdrawal: ArrowUpRight,
-      approval_request: AlertCircle,
-      pool_milestone: CheckCircle,
-      payment_failed: AlertCircle,
-      pool_complete: CheckCircle,
-      invitation: Users,
-      transaction: ArrowDownLeft,
-      membership: Users,
-      general: Bell,
-      // New backend notification types
-      deposit_success: ArrowDownLeft,
-      deposit_failed: AlertCircle,
-      withdrawal_success: ArrowUpRight,
-      withdrawal_failed: AlertCircle,
-      payment_success: CheckCircle,
-      payment_failed: AlertCircle,
-    };
-    return iconMap[type] || Bell;
+  const handleAccountNavClick = (item) => {
+    setActiveTab(item.id);
+    router.push(`/${item.id}`);
   };
 
-  const getNotificationColor = (type) => {
-    // All notifications use purple theme for icon backgrounds and text
-    return "bg-[#7a73ff] text-white";
-  };
-
-  const NotificationCard = ({ notification }) => {
-    const Icon = getNotificationIcon(notification.type);
-    const colorClass = getNotificationColor(notification.type);
-
-    return (
-      <div
-        className={`bg-white/80 backdrop-blur-xl rounded-xl p-4 sm:p-6 border transition-all duration-300 hover:shadow-lg ${
-          notification.readAt
-            ? "border-white/20"
-            : "border-purple-200/50 bg-purple-50/30"
-        }`}
-      >
-        <div className="flex items-start gap-4">
-          <div
-            className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${colorClass}`}
-          >
-            <Icon className="w-5 h-5" />
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between mb-2">
-              <h3
-                className={`font-semibold ${
-                  notification.readAt ? "text-gray-900" : "text-gray-900"
-                }`}
-              >
-                {notification.title}
-              </h3>
-              <div className="flex items-center gap-2 ml-4">
-                {!notification.readAt && (
-                  <button
-                    onClick={() => markAsRead(notification.id)}
-                    disabled={markingAsRead.has(notification.id)}
-                    className="p-1 text-[#7a73ff] hover:bg-[#b8b5ff] rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Mark as read"
-                  >
-                    {markingAsRead.has(notification.id) ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Check className="w-4 h-4" />
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <p
-              className={`text-sm mb-3 ${
-                notification.readAt ? "text-gray-600" : "text-gray-700"
-              }`}
-            >
-              {notification.message}
-            </p>
-
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-gray-500">
-                {new Date(notification.createdAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
-
-              {/* Transaction-specific actions */}
-              {notification.type === "pool_invite" && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() =>
-                      setInviteModal({
-                        open: true,
-                        notification,
-                        submitting: false,
-                        error: null,
-                      })
-                    }
-                    className="bg-[#7a73ff] text-white px-3 py-1 rounded-xl text-xs font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300"
-                  >
-                    View & Accept
-                  </button>
-                </div>
-              )}
-              {notification.type === "deposit_failed" && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() =>
-                      router.push(`/pools/${notification.data.poolId}`)
-                    }
-                    className="bg-[#7a73ff] text-white px-3 py-1 rounded-xl text-xs font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              )}
-
-              {notification.type === "deposit_success" && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() =>
-                      router.push(`/pools/${notification.data.poolId}`)
-                    }
-                    className="bg-[#7a73ff] text-white px-3 py-1 rounded-xl text-xs font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300"
-                  >
-                    View Pool
-                  </button>
-                </div>
-              )}
-
-              {notification.type === "withdrawal_success" && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() =>
-                      router.push(`/pools/${notification.data.poolId}`)
-                    }
-                    className="bg-[#7a73ff] text-white px-3 py-1 rounded-xl text-xs font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300"
-                  >
-                    View Pool
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  const handleLogout = async () => {
+    await logout();
+    router.push("/");
   };
 
   if (authLoading) {
     return (
-      <DashboardLayout
-        title="Notifications"
-        subtitle="Stay updated with your pool activities"
-      >
-        <div className="text-center py-12">
-          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </DashboardLayout>
+      <DashboardLoading
+        title="Loading notifications"
+        subtitle="Gathering the latest updates."
+      />
     );
   }
 
@@ -385,417 +295,363 @@ export default function NotificationsPage() {
     return null;
   }
 
-  if (loading) {
-    return (
-      <DashboardLayout
-        title="Notifications"
-        subtitle="Stay updated with your pool activities"
-      >
-        <div className="text-center py-12">
-          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading notifications...</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <DashboardLayout
-        title="Notifications"
-        subtitle="Stay updated with your pool activities"
-      >
-        <div className="text-center py-12">
-          <AlertCircle className="w-16 h-16 text-red-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Failed to load notifications
-          </h3>
-          <p className="text-red-600 mb-6">{error}</p>
-          <button
-            onClick={loadNotifications}
-            className="bg-[#7a73ff] text-white px-6 py-2 rounded-xl font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300"
-          >
-            Try Again
-          </button>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   return (
-    <DashboardLayout
-      title="Notifications"
-      subtitle="Stay updated with your pool activities"
-    >
-      {/* Header Actions */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          {unreadCount > 0 && (
-            <button
-              onClick={markAllAsRead}
-              disabled={markingAllAsRead}
-              className="bg-[#7a73ff] text-white px-4 py-2 rounded-xl font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {markingAllAsRead ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  Marking...
-                </>
-              ) : (
-                "Mark All Read"
-              )}
-            </button>
-          )}
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-[#f7f4ff] via-white to-[#eef2ff] flex overflow-hidden relative">
+      <DashboardSidebar
+        mobileMenuOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        primaryNavItems={primaryNavItems}
+        accountNavItems={accountNavItems}
+        activeTab={activeTab}
+        onPrimaryNavClick={handlePrimaryNavClick}
+        onAccountNavClick={handleAccountNavClick}
+        onLogout={handleLogout}
+        user={user}
+        profile={profile}
+      />
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="p-2 text-[#7a73ff] hover:text-white rounded-lg hover:bg-[#b8b5ff] transition-colors"
-          >
-            <Settings className="w-5 h-5" />
-          </button>
-          <button
-            onClick={loadNotifications}
-            disabled={loading}
-            className="p-2 text-[#7a73ff] hover:text-white rounded-lg hover:bg-[#b8b5ff] disabled:opacity-50 transition-colors"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-          </button>
-        </div>
-      </div>
+      <main className="flex-1 lg:ml-80 min-w-0 relative">
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className="lg:hidden fixed top-6 left-6 z-30 h-11 w-11 rounded-full bg-white/90 shadow-lg border border-white/40 text-gray-600 flex items-center justify-center"
+          aria-label="Open navigation"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
 
-      {/* Error Display */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-red-600" />
-            <p className="text-red-800">{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="ml-auto text-red-600 hover:text-red-800"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Success Message Display */}
-      {successMessage && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <p className="text-green-800">{successMessage}</p>
-            <button
-              onClick={() => setSuccessMessage(null)}
-              className="ml-auto text-green-600 hover:text-green-800"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Notification Settings Modal */}
-      {showSettings && (
-        <div className="bg-[#f6f5ff] backdrop-blur-xl rounded-xl p-6 border border-[#b8b5ff] shadow-sm mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Notification Settings
-          </h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">
-                  In-App Notifications
-                </p>
-                <p className="text-sm text-gray-500">
-                  Receive notifications within the app
-                </p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={notificationSettings.in_app}
-                  onChange={(e) =>
-                    updateSettings({
-                      ...notificationSettings,
-                      in_app: e.target.checked,
-                    })
-                  }
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-[#b8b5ff] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#7a73ff] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#b8b5ff] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#7a73ff]"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Push Notifications</p>
-                <p className="text-sm text-gray-500">
-                  Receive push notifications on your device
-                </p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={notificationSettings.fcm}
-                  onChange={(e) =>
-                    updateSettings({
-                      ...notificationSettings,
-                      fcm: e.target.checked,
-                    })
-                  }
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">Email Notifications</p>
-                <p className="text-sm text-gray-500">
-                  Receive notifications via email
-                </p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={notificationSettings.email}
-                  onChange={(e) =>
-                    updateSettings({
-                      ...notificationSettings,
-                      email: e.target.checked,
-                    })
-                  }
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center">
-              <Bell className="w-5 h-5 text-white" />
-            </div>
+        <div className="px-6 sm:px-10 lg:px-16 pt-20 sm:pt-24 pb-16 lg:pb-20 space-y-10">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-gray-500">Total Notifications</p>
-              <p className="text-xl font-bold text-[#7a73ff]">
-                {notifications.length}
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                Notifications
+              </p>
+              <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 mt-2">
+                Stay in sync with your plans
+              </h1>
+              <p className="text-sm text-gray-500 mt-2 max-w-2xl">
+                Invitations, plan updates, and reminders live here so your crew
+                stays aligned.
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
+                {unreadCount} unread notifications
               </p>
             </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center">
-              <AlertCircle className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Unread</p>
-              <p className="text-xl font-bold text-[#7a73ff]">{unreadCount}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={() => setFilter("all")}
-          className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
-            filter === "all"
-              ? "bg-[#7a73ff] text-white shadow-lg"
-              : "bg-[#f6f5ff] backdrop-blur-xl text-[#7a73ff] border border-[#b8b5ff] hover:bg-[#eaeaff]"
-          }`}
-        >
-          All ({notifications.length})
-        </button>
-        <button
-          onClick={() => setFilter("unread")}
-          className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
-            filter === "unread"
-              ? "bg-[#7a73ff] text-white shadow-lg"
-              : "bg-[#f6f5ff] backdrop-blur-xl text-[#7a73ff] border border-[#b8b5ff] hover:bg-[#eaeaff]"
-          }`}
-        >
-          Unread ({unreadCount})
-        </button>
-      </div>
-
-      {/* Notifications List */}
-      <div className="space-y-4">
-        {filteredNotifications.map((notification) => (
-          <NotificationCard key={notification.id} notification={notification} />
-        ))}
-      </div>
-
-      {filteredNotifications.length === 0 && (
-        <div className="text-center py-12">
-          <Bell className="w-16 h-16 text-[#b8b5ff] mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No notifications found
-          </h3>
-          <p className="text-gray-500 mb-6">
-            {filter === "unread"
-              ? "All notifications have been read"
-              : "Your notifications will appear here"}
-          </p>
-          <button
-            onClick={() => router.push("/pools")}
-            className="bg-[#7a73ff] text-white px-6 py-2 rounded-xl font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300"
-          >
-            View Pool
-          </button>
-        </div>
-      )}
-
-      {/* Invitation Accept Modal */}
-      {inviteModal.open && inviteModal.notification && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/30"
-            onClick={() =>
-              setInviteModal({
-                open: false,
-                notification: null,
-                submitting: false,
-                error: null,
-              })
-            }
-          ></div>
-          <div className="relative bg-white/90 backdrop-blur-xl rounded-2xl border border-[#b8b5ff] shadow-xl w-full max-w-md mx-4 p-6">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 bg-[#7a73ff] rounded-lg flex items-center justify-center flex-shrink-0">
-                <Users className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Invitation to join {inviteModal.notification.data?.poolName}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Invited by {inviteModal.notification.data?.inviterName}
-                </p>
-              </div>
+            <div className="flex items-center gap-3">
               <button
-                onClick={() =>
-                  setInviteModal({
-                    open: false,
-                    notification: null,
-                    submitting: false,
-                    error: null,
-                  })
-                }
-                className="text-gray-500 hover:text-gray-700"
-                aria-label="Close"
+                onClick={handleMarkAllRead}
+                disabled={markingAllRead}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-sm font-semibold shadow-sm transition-shadow ${
+                  markingAllRead
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-white text-gray-700 hover:shadow-md"
+                }`}
               >
-                ×
-              </button>
-            </div>
-
-            {inviteModal.error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-3 py-2 text-sm mb-4">
-                {inviteModal.error}
-              </div>
-            )}
-
-            <div className="bg-[#f6f5ff] border border-[#e6e4ff] rounded-xl p-4 mb-4">
-              <p className="text-sm text-gray-700">
-                Accepting will add you to{" "}
-                <span className="font-semibold">
-                  {inviteModal.notification.data?.poolName}
-                </span>
-                .
-              </p>
-            </div>
-
-            <div className="flex items-center justify-end gap-2">
-              <button
-                onClick={() =>
-                  setInviteModal({
-                    open: false,
-                    notification: null,
-                    submitting: false,
-                    error: null,
-                  })
-                }
-                className="px-4 py-2 rounded-xl font-medium transition-all duration-300 bg-[#f6f5ff] text-[#7a73ff] border border-[#b8b5ff] hover:bg-[#eaeaff]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  try {
-                    setInviteModal((prev) => ({
-                      ...prev,
-                      submitting: true,
-                      error: null,
-                    }));
-                    const invitationId =
-                      inviteModal.notification.data?.invitationId;
-                    const inviteCode =
-                      inviteModal.notification.data?.inviteCode;
-                    if (!invitationId && !inviteCode) {
-                      throw new Error("Missing invitation identifier");
-                    }
-                    const resp = await dashboardAPI.acceptInvitation(
-                      invitationId ? { invitationId } : { inviteCode }
-                    );
-                    if (!resp.success) {
-                      throw new Error(
-                        resp.message || "Failed to accept invitation"
-                      );
-                    }
-                    // Fire-and-forget: mark this notification as read in background
-                    const currentNotifId = inviteModal.notification.id;
-                    dashboardAPI
-                      .markNotificationAsRead(currentNotifId)
-                      .catch(() => {});
-
-                    const poolId = inviteModal.notification.data?.poolId;
-
-                    // Redirect immediately to the pool
-                    if (poolId) {
-                      router.push(`/pools/${poolId}`);
-                    }
-
-                    // Close modal after redirect trigger
-                    setInviteModal({
-                      open: false,
-                      notification: null,
-                      submitting: false,
-                      error: null,
-                    });
-                  } catch (e) {
-                    setInviteModal((prev) => ({
-                      ...prev,
-                      submitting: false,
-                      error: handleApiError(e, "Failed to accept invitation"),
-                    }));
-                  }
-                }}
-                disabled={inviteModal.submitting}
-                className="bg-[#7a73ff] text-white px-5 py-2 rounded-xl font-medium hover:bg-[#6961ff] hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {inviteModal.submitting ? (
+                {markingAllRead ? (
                   <span className="inline-flex items-center gap-2">
-                    <RefreshCw className="w-4 h-4 animate-spin" /> Accepting...
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-400/70 border-t-transparent" />
+                    Marking...
                   </span>
                 ) : (
-                  "Accept Invitation"
+                  <>
+                    <CheckCircle2 className="w-4 h-4 text-[#6b63ff]" />
+                    Mark all read
+                  </>
                 )}
               </button>
             </div>
           </div>
+
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Invitations
+              </h2>
+              <span className="text-xs font-semibold text-[#6b63ff]">
+                {invitations.length} new
+              </span>
+            </div>
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5 flex flex-col gap-3">
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                Invite by username
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <div className="flex-1 min-w-[240px]">
+                  <SearchableSelect
+                    options={planOptions}
+                    value={invitePlanId}
+                    onChange={(value) => setInvitePlanId(value)}
+                    onQueryChange={(value) => setPlanSearch(value)}
+                    placeholder={
+                      planSearchLoading ? "Searching plans..." : "Search plans"
+                    }
+                    className="w-full"
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={inviteUsername}
+                  onChange={(event) => setInviteUsername(event.target.value)}
+                  placeholder="Username"
+                  className="flex-1 min-w-[200px] px-4 py-2 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7a73ff]"
+                />
+                <button
+                  onClick={handleInviteByUsername}
+                  disabled={sendingInvite}
+                  className={`px-4 py-2 rounded-full text-white text-sm font-semibold shadow-sm transition-shadow ${
+                    sendingInvite
+                      ? "bg-[#b8b5ff] cursor-not-allowed"
+                      : "bg-[#7a73ff] hover:shadow-md"
+                  }`}
+                >
+                  {sendingInvite ? (
+                    <span className="inline-flex items-center gap-2">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
+                      Sending...
+                    </span>
+                  ) : (
+                    "Send invite"
+                  )}
+                </button>
+              </div>
+              {inviteStatus && (
+                <p className="text-sm text-gray-500">{inviteStatus}</p>
+              )}
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {invitations.map((invite) => (
+                <div
+                  key={invite.id}
+                  className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5 flex flex-col gap-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-[#f3f1ff] text-[#6b63ff] flex items-center justify-center">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-400">
+                        {formatTime(invite.createdAt)}
+                      </p>
+                      <h3 className="text-base font-semibold text-gray-900 mt-1">
+                        {invite.title || "Plan invitation"}
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-2">
+                        {invite.message || "You were invited to join a plan."}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-2">
+                        Invited by {invite.inviterName || "a teammate"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => handleAcceptInvite(invite.id)}
+                      disabled={acceptingInviteId === invite.id}
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold shadow-sm transition-shadow ${
+                        acceptingInviteId === invite.id
+                          ? "bg-[#b8b5ff] text-white cursor-not-allowed"
+                          : "bg-[#7a73ff] text-white hover:shadow-md"
+                      }`}
+                    >
+                      {acceptingInviteId === invite.id ? (
+                        <>
+                          <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
+                          Accepting...
+                        </>
+                      ) : (
+                        "Accept"
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleDeclineInvite(invite.id)}
+                      disabled={decliningInviteId === invite.id}
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-shadow ${
+                        decliningInviteId === invite.id
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300"
+                      }`}
+                    >
+                      {decliningInviteId === invite.id ? (
+                        <>
+                          <span className="h-3 w-3 animate-spin rounded-full border-2 border-gray-400/70 border-t-transparent" />
+                          Declining...
+                        </>
+                      ) : (
+                        "Decline"
+                      )}
+                    </button>
+                    {invite.inviterId === user?.uid && (
+                      <button
+                        onClick={() => handleRevokeInvite(invite.id)}
+                        disabled={revokingInviteId === invite.id}
+                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-colors ${
+                          revokingInviteId === invite.id
+                            ? "text-gray-400 cursor-not-allowed"
+                            : "text-red-500 hover:text-red-600"
+                        }`}
+                      >
+                        {revokingInviteId === invite.id ? (
+                          <>
+                            <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            Revoking...
+                          </>
+                        ) : (
+                          "Revoke"
+                        )}
+                      </button>
+                    )}
+                    <button className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold text-gray-400 hover:text-gray-600">
+                      Ignore
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {!loadingInvitations && invitations.length === 0 && (
+                <p className="text-sm text-gray-500">
+                  No invitations right now.
+                </p>
+              )}
+              {invitesError && (
+                <p className="text-sm text-red-500">{invitesError}</p>
+              )}
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Plan updates
+              </h2>
+              <span className="text-xs font-semibold text-gray-400">
+                Latest activity
+              </span>
+            </div>
+            <div className="space-y-4">
+              {notificationGroups.updates.map((update) => (
+                <div
+                  key={update.id}
+                  className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5 flex items-center justify-between gap-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-[#e9f7f3] text-[#22c55e] flex items-center justify-center">
+                      <CheckCircle2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400">
+                        {formatTime(update.createdAt)}
+                      </p>
+                      <h3 className="text-base font-semibold text-gray-900 mt-1">
+                        {update.title || "Plan update"}
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-2">
+                        {update.message || "A plan was updated."}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() =>
+                      update.planId
+                        ? router.push(`/plans/${update.planId}`)
+                        : null
+                    }
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f3f1ff] text-[#6b63ff] text-xs font-semibold hover:bg-[#e6e4ff]"
+                  >
+                    View plan
+                  </button>
+                  <button
+                    onClick={() => handleMarkRead(update.id)}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold text-gray-400 hover:text-gray-600"
+                  >
+                    Mark read
+                  </button>
+                </div>
+              ))}
+              {!loadingNotifications &&
+                notificationGroups.updates.length === 0 && (
+                  <p className="text-sm text-gray-500">No updates yet.</p>
+                )}
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">Reminders</h2>
+              <span className="text-xs font-semibold text-gray-400">
+                Keep momentum
+              </span>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {notificationGroups.reminders.map((reminder) => (
+                <div
+                  key={reminder.id}
+                  className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5 flex flex-col gap-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-[#fff4e6] text-[#f97316] flex items-center justify-center">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400">
+                        {formatTime(reminder.createdAt)}
+                      </p>
+                      <h3 className="text-base font-semibold text-gray-900 mt-1">
+                        {reminder.title || "Reminder"}
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-2">
+                        {reminder.message || "Stay on track with your plan."}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0b2239] text-white text-xs font-semibold hover:shadow-md transition-shadow">
+                      Take action
+                    </button>
+                    <button
+                      onClick={() => handleMarkRead(reminder.id)}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold text-gray-400 hover:text-gray-600"
+                    >
+                      Mark read
+                    </button>
+                    <button className="inline-flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold text-gray-400 hover:text-gray-600">
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {!loadingNotifications &&
+                notificationGroups.reminders.length === 0 && (
+                  <p className="text-sm text-gray-500">
+                    No reminders right now.
+                  </p>
+                )}
+              {notificationsError && (
+                <p className="text-sm text-red-500">{notificationsError}</p>
+              )}
+            </div>
+          </section>
+
+          <section className="bg-[#0b2239] text-white rounded-[32px] p-6 sm:p-8 shadow-lg flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-white/60">
+                Plan Updates
+              </p>
+              <h3 className="text-xl font-semibold mt-3">
+                Keep every plan moving
+              </h3>
+              <p className="text-sm text-white/70 mt-2 max-w-xl">
+                Invite your crew, log progress, and save every completed plan as
+                a Memory.
+              </p>
+            </div>
+            <button
+              onClick={() => router.push("/plans")}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#0b2239] text-sm font-semibold shadow-sm hover:shadow-md transition-shadow"
+            >
+              <Bell className="w-4 h-4" />
+              Post an update
+            </button>
+          </section>
         </div>
-      )}
-    </DashboardLayout>
+      </main>
+    </div>
   );
 }

@@ -145,7 +145,7 @@ export default function Home() {
                 transition={{ delay: 0.5 }}
               >
                 <motion.a
-                  href="https://app.grupchat.net"
+                  href="/sign-in"
                   className="block w-full px-6 py-3 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition-all duration-300 shadow-lg"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -171,7 +171,10 @@ export default function Home() {
       <nav className="sticky top-0 z-50 w-full bg-transparent">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-2 sm:py-4">
           <div className="flex h-12 sm:h-14 items-center justify-between rounded-full bg-gray-100/80 backdrop-blur-xl px-3 sm:px-6 border border-gray-200/50 w-full sm:w-2/3 md:w-1/2 lg:w-1/3 mx-auto">
-            <Link href="/" className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0"
+            >
               <Image
                 src="/logo.png"
                 alt="GrupChat"
@@ -228,7 +231,10 @@ export default function Home() {
             celebrate milestones, and create lasting experiences with friends.
           </motion.p>
 
-          <motion.div className="flex justify-center mb-6" variants={itemVariants}>
+          <motion.div
+            className="flex justify-center mb-6"
+            variants={itemVariants}
+          >
             <Link
               href="/sign-up"
               className="inline-flex items-center gap-2 bg-black text-white px-6 sm:px-8 py-2 sm:py-2 rounded-full text-sm sm:text-base font-semibold hover:bg-gray-800 transition-colors"
@@ -256,7 +262,12 @@ export default function Home() {
           >
             <RotatingText
               baseText="Track progress for:"
-              words={["travel plans", "meetups", "events", "many more group projects"]}
+              words={[
+                "travel plans",
+                "meetups",
+                "events",
+                "many more group projects",
+              ]}
             />
           </motion.div>
         </motion.div>
@@ -445,8 +456,9 @@ export default function Home() {
                     Create Your Goal
                   </h3>
                   <p className="text-sm sm:text-base text-gray-500 leading-relaxed">
-                    Set up a new goal or challenge — whether it's a trip, event, or activity.
-                    Add details, set a target date, and invite your friends.
+                    Set up a new goal or challenge — whether it's a trip, event,
+                    or activity. Add details, set a target date, and invite your
+                    friends.
                   </p>
                 </div>
               </div>
@@ -470,8 +482,9 @@ export default function Home() {
                     Invite Your Friends
                   </h3>
                   <p className="text-sm sm:text-base text-gray-500 leading-relaxed">
-                    Add friends to your goal. Everyone stays in the loop with real-time
-                    updates and can contribute progress, photos, and milestones.
+                    Add friends to your goal. Everyone stays in the loop with
+                    real-time updates and can contribute progress, photos, and
+                    milestones.
                   </p>
                 </div>
               </div>
@@ -495,8 +508,9 @@ export default function Home() {
                     Track & Celebrate
                   </h3>
                   <p className="text-sm sm:text-base text-gray-500 leading-relaxed">
-                    Share progress updates, upload photos, and celebrate milestones together.
-                    Watch your plans transform into memories you'll cherish forever.
+                    Share progress updates, upload photos, and celebrate
+                    milestones together. Watch your plans transform into
+                    memories you'll cherish forever.
                   </p>
                 </div>
               </div>
@@ -628,7 +642,8 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              Start tracking your group goals today and turn plans into lasting memories
+              Start tracking your group goals today and turn plans into lasting
+              memories
             </motion.p>
           </motion.div>
 
@@ -648,15 +663,25 @@ export default function Home() {
               <motion.div
                 className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg"
                 animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
                 Coming Soon
               </motion.div>
-              <svg className="w-8 h-8 mr-3" viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                className="w-8 h-8 mr-3"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
                 <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" />
               </svg>
               <div className="text-left">
-                <div className="text-xs text-gray-300 group-hover:text-gray-200">Get it on</div>
+                <div className="text-xs text-gray-300 group-hover:text-gray-200">
+                  Get it on
+                </div>
                 <div className="text-xl font-semibold">Google Play</div>
               </div>
             </motion.button>
@@ -670,15 +695,25 @@ export default function Home() {
               <motion.div
                 className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg"
                 animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
                 Coming Soon
               </motion.div>
-              <svg className="w-8 h-8 mr-3" viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                className="w-8 h-8 mr-3"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
                 <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.18 17.41,12.63C17.44,15.65 20.06,16.66 20.09,16.67C20.06,16.74 19.67,18.11 18.71,19.5M13,3.5C13.73,2.67 14.94,2.04 15.94,2C16.07,3.17 15.6,4.35 14.9,5.19C14.21,6.04 13.07,6.7 11.95,6.61C11.8,5.46 12.36,4.26 13,3.5Z" />
               </svg>
               <div className="text-left">
-                <div className="text-xs text-gray-300 group-hover:text-gray-200">Download on the</div>
+                <div className="text-xs text-gray-300 group-hover:text-gray-200">
+                  Download on the
+                </div>
                 <div className="text-xl font-semibold">App Store</div>
               </div>
             </motion.button>
@@ -693,7 +728,7 @@ export default function Home() {
           >
             <p className="text-gray-500 mb-4">Or access via web</p>
             <Link
-              href="https://app.grupchat.net"
+              href="/sign-in"
               className="inline-flex items-center px-6 py-3 border-2 border-purple-600 text-purple-600 rounded-xl hover:bg-purple-600 hover:text-white transition-all duration-300 font-semibold"
             >
               <svg
@@ -744,8 +779,8 @@ export default function Home() {
                 </span>
               </div>
               <p className="text-gray-400 mb-6 max-w-md">
-                Powering plans beyond the chat. Track progress, celebrate milestones,
-                and create lasting memories with friends.
+                Powering plans beyond the chat. Track progress, celebrate
+                milestones, and create lasting memories with friends.
               </p>
               <div className="flex space-x-4">
                 {[
@@ -764,7 +799,11 @@ export default function Home() {
                     transition={{ duration: 0.4, delay: index * 0.1 }}
                     viewport={{ once: true }}
                   >
-                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="h-6 w-6"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       {social.icon === "twitter" && (
                         <path d="M8.29 20c7.547 0 11.675-6.155 11.675-11.495 0-.175 0-.349-.012-.522A8.18 8.18 0 0022 5.92a8.19 8.19 0 01-2.357.637A4.077 4.077 0 0021.448 4.1a8.224 8.224 0 01-2.605.981A4.108 4.108 0 0015.448 4c-2.266 0-4.104 1.822-4.104 4.07 0 .32.036.634.106.934C7.728 8.87 4.1 7.13 1.671 4.149a4.025 4.025 0 00-.555 2.048c0 1.413.725 2.662 1.825 3.393A4.093 4.093 0 01.8 8.575v.051c0 1.974 1.417 3.627 3.292 4.004a4.1 4.1 0 01-1.853.07c.522 1.614 2.037 2.792 3.833 2.825A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
                       )}
@@ -789,7 +828,7 @@ export default function Home() {
                   className="inline-flex items-center px-4 py-2 bg-yellow-400 text-black rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-200"
                 >
                   <span className="mr-2">☕️</span>
-                  Top Up Our Coffee
+                  Buy Us a Coffee
                 </a>
               </div>
             </motion.div>

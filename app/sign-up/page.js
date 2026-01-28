@@ -214,69 +214,69 @@ export default function SignUp() {
             variants={itemVariants}
           >
             {error && (
-              <motion.div
-                className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                {error}
-              </motion.div>
-            )}
+                <motion.div
+                  className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  {error}
+                </motion.div>
+              )}
 
             <form onSubmit={handleEmailSignUp} className="space-y-5">
               <div>
-                <label
-                  htmlFor="fullName"
+                    <label
+                      htmlFor="fullName"
                   className="block text-sm font-semibold text-black mb-2"
-                >
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                    >
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      id="fullName"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10 transition-colors text-black placeholder-gray-400"
-                  placeholder="Enter your full name"
-                  required
-                />
+                      placeholder="Enter your full name"
+                      required
+                    />
               </div>
 
               <div>
-                <label
-                  htmlFor="email"
+                    <label
+                      htmlFor="email"
                   className="block text-sm font-semibold text-black mb-2"
-                >
+                    >
                   Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10 transition-colors text-black placeholder-gray-400"
                   placeholder="you@example.com"
-                  required
-                />
+                      required
+                    />
               </div>
 
               <div>
-                <label
-                  htmlFor="password"
+                    <label
+                      htmlFor="password"
                   className="block text-sm font-semibold text-black mb-2"
-                >
-                  Password
-                </label>
+                    >
+                      Password
+                    </label>
                 <div className="relative">
-                  <input
+                    <input
                     type={showPassword ? "text" : "password"}
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10 transition-colors text-black placeholder-gray-400 pr-12"
                     placeholder="Create a strong password"
-                    required
-                  />
+                      required
+                    />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -322,22 +322,22 @@ export default function SignUp() {
               </div>
 
               <div>
-                <label
-                  htmlFor="confirmPassword"
+                    <label
+                      htmlFor="confirmPassword"
                   className="block text-sm font-semibold text-black mb-2"
-                >
-                  Confirm Password
-                </label>
+                    >
+                      Confirm Password
+                    </label>
                 <div className="relative">
-                  <input
+                    <input
                     type={showConfirmPassword ? "text" : "password"}
-                    id="confirmPassword"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                      id="confirmPassword"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10 transition-colors text-black placeholder-gray-400 pr-12"
-                    placeholder="Confirm your password"
-                    required
-                  />
+                      placeholder="Confirm your password"
+                      required
+                    />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -383,79 +383,79 @@ export default function SignUp() {
               </div>
 
               <motion.div className="flex items-center" variants={itemVariants}>
-                <input
-                  type="checkbox"
-                  id="terms"
-                  className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                  required
-                />
+                    <input
+                      type="checkbox"
+                      id="terms"
+                      className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                      required
+                    />
                 <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
-                  I agree to the{" "}
+                      I agree to the{" "}
                   <Link
-                    href="/terms-of-service"
-                    className="text-purple-600 hover:text-purple-800 transition-colors"
-                  >
-                    Terms of Service
+                        href="/terms-of-service"
+                        className="text-purple-600 hover:text-purple-800 transition-colors"
+                      >
+                        Terms of Service
                   </Link>{" "}
-                  and{" "}
+                      and{" "}
                   <Link
-                    href="/privacy-policy"
-                    className="text-purple-600 hover:text-purple-800 transition-colors"
-                  >
-                    Privacy Policy
+                        href="/privacy-policy"
+                        className="text-purple-600 hover:text-purple-800 transition-colors"
+                      >
+                        Privacy Policy
                   </Link>
-                </label>
-              </motion.div>
+                    </label>
+                  </motion.div>
 
-              <motion.button
-                type="submit"
-                disabled={isLoading}
+                  <motion.button
+                    type="submit"
+                    disabled={isLoading}
                 className="w-full bg-purple-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-purple-700 transition-colors disabled:opacity-50"
                 whileHover={{ scale: isLoading ? 1 : 1.02 }}
-                whileTap={{ scale: isLoading ? 1 : 0.98 }}
-              >
+                    whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                  >
                 {isLoading ? "Creating Account..." : "Create Account"}
-              </motion.button>
+                  </motion.button>
             </form>
 
             <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
+                  <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
+                  </div>
+                  <div className="relative flex justify-center text-sm">
                 <span className="px-4 bg-white text-gray-500">
                   Or continue with
-                </span>
-              </div>
-            </div>
+                    </span>
+                  </div>
+                </div>
 
-            <motion.button
-              type="button"
-              onClick={handleGoogleSignUp}
+                <motion.button
+                  type="button"
+                  onClick={handleGoogleSignUp}
               className="w-full flex items-center justify-center gap-3 px-6 py-3 rounded-full border-2 border-gray-300 text-black font-semibold hover:border-gray-400 hover:bg-gray-50 transition-colors"
-              whileHover={{ scale: isLoading ? 1 : 1.02 }}
-              whileTap={{ scale: isLoading ? 1 : 0.98 }}
-            >
+                  whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                  whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                >
               <Image
                 src="/google.png"
                 alt="Google"
                 width={20}
                 height={20}
                 className="w-5 h-5"
-              />
+                    />
               <span>{isLoading ? "Signing up..." : "Sign up with Google"}</span>
-            </motion.button>
+                </motion.button>
 
             <motion.p
               className="text-center mt-6 text-sm text-gray-500"
               variants={itemVariants}
             >
-              Already have an account?{" "}
+                  Already have an account?{" "}
               <Link
-                href="/sign-in"
+                    href="/sign-in"
                 className="font-semibold text-black hover:text-gray-700 transition-colors"
-              >
-                Sign in
+                  >
+                    Sign in
               </Link>
             </motion.p>
           </motion.div>
@@ -481,6 +481,6 @@ export default function SignUp() {
           </motion.p>
         </motion.div>
       </section>
-    </div>
+      </div>
   );
 }
