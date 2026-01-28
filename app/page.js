@@ -551,13 +551,13 @@ export default function Home() {
               {
                 question: "Do I need to pay to use GrupChat?",
                 answer:
-                  "GrupChat is completely free! Create goals, track progress, and build memories with friends at no cost. Payments are optional and are processed at 2 - 5% transaction fees.",
+                  "GrupChat is completely free! Create goals, track progress, and build memories with friends at no cost. You can upgrade a successfully completed plan into a memory with a one-time fee to access all the premium features available.",
               },
-              {
-                question: "Can I track payments/progress manually?",
-                answer:
-                  "Yes! You can manually log contributions and track progress toward financial goals. Payment integrations are provided, but manual tracking is provided for free to all our users. Feel free to share a coffee ☕, it helps us provide better value.",
-              },
+              // {
+              //   question: "Can I track payments/progress manually?",
+              //   answer:
+              //     "Yes! You can manually log contributions and track progress toward financial goals. Payment integrations are provided, but manual tracking is provided for free to all our users. Feel free to share a coffee ☕, it helps us provide better value.",
+              // },
               {
                 question: "What if we don't complete our goal?",
                 answer:
