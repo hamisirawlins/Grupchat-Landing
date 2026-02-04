@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLoading from "@/components/dashboard/DashboardLoading";
 import DashboardSidebar from "@/components/navigation/DashboardSidebar";
-import { handleApiError, plansAPI, uploadsAPI } from "@/lib/api";
+import { handleApiError, plansAPI, uploadsAPI, dashboardAPI } from "@/lib/api";
 import {
   ArrowDown,
   ArrowLeft,
@@ -24,6 +24,15 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+
+// Premium memory tier pricing configuration
+// Currency: KES (Kenyan Shilling) - ~250 KES ≈ $1.99 USD
+// Update these values when switching to USD account
+const MEMORY_TIER_PRICING = {
+  currency: "KES", // Change to "USD" when USD account is active
+  amount: 25000, // Amount in cents (250.00 KES)
+  displayAmount: "250 KES", // For UI display
+};
 
 export default function PlanDetailPage() {
   const { user, profile, logout, loading: authLoading } = useAuth();
@@ -60,6 +69,11 @@ export default function PlanDetailPage() {
   const [addingMilestone, setAddingMilestone] = useState(false);
   const [savingMilestoneOrder, setSavingMilestoneOrder] = useState(false);
   const [openImageMenuId, setOpenImageMenuId] = useState(null);
+  const [memoryUpgradeModalOpen, setMemoryUpgradeModalOpen] = useState(false);
+  const [memoryUpgradeLoading, setMemoryUpgradeLoading] = useState(false);
+  const [memoryUpgradeError, setMemoryUpgradeError] = useState("");
+  const [paystackPublicKey, setPaystackPublicKey] = useState("");
+  const [paystackScriptReady, setPaystackScriptReady] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -75,7 +89,40 @@ export default function PlanDetailPage() {
     fetchMembers();
     fetchMilestones();
     fetchPlanImages();
+    fetchPaystackPublicKey();
   }, [authLoading, user, planId]);
+
+  const fetchPaystackPublicKey = async () => {
+    try {
+      const response = await dashboardAPI.getPaystackPublicKey();
+      if (response?.data?.publicKey) {
+        setPaystackPublicKey(response.data.publicKey);
+        
+        // Load Paystack script and wait for it to be ready
+        if (!window.PaystackPop) {
+          const script = document.createElement("script");
+          script.src = "https://js.paystack.co/v1/inline.js";
+          script.async = true;
+          
+          script.onload = () => {
+            setPaystackScriptReady(true);
+          };
+          
+          script.onerror = () => {
+            console.error("Failed to load Paystack script");
+            setMemoryUpgradeError("Failed to load payment processor");
+          };
+          
+          document.head.appendChild(script);
+        } else {
+          // Script already loaded
+          setPaystackScriptReady(true);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch Paystack public key:", error);
+    }
+  };
 
   const fetchPlan = async () => {
     setPlanLoading(true);
@@ -370,6 +417,72 @@ export default function PlanDetailPage() {
   const completedMilestones = milestones.filter((item) => item?.completed);
   const pendingMilestones = milestones.filter((item) => !item?.completed);
 
+  const handleMemoryUpgradeClick = () => {
+    setMemoryUpgradeModalOpen(true);
+    setMemoryUpgradeError("");
+  };
+
+  const handleInitiateMemoryUpgrade = async () => {
+    if (!profile?.email) {
+      setMemoryUpgradeError("Email not found in your profile");
+      return;
+    }
+
+    if (!paystackScriptReady || !window.PaystackPop) {
+      setMemoryUpgradeError("Payment processor not ready. Please try again.");
+      return;
+    }
+
+    setMemoryUpgradeLoading(true);
+    setMemoryUpgradeError("");
+
+    try {
+      const response = await plansAPI.initiateMemoryUpgrade(planId, profile.email);
+      if (response?.data?.authorizationUrl && response?.data?.reference) {
+        // Open Paystack popup with Apple Pay support
+        const handler = window.PaystackPop.setup({
+          key: paystackPublicKey,
+          email: profile.email,
+          amount: MEMORY_TIER_PRICING.amount, 
+          currency: MEMORY_TIER_PRICING.currency,
+          ref: response.data.reference,
+          onClose: () => {
+            setMemoryUpgradeLoading(false);
+            // Poll for plan update
+            const pollInterval = setInterval(async () => {
+              try {
+                const updatedPlan = await plansAPI.getPlan(planId);
+                if (updatedPlan?.data?.memoryTier) {
+                  clearInterval(pollInterval);
+                  setPlan(updatedPlan.data);
+                  setMemoryUpgradeModalOpen(false);
+                }
+              } catch (error) {
+                console.error("Error polling plan update:", error);
+              }
+            }, 2000);
+
+            // Stop polling after 30 seconds
+            setTimeout(() => clearInterval(pollInterval), 30000);
+          },
+          onSuccess: () => {
+            // Refetch plan data
+            fetchPlan();
+            setMemoryUpgradeModalOpen(false);
+            setMemoryUpgradeLoading(false);
+          },
+        });
+        handler.openIframe();
+      } else {
+        setMemoryUpgradeError("Failed to initialize payment. Please try again.");
+      }
+    } catch (error) {
+      setMemoryUpgradeError(handleApiError(error, "Failed to initiate memory upgrade"));
+    } finally {
+      setMemoryUpgradeLoading(false);
+    }
+  };
+
   const primaryNavItems = useMemo(
     () => [
       { id: "homepage", label: "Overview", icon: Flag },
@@ -499,6 +612,45 @@ export default function PlanDetailPage() {
               </div>
             </div>
           )}
+          {memoryUpgradeModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+              <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Unlock Memories
+                </h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  Upgrade this plan to memory tier to unlock photo memories and archival features.
+                </p>
+                <p className="mt-3 text-sm font-semibold text-gray-900">
+                  Cost: {MEMORY_TIER_PRICING.displayAmount}
+                </p>
+                {memoryUpgradeError && (
+                  <p className="mt-3 text-sm text-red-600 bg-red-50 p-2 rounded-lg">
+                    {memoryUpgradeError}
+                  </p>
+                )}
+                <p className="mt-4 text-xs text-gray-500">
+                  Payment methods: Card, Apple Pay, Mobile Money
+                </p>
+                <div className="mt-6 flex items-center justify-end gap-3">
+                  <button
+                    onClick={() => setMemoryUpgradeModalOpen(false)}
+                    disabled={memoryUpgradeLoading}
+                    className="px-4 py-2 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-60"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleInitiateMemoryUpgrade}
+                    disabled={memoryUpgradeLoading}
+                    className="px-4 py-2 rounded-full text-sm font-semibold text-white bg-[#7a73ff] hover:bg-[#6a63ff] disabled:opacity-60"
+                  >
+                    {memoryUpgradeLoading ? "Opening..." : "Proceed to Payment"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           <header className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
@@ -520,8 +672,12 @@ export default function PlanDetailPage() {
               <button className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-[#6b63ff]/40 bg-white text-sm font-semibold text-[#6b63ff] hover:bg-purple-50 transition-colors shadow-sm">
                 Invite members
               </button>
-              <button className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#7a73ff] text-white text-sm font-semibold shadow-md hover:shadow-lg transition-shadow">
-                Upgrade to Memory
+              <button
+                onClick={handleMemoryUpgradeClick}
+                disabled={plan?.memoryTier}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#7a73ff] text-white text-sm font-semibold shadow-md hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {plan?.memoryTier ? "Memory Active" : "Upgrade to Memory"}
               </button>
             </div>
           </header>
