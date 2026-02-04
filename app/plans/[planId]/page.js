@@ -993,9 +993,8 @@ export default function PlanDetailPage() {
                     Save every moment forever
                   </h3>
                   <p className="text-sm text-white/70 mt-2">
-                    Upgrade this plan to a memory and keep everything accessible
-                    after the plan ends. Save updates and media, duplicate
-                    plans, and unlock more premium tools.
+                    Upgrade this plan to a memory and unlock premium features. Duplicate
+                    plans, group insights, memorable milestone reminders, and track your group's progress over time.
                   </p>
                   <button className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white">
                     Unlock Memories
