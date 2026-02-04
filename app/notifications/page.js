@@ -47,6 +47,7 @@ export default function NotificationsPage() {
   const [acceptingInviteId, setAcceptingInviteId] = useState(null);
   const [decliningInviteId, setDecliningInviteId] = useState(null);
   const [revokingInviteId, setRevokingInviteId] = useState(null);
+  const [inviteSuccessMessage, setInviteSuccessMessage] = useState("");
 
   useEffect(() => {
     if (authLoading) return;
@@ -180,11 +181,25 @@ export default function NotificationsPage() {
     }
   };
 
-  const handleAcceptInvite = async (invitationId) => {
+  const handleAcceptInvite = async (invitationId, planId) => {
     setAcceptingInviteId(invitationId);
+    setInviteSuccessMessage("");
+    setInvitesError("");
     try {
-      await invitationsAPI.acceptInvitation(invitationId);
-      fetchInvitations();
+      const response = await invitationsAPI.acceptInvitation(invitationId);
+      
+      // Show success message
+      setInviteSuccessMessage("✓ Invitation accepted! You're now a member of this plan.");
+      
+      // Remove accepted invitation from list
+      setInvitations(prev => prev.filter(inv => inv.id !== invitationId));
+      
+      // Optional: Navigate to the plan after 2 seconds
+      if (planId) {
+        setTimeout(() => {
+          router.push(`/plans/${planId}`);
+        }, 2000);
+      }
     } catch (error) {
       setInvitesError(handleApiError(error, "Unable to accept invitation."));
     } finally {
@@ -194,9 +209,16 @@ export default function NotificationsPage() {
 
   const handleDeclineInvite = async (invitationId) => {
     setDecliningInviteId(invitationId);
+    setInviteSuccessMessage("");
+    setInvitesError("");
     try {
       await invitationsAPI.declineInvitation(invitationId);
-      fetchInvitations();
+      
+      // Show success message
+      setInviteSuccessMessage("Invitation declined.");
+      
+      // Remove declined invitation from list
+      setInvitations(prev => prev.filter(inv => inv.id !== invitationId));
     } catch (error) {
       setInvitesError(handleApiError(error, "Unable to decline invitation."));
     } finally {
@@ -417,6 +439,11 @@ export default function NotificationsPage() {
                 <p className="text-sm text-gray-500">{inviteStatus}</p>
               )}
             </div>
+            {inviteSuccessMessage && (
+              <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4">
+                <p className="text-sm font-medium text-green-700">{inviteSuccessMessage}</p>
+              </div>
+            )}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {invitations.map((invite) => (
                 <div
@@ -444,7 +471,7 @@ export default function NotificationsPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <button
-                      onClick={() => handleAcceptInvite(invite.id)}
+                      onClick={() => handleAcceptInvite(invite.id, invite.planId)}
                       disabled={acceptingInviteId === invite.id}
                       className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold shadow-sm transition-shadow ${
                         acceptingInviteId === invite.id

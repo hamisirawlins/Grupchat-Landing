@@ -71,9 +71,33 @@ main {
   }
 }
 
+@keyframes slideUpBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-6px);
+  }
+  80% {
+    transform: translateY(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .coffee-cta,
   .coffee-chip__emoji {
     animation: none;
+  }
+  
+  [data-card-id] {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

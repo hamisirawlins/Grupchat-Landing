@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLoading from "@/components/dashboard/DashboardLoading";
 import DashboardSidebar from "@/components/navigation/DashboardSidebar";
-import { handleApiError, plansAPI, uploadsAPI, dashboardAPI } from "@/lib/api";
+import { handleApiError, plansAPI, uploadsAPI, dashboardAPI, usersAPI, invitationsAPI } from "@/lib/api";
 import {
   ArrowDown,
   ArrowLeft,
@@ -14,15 +14,20 @@ import {
   Eye,
   Flag,
   FolderOpen,
+  Lock,
+  Mail,
   Menu,
   MoreVertical,
   Settings,
+  UserPlus,
+  X,
   Sparkles,
   Tag,
   Trash2,
   Users,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 // Premium memory tier pricing configuration
@@ -74,7 +79,25 @@ export default function PlanDetailPage() {
   const [memoryUpgradeError, setMemoryUpgradeError] = useState("");
   const [paystackPublicKey, setPaystackPublicKey] = useState("");
   const [paystackScriptReady, setPaystackScriptReady] = useState(false);
+  const [visibleCards, setVisibleCards] = useState(new Set());
   const fileInputRef = useRef(null);
+  const observerRef = useRef(null);
+
+  // Invitation states
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [sendingInvites, setSendingInvites] = useState(false);
+  const [inviteStatus, setInviteStatus] = useState("");
+  const searchTimeoutRef = useRef(null);
+
+  // Pending invitations state
+  const [pendingInvitations, setPendingInvitations] = useState([]);
+  const [pendingInvitationsLoading, setPendingInvitationsLoading] = useState(false);
+  const [pendingInvitationsError, setPendingInvitationsError] = useState("");
+  const [revokingInviteId, setRevokingInviteId] = useState(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -87,10 +110,50 @@ export default function PlanDetailPage() {
     if (authLoading || !user || !planId) return;
     fetchPlan();
     fetchMembers();
+    fetchPendingInvitations();
     fetchMilestones();
     fetchPlanImages();
     fetchPaystackPublicKey();
   }, [authLoading, user, planId]);
+
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.dataset.cardId;
+            if (id) {
+              setVisibleCards((prev) => new Set([...prev, id]));
+            }
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '50px' }
+    );
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const cards = document.querySelectorAll('[data-card-id]');
+    cards.forEach((card) => {
+      if (observerRef.current) {
+        observerRef.current.observe(card);
+      }
+    });
+
+    return () => {
+      cards.forEach((card) => {
+        if (observerRef.current) {
+          observerRef.current.unobserve(card);
+        }
+      });
+    };
+  }, [planImages, planImagesLoading]);
 
   const fetchPaystackPublicKey = async () => {
     try {
@@ -174,6 +237,31 @@ export default function PlanDetailPage() {
     }
   };
 
+  const resizeImage = async (file, maxWidth = 800) => {
+    return new Promise((resolve) => {
+      const img = new window.Image();
+      const canvas = document.createElement('canvas');
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        img.src = e.target.result;
+        img.onload = () => {
+          const ratio = Math.min(maxWidth / img.width, 1);
+          canvas.width = img.width * ratio;
+          canvas.height = img.height * ratio;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          canvas.toBlob((blob) => {
+            resolve(new File([blob], file.name.replace(/\.[^/.]+$/, '.webp'), { type: 'image/webp' }));
+          }, 'image/webp', 0.85);
+        };
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleUpdatePlan = async () => {
     setUpdateStatus("");
     setUpdatingPlan(true);
@@ -200,35 +288,58 @@ export default function PlanDetailPage() {
       return;
     }
     setUploadingImage(true);
+    setImageUploadStatus("Uploading image...");
     try {
       for (const file of selectedFiles) {
-        const dataUrl = await new Promise((resolve, reject) => {
+        // Upload original HD version first
+        const hdDataUrl = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result);
           reader.onerror = () => reject(new Error("Unable to read file"));
           reader.readAsDataURL(file);
         });
-        const uploadResponse = await uploadsAPI.uploadImage({
-          dataUrl,
+        
+        const hdUploadResponse = await uploadsAPI.uploadImage({
+          dataUrl: hdDataUrl,
           fileName: file.name,
           contentType: file.type,
-          folder: `plans/${planId}/memories`,
+          folder: `plans/${planId}/memories/hd`,
         });
-        const uploaded = uploadResponse?.data;
+        const hdUploaded = hdUploadResponse?.data;
+        
+        // Create and upload thumbnail version
+        const thumbnailFile = await resizeImage(file, 800);
+        
+        const thumbnailDataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error("Unable to read file"));
+          reader.readAsDataURL(thumbnailFile);
+        });
+        
+        const thumbnailUploadResponse = await uploadsAPI.uploadImage({
+          dataUrl: thumbnailDataUrl,
+          fileName: thumbnailFile.name,
+          contentType: thumbnailFile.type,
+          folder: `plans/${planId}/memories/thumbnails`,
+        });
+        const thumbnailUploaded = thumbnailUploadResponse?.data;
+        
+        // Save both URLs to database
         await plansAPI.addPlanImage(planId, {
-          url: uploaded?.url,
-          thumbnailUrl: null,
-          mimeType: uploaded?.contentType || file.type,
-          bytes: uploaded?.bytes || file.size,
+          url: hdUploaded?.url,
+          thumbnailUrl: thumbnailUploaded?.url,
+          mimeType: hdUploaded?.contentType || file.type,
+          bytes: hdUploaded?.bytes || file.size,
           width: null,
           height: null,
-          storagePath: uploaded?.storagePath,
+          storagePath: hdUploaded?.storagePath,
           type: "plan-memory",
           caption: null,
           position: 0,
         });
       }
-      setImageUploadStatus("Image uploaded.");
+      setImageUploadStatus("Image uploaded");
       setImageFile(null);
       fetchPlanImages();
     } catch (error) {
@@ -264,6 +375,37 @@ export default function PlanDetailPage() {
       setMembers(response?.data || []);
     } catch (error) {
       setMembersError(handleApiError(error, "Failed to load members"));
+    }
+  };
+
+  const fetchPendingInvitations = async () => {
+    setPendingInvitationsError("");
+    setPendingInvitationsLoading(true);
+    try {
+      // Get all invitations for this plan that are pending
+      const response = await plansAPI.getPlanInvitations?.(planId);
+      if (response?.data) {
+        const pending = response.data.filter(inv => inv.status === "pending");
+        setPendingInvitations(pending);
+      }
+    } catch (error) {
+      // Endpoint may not exist yet, so we'll handle gracefully
+      console.log("Could not fetch invitations:", error);
+      setPendingInvitations([]);
+    } finally {
+      setPendingInvitationsLoading(false);
+    }
+  };
+
+  const handleRevokeInvite = async (invitationId) => {
+    setRevokingInviteId(invitationId);
+    try {
+      await invitationsAPI.revokeInvitation(invitationId);
+      setPendingInvitations(prev => prev.filter(inv => inv.id !== invitationId));
+    } catch (error) {
+      setPendingInvitationsError(handleApiError(error, "Failed to revoke invitation"));
+    } finally {
+      setRevokingInviteId(null);
     }
   };
 
@@ -418,6 +560,9 @@ export default function PlanDetailPage() {
   const pendingMilestones = milestones.filter((item) => !item?.completed);
 
   const handleMemoryUpgradeClick = () => {
+    if (plan?.memoryTier) {
+      return; // Prevent opening modal if already upgraded
+    }
     setMemoryUpgradeModalOpen(true);
     setMemoryUpgradeError("");
   };
@@ -528,6 +673,248 @@ export default function PlanDetailPage() {
   const handleLogout = async () => {
     await logout();
     router.push("/");
+  };
+
+  // Invitation handlers
+  const handleSearchUsers = async (query) => {
+    if (!query || query.trim().length === 0) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearchLoading(true);
+    try {
+      const response = await usersAPI.searchUsers(query.trim());
+      const results = response?.data || [];
+      
+      // Filter out already selected users and existing members
+      const memberUserIds = new Set(members.map(m => m.userId));
+      const selectedUserIds = new Set(selectedUsers.map(u => u.id));
+      const filtered = results.filter(
+        r => !memberUserIds.has(r.id) && !selectedUserIds.has(r.id)
+      );
+      
+      setSearchResults(filtered);
+    } catch (error) {
+      console.error("User search error:", error);
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    // Debounce search
+    searchTimeoutRef.current = setTimeout(() => {
+      handleSearchUsers(query);
+    }, 300);
+  };
+
+  const handleAddUser = (user) => {
+    setSelectedUsers(prev => [...prev, user]);
+    setSearchResults(prev => prev.filter(u => u.userId !== user.userId));
+  };
+
+  const handleRemoveUser = (userId) => {
+    setSelectedUsers(prev => prev.filter(u => u.id !== userId));
+  };
+
+  const handleCloseInviteModal = () => {
+    setInviteModalOpen(false);
+    setSelectedUsers([]);
+    setSearchQuery("");
+    setSearchResults([]);
+    setInviteStatus("");
+  };
+
+  const handleSendInvites = async () => {
+    if (selectedUsers.length === 0) {
+      setInviteStatus("Please select at least one user.");
+      return;
+    }
+
+    setSendingInvites(true);
+    setInviteStatus("Sending invitations...");
+
+    try {
+      // Send invites in parallel
+      const results = await Promise.allSettled(
+        selectedUsers.map(user =>
+          invitationsAPI.inviteByUsername({
+            planId: planId,
+            inviteeUsername: user.username,
+          })
+        )
+      );
+
+      // Count successes and failures
+      const successes = results.filter(r => r.status === "fulfilled").length;
+      const failures = results.filter(r => r.status === "rejected").length;
+
+      if (successes > 0) {
+        setInviteStatus(`✓ ${successes} invitation${successes !== 1 ? "s" : ""} sent!`);
+        
+        // Close modal after 1.5 seconds on success
+        setTimeout(() => {
+          handleCloseInviteModal();
+          // Refresh members list if needed
+          if (typeof fetchMembers === "function") {
+            fetchMembers();
+          }
+        }, 1500);
+      }
+
+      if (failures > 0) {
+        const failedUsers = selectedUsers.filter((user, index) => {
+          return results[index].status === "rejected";
+        });
+        const failedNames = failedUsers.map(u => u.username).join(", ");
+        setInviteStatus(`${successes > 0 ? `Sent ${successes} ` : ""}Failed to invite: ${failedNames}`);
+      }
+    } catch (error) {
+      console.error("Error sending invites:", error);
+      setInviteStatus(handleApiError(error, "Failed to send invitations"));
+    } finally {
+      setSendingInvites(false);
+    }
+  };
+
+  // Invite Members Modal Component
+  const InviteMembersModal = () => {
+    if (!inviteModalOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col">
+          {/* Header */}
+          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#f3f1ff] flex items-center justify-center">
+                <UserPlus className="w-5 h-5 text-[#6b63ff]" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Invite Members</h2>
+                <p className="text-xs text-gray-500 mt-1">Search and invite people to this plan</p>
+              </div>
+            </div>
+            <button
+              onClick={handleCloseInviteModal}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+
+          {/* Search Input */}
+          <div className="p-6 border-b border-gray-200">
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search by username or email..."
+                className="w-full px-4 py-3 pl-10 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7a73ff] focus:border-transparent"
+                autoFocus
+              />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            </div>
+
+            {/* Selected Users Chips */}
+            {selectedUsers.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {selectedUsers.map(user => (
+                  <div
+                    key={user.id}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#f3f1ff] border border-purple-100 rounded-full"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-[#7a73ff] text-white flex items-center justify-center text-xs font-semibold">
+                      {(user.displayName || user.username || "U").charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm font-medium text-[#6b63ff]">
+                      {user.username}
+                    </span>
+                    <button
+                      onClick={() => handleRemoveUser(user.id)}
+                      className="hover:bg-purple-200 rounded-full p-0.5 transition-colors"
+                    >
+                      <X className="w-4 h-4 text-[#6b63ff]" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Search Results */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-2">
+            {searchLoading && (
+              <p className="text-sm text-gray-400 text-center py-4">Searching...</p>
+            )}
+
+            {!searchLoading && searchQuery.length > 0 && searchResults.length === 0 && (
+              <p className="text-sm text-gray-400 text-center py-4">
+                No users found. Try a different search.
+              </p>
+            )}
+
+            {!searchLoading && searchQuery.length === 0 && searchResults.length === 0 && selectedUsers.length === 0 && (
+              <p className="text-sm text-gray-400 text-center py-4">
+                Search by username or email...
+              </p>
+            )}
+
+            {searchResults.map(user => (
+              <button
+                key={user.id}
+                onClick={() => handleAddUser(user)}
+                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-colors text-left"
+              >
+                <div className="w-10 h-10 rounded-full bg-[#7a73ff] text-white flex items-center justify-center text-sm font-semibold">
+                  {(user.displayName || user.username || "U").charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {user.displayName || user.username}
+                  </p>
+                  <p className="text-xs text-gray-400 truncate">@{user.username}</p>
+                </div>
+                <UserPlus className="w-4 h-4 text-gray-400" />
+              </button>
+            ))}
+          </div>
+
+          {/* Footer */}
+          <div className="p-6 border-t border-gray-200">
+            {inviteStatus && (
+              <p className="text-sm text-center mb-3 text-gray-600">{inviteStatus}</p>
+            )}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleCloseInviteModal}
+                className="flex-1 px-4 py-2.5 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSendInvites}
+                disabled={selectedUsers.length === 0 || sendingInvites}
+                className="flex-1 px-4 py-2.5 rounded-full text-sm font-semibold text-white bg-[#7a73ff] hover:bg-[#6a63ff] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {sendingInvites ? "Sending..." : `Invite ${selectedUsers.length || ""}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (authLoading) {
@@ -681,7 +1068,11 @@ export default function PlanDetailPage() {
               </button>
             </div>
             <div className="flex items-center gap-2">
-              <button className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-[#6b63ff]/40 bg-white text-sm font-semibold text-[#6b63ff] hover:bg-purple-50 transition-colors shadow-sm">
+              <button
+                onClick={() => setInviteModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-[#6b63ff]/40 bg-white text-sm font-semibold text-[#6b63ff] hover:bg-purple-50 transition-colors shadow-sm"
+              >
+                <UserPlus className="w-4 h-4" />
                 Invite members
               </button>
               <button
@@ -1027,76 +1418,185 @@ export default function PlanDetailPage() {
                 </div>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
-                      Media
-                    </p>
-                    <h3 className="text-lg font-semibold text-gray-900 mt-2">
-                      Plan images
-                    </h3>
+              {/* Pending Invitations Section */}
+              {pendingInvitations.length > 0 && (
+                <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-5">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                        Sent
+                      </p>
+                      <h3 className="text-lg font-semibold text-gray-900 mt-2">
+                        Pending invitations
+                      </h3>
+                    </div>
+                    <UserPlus className="w-5 h-5 text-gray-300" />
                   </div>
-                  <Tag className="w-5 h-5 text-gray-300" />
+                  {pendingInvitationsError && (
+                    <p className="text-sm text-red-500 mb-4">{pendingInvitationsError}</p>
+                  )}
+                  <div className="space-y-3">
+                    {pendingInvitations.map((invitation) => (
+                      <div
+                        key={invitation.id}
+                        className="flex items-center justify-between gap-3 border border-amber-100 bg-amber-50 rounded-2xl p-3"
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="w-9 h-9 rounded-full bg-amber-200 text-amber-700 flex items-center justify-center text-sm font-semibold">
+                            {(invitation.inviteeName || invitation.inviteeUsername || "I")
+                              .charAt(0)
+                              .toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">
+                              {invitation.inviteeName || invitation.inviteeUsername || "Invited User"}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {invitation.createdAt 
+                                ? new Date(invitation.createdAt).toLocaleDateString() 
+                                : "Recently invited"}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleRevokeInvite(invitation.id)}
+                          disabled={revokingInviteId === invitation.id}
+                          className="px-3 py-1.5 text-xs font-semibold text-amber-600 hover:bg-amber-100 rounded-full transition-colors disabled:opacity-50"
+                        >
+                          {revokingInviteId === invitation.id ? "Revoking..." : "Revoke"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="mt-5 space-y-4">
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingImage}
-                    className={`w-full px-4 py-3 rounded-full text-white text-sm font-semibold transition-shadow ${
-                      uploadingImage
-                        ? "bg-slate-700/60 cursor-not-allowed"
-                        : "bg-[#0b2239] hover:shadow-md"
-                    }`}
-                  >
-                    {uploadingImage ? (
-                      <span className="inline-flex items-center justify-center gap-2">
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
-                        Uploading...
-                      </span>
-                    ) : (
-                      "Add images"
-                    )}
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleSelectImages}
-                    className="hidden"
-                  />
-                  {imageUploadStatus && (
-                    <p className="text-sm text-gray-500">{imageUploadStatus}</p>
-                  )}
-                  {planImagesError && (
-                    <p className="text-sm text-red-500">{planImagesError}</p>
-                  )}
-                  {planImagesLoading && (
-                    <p className="text-sm text-gray-500">Loading images...</p>
-                  )}
-                  <div className="columns-2 md:columns-3 gap-3 [column-fill:_balance]">
+              )}
+
+              <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
+                {!plan?.memoryTier ? (
+                  <div className="relative min-h-64 flex flex-col items-center justify-center overflow-hidden">
+                    {/* Pinterest-style masonry grid background */}
+                    <div className="absolute inset-0 columns-3 gap-3 p-4 md:p-6 opacity-20 space-y-3">
+                      {Array.from({ length: 20 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`rounded-lg md:rounded-2xl bg-gray-500 animate-pulse break-inside-avoid ${
+                            i % 5 === 0 ? "h-40 md:h-56 lg:h-64" : i % 3 === 0 ? "h-32 md:h-44 lg:h-52" : "h-24 md:h-36 lg:h-40"
+                          }`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Padlock button - centered and properly spaced */}
+                    <button
+                      onClick={handleMemoryUpgradeClick}
+                      className="group relative z-10 flex flex-col items-center gap-2 md:gap-3"
+                      title="Click to unlock memory tier"
+                    >
+                      <div className="relative transition-transform duration-300 group-hover:scale-110">
+                        <Lock className="w-10 h-10 md:w-12 md:h-12 text-gray-400 group-hover:text-[#7a73ff] transition-colors duration-300" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm md:text-base font-semibold text-gray-600 group-hover:text-[#7a73ff] transition-colors duration-300">
+                          Unlock Memories
+                        </p>
+                        <p className="text-xs md:text-sm text-gray-400 group-hover:text-gray-600 transition-colors duration-300 mt-1">
+                          Upgrade to memory tier
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                          Media
+                        </p>
+                        <h3 className="text-lg font-semibold text-gray-900 mt-2">
+                          Plan images
+                        </h3>
+                      </div>
+                      <Tag className="w-5 h-5 text-gray-300" />
+                    </div>
+                    <div className="mt-5 space-y-4">
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadingImage}
+                        className={`w-full px-4 py-3 rounded-full text-white text-sm font-semibold transition-shadow ${
+                          uploadingImage
+                            ? "bg-slate-700/60 cursor-not-allowed"
+                            : "bg-[#0b2239] hover:shadow-md"
+                        }`}
+                      >
+                        {uploadingImage ? (
+                          <span className="inline-flex items-center justify-center gap-2">
+                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
+                            Uploading...
+                          </span>
+                        ) : (
+                          "Add images"
+                        )}
+                      </button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleSelectImages}
+                        className="hidden"
+                      />
+                      {imageUploadStatus && (
+                        <p className="text-sm text-gray-500">{imageUploadStatus}</p>
+                      )}
+                      {planImagesError && (
+                        <p className="text-sm text-red-500">{planImagesError}</p>
+                      )}
+                      {planImagesLoading && (
+                        <p className="text-sm text-gray-500">Loading images...</p>
+                      )}
+                      <div className="columns-3 gap-3 space-y-3">
                     {planImagesLoading &&
                       Array.from({ length: 6 }).map((_, index) => (
                         <div
                           key={`image-skeleton-${index}`}
                           className="mb-3 break-inside-avoid rounded-2xl border border-gray-100 bg-gray-100/70 overflow-hidden animate-pulse"
                         >
-                          <div className="h-28 sm:h-32 md:h-36 bg-gray-200/80" />
+                          <div className={`bg-gray-200/80 ${
+                            index % 3 === 0 ? "h-56" : index % 2 === 0 ? "h-44" : "h-36"
+                          }`} />
                         </div>
                       ))}
                     {!planImagesLoading &&
-                      planImages.map((item) => (
+                      planImages.map((item, index) => (
                         <div
                           key={item.id}
-                          className="mb-3 break-inside-avoid relative rounded-2xl border border-gray-100 overflow-visible"
+                          data-card-id={item.id}
+                          className={`mb-3 break-inside-avoid relative rounded-2xl border border-gray-100 overflow-visible transition-all duration-500 ease-out ${
+                            visibleCards.has(item.id)
+                              ? 'opacity-100 translate-y-0'
+                              : 'opacity-0 translate-y-8'
+                          }`}
+                          style={{
+                            transitionDelay: `${Math.min(index * 80, 800)}ms`,
+                            animation: visibleCards.has(item.id)
+                              ? `slideUpBounce 0.6s ease-out ${Math.min(index * 80, 800)}ms forwards`
+                              : 'none'
+                          }}
                         >
-                          <div className="rounded-2xl overflow-hidden">
+                          <div className="rounded-2xl overflow-hidden relative bg-gray-100">
                             {item.image?.url && (
-                              <img
-                                src={item.image.url}
-                                alt="Plan media"
-                                className="w-full h-auto object-cover"
+                              <Image
+                                src={item.image.thumbnailUrl || item.image.url}
+                                alt="Plan memory"
+                                width={400}
+                                height={400}
+                                className="w-full h-auto object-cover cursor-pointer"
+                                priority={index < 3}
+                                loading={index < 3 ? "eager" : "lazy"}
+                                placeholder="blur"
+                                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2YzZjRmNiIvPjwvc3ZnPg=="
+                                unoptimized
+                                onClick={() => handlePreviewImage(item.image?.url)}
                               />
                             )}
                           </div>
@@ -1148,8 +1648,10 @@ export default function PlanDetailPage() {
                     {planImages.length === 0 && !planImagesLoading && (
                       <p className="text-sm text-gray-500">No images yet.</p>
                     )}
-                  </div>
-                </div>
+                      </div>
+                    </div>
+                    </>
+                )}
               </div>
 
               {!plan?.memoryTier && !plan?.memoryDate && (
@@ -1173,6 +1675,9 @@ export default function PlanDetailPage() {
           </div>
         </main>
       </div>
+
+      {/* Invite Members Modal */}
+      <InviteMembersModal />
     </div>
   );
 }
