@@ -447,29 +447,41 @@ export default function PlanDetailPage() {
           currency: MEMORY_TIER_PRICING.currency,
           ref: response.data.reference,
           onClose: () => {
-            setMemoryUpgradeLoading(false);
-            // Poll for plan update
+            // Start polling for plan update immediately
+            let attempts = 0;
+            const maxAttempts = 15; // 30 seconds (15 attempts × 2 seconds)
+            
             const pollInterval = setInterval(async () => {
+              attempts++;
               try {
                 const updatedPlan = await plansAPI.getPlan(planId);
                 if (updatedPlan?.data?.memoryTier) {
                   clearInterval(pollInterval);
                   setPlan(updatedPlan.data);
                   setMemoryUpgradeModalOpen(false);
+                  setMemoryUpgradeLoading(false);
+                }
+                
+                // Stop after max attempts
+                if (attempts >= maxAttempts) {
+                  clearInterval(pollInterval);
+                  setMemoryUpgradeLoading(false);
+                  // Fetch once more to ensure we have latest data
+                  fetchPlan();
                 }
               } catch (error) {
                 console.error("Error polling plan update:", error);
+                if (attempts >= maxAttempts) {
+                  clearInterval(pollInterval);
+                  setMemoryUpgradeLoading(false);
+                  fetchPlan();
+                }
               }
             }, 2000);
-
-            // Stop polling after 30 seconds
-            setTimeout(() => clearInterval(pollInterval), 30000);
           },
           onSuccess: () => {
-            // Refetch plan data
+            // Payment completed - refetch immediately and keep polling
             fetchPlan();
-            setMemoryUpgradeModalOpen(false);
-            setMemoryUpgradeLoading(false);
           },
         });
         handler.openIframe();
