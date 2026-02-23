@@ -205,7 +205,7 @@ export default function SignUp() {
               </span>
             </h1>
             <p className="text-base sm:text-lg text-gray-500">
-              Start pooling funds with friends and family
+              Keep an eye on plans with friends and family
             </p>
           </motion.div>
 

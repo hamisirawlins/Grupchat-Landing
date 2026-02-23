@@ -373,7 +373,7 @@ export default function Home() {
                 150+
               </div>
               <div className="text-base sm:text-lg text-gray-700 font-medium">
-                Goals Completed Together
+                Plans Completed Together
               </div>
             </motion.div>
 
