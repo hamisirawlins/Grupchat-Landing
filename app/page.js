@@ -662,17 +662,6 @@ export default function Home() {
               whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.95 }}
             >
-              <motion.div
-                className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg"
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              >
-                Coming Soon
-              </motion.div>
               <svg
                 className="w-8 h-8 mr-3"
                 viewBox="0 0 24 24"
