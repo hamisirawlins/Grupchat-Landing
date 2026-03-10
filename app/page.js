@@ -654,8 +654,10 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <motion.button
-              onClick={() => setShowComingSoonPopup(true)}
+            <motion.a
+              href="https://play.google.com/store/apps/details?id=com.grupchat"
+              target="_blank"
+              rel="noopener noreferrer"
               className="relative flex items-center px-6 py-3 bg-black rounded-xl text-white hover:bg-gray-800 transition-all duration-300 shadow-lg group border-2 border-transparent hover:border-purple-300"
               whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.95 }}
@@ -684,7 +686,7 @@ export default function Home() {
                 </div>
                 <div className="text-xl font-semibold">Google Play</div>
               </div>
-            </motion.button>
+            </motion.a>
 
             <motion.button
               onClick={() => setShowComingSoonPopup(true)}
