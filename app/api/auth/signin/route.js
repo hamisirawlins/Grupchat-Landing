@@ -41,6 +41,14 @@ export async function POST(request) {
     
     return NextResponse.json(data, { status: backendResponse.status });
   } catch (error) {
+    console.error('\n========== [Auth API] ERROR ==========');
+    console.error('[Auth API] Error name:', error.name);
+    console.error('[Auth API] Error message:', error.message);
+    console.error('[Auth API] Error code:', error.code);
+    console.error('[Auth API] Error cause:', error.cause);
+    console.error('[Auth API] Backend URL was:', baseUrl);
+    console.error('[Auth API] Stack:', error.stack);
+    console.error('========== [Auth API] ERROR END ==========\n');
     
     return NextResponse.json(
       { 
