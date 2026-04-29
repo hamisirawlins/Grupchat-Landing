@@ -12,6 +12,7 @@
     "@firebase/auth": "^1.11.0",
     "@headlessui/react": "^2.2.7",
     "@hookform/resolvers": "^5.2.1",
+    "@keverdjs/react": "^1.6.0",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "chart.js": "^4.5.0",
