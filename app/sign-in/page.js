@@ -75,19 +75,14 @@ export default function SignIn() {
     setError("");
 
     try {
-      console.log('[SignIn] Starting Google sign-in...');
       const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
       const user = userCredential.user;
-      console.log('[SignIn] Google sign-in successful. User:', user.email);
 
       // Get ID token for backend authentication
-      console.log('[SignIn] Getting ID token...');
       const idToken = await user.getIdToken();
-      console.log('[SignIn] ID token obtained. Length:', idToken.length);
 
       // Send token to backend
-      console.log('[SignIn] Sending token to /api/auth/signin');
       const response = await fetch("/api/auth/signin", {
         method: "POST",
         headers: {
@@ -96,13 +91,10 @@ export default function SignIn() {
         },
         body: JSON.stringify({ idToken }),
       });
-      console.log('[SignIn] Response received. Status:', response.status);
 
       const data = await response.json();
-      console.log('[SignIn] Response data:', data);
 
       if (data.success) {
-        console.log('[SignIn] Sign-in successful, redirecting to dashboard');
         // The AuthContext will handle the token and user state
         // Redirect to dashboard
         window.location.href = "/dashboard";
