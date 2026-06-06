@@ -227,9 +227,7 @@ export default function Home() {
             className="text-base sm:text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed"
             variants={itemVariants}
           >
-            Leave your house. Come back. Phone stays in pocket.
-            Browse curated plans, join with friends, and let GrupChat handle
-            transport, venue, and payments end-to-end.
+            Leave your house. Come back. Phone stays in pocket. Transform your group chats into actual memories.
           </motion.p>
 
           <motion.div
