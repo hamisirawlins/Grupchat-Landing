@@ -399,10 +399,10 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <div className="text-5xl sm:text-6xl md:text-7xl font-bold text-purple-600 mb-3">
-                120+
+                10+
               </div>
               <div className="text-base sm:text-lg text-gray-700 font-medium">
-                Countries Access
+                Groups Served
               </div>
             </motion.div>
           </div>
