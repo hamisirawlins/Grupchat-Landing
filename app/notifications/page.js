@@ -2,17 +2,16 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLoading from "@/components/dashboard/DashboardLoading";
-import DashboardSidebar from "@/components/navigation/DashboardSidebar";
+import DashboardWrapper from "@/components/layout/DashboardWrapper";
 import {
-  BarChart3,
-  Bell,
   CheckCircle2,
-  FolderOpen,
-  Home,
-  Menu,
-  Settings,
   Sparkles,
   Users,
+  BarChart3,
+  Bell,
+  FolderOpen,
+  Home,
+  Settings,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -27,9 +26,9 @@ import SearchableSelect from "@/components/SearchableSelect";
 export default function NotificationsPage() {
   const { user, profile, logout, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("notifications");
   const [notifications, setNotifications] = useState([]);
+  const [plansLoading, setPlansLoading] = useState(false);
   const [invitations, setInvitations] = useState([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [loadingInvitations, setLoadingInvitations] = useState(false);
@@ -48,6 +47,36 @@ export default function NotificationsPage() {
   const [decliningInviteId, setDecliningInviteId] = useState(null);
   const [revokingInviteId, setRevokingInviteId] = useState(null);
   const [inviteSuccessMessage, setInviteSuccessMessage] = useState("");
+
+  const primaryNavItems = [
+    { id: "homepage", label: "Overview", icon: Home },
+    { id: "plans", label: "Plans", icon: FolderOpen },
+    { id: "plot", label: "Plot", icon: BarChart3 },
+    { id: "notifications", label: "Notifications", icon: Bell, active: true },
+  ];
+
+  const accountNavItems = [
+    { id: "settings", label: "Settings", icon: Settings },
+  ];
+
+  const handlePrimaryNavClick = (item) => {
+    if (item.id === "homepage") {
+      setActiveTab(item.id);
+      router.push("/dashboard");
+      return;
+    }
+    router.push(`/${item.id}`);
+  };
+
+  const handleAccountNavClick = (item) => {
+    setActiveTab(item.id);
+    router.push(`/${item.id}`);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/");
+  };
 
   useEffect(() => {
     if (authLoading) return;
@@ -274,36 +303,6 @@ export default function NotificationsPage() {
     return { updates, reminders };
   }, [notifications]);
 
-  const primaryNavItems = [
-    { id: "homepage", label: "Overview", icon: Home },
-    { id: "plans", label: "Plans", icon: FolderOpen },
-    { id: "plot", label: "Plot", icon: BarChart3 },
-    { id: "notifications", label: "Notifications", icon: Bell, active: true },
-  ];
-
-  const accountNavItems = [
-    { id: "settings", label: "Settings", icon: Settings },
-  ];
-
-  const handlePrimaryNavClick = (item) => {
-    if (item.id === "homepage") {
-      setActiveTab(item.id);
-      router.push("/dashboard");
-      return;
-    }
-    router.push(`/${item.id}`);
-  };
-
-  const handleAccountNavClick = (item) => {
-    setActiveTab(item.id);
-    router.push(`/${item.id}`);
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    router.push("/");
-  };
-
   if (authLoading) {
     return (
       <DashboardLoading
@@ -318,30 +317,8 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#f7f4ff] via-white to-[#eef2ff] flex overflow-hidden relative">
-      <DashboardSidebar
-        mobileMenuOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-        primaryNavItems={primaryNavItems}
-        accountNavItems={accountNavItems}
-        activeTab={activeTab}
-        onPrimaryNavClick={handlePrimaryNavClick}
-        onAccountNavClick={handleAccountNavClick}
-        onLogout={handleLogout}
-        user={user}
-        profile={profile}
-      />
-
-      <main className="flex-1 lg:ml-80 min-w-0 relative">
-        <button
-          onClick={() => setMobileMenuOpen(true)}
-          className="lg:hidden fixed top-6 left-6 z-30 h-11 w-11 rounded-full bg-white/90 shadow-lg border border-white/40 text-gray-600 flex items-center justify-center"
-          aria-label="Open navigation"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-
-        <div className="px-6 sm:px-10 lg:px-16 pt-20 sm:pt-24 pb-16 lg:pb-20 space-y-10">
+    <DashboardWrapper>
+      <div className="px-6 sm:px-10 lg:px-16 pt-20 sm:pt-24 pb-16 lg:pb-20 space-y-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
@@ -677,8 +654,7 @@ export default function NotificationsPage() {
               Post an update
             </button>
           </section>
-        </div>
-      </main>
-    </div>
+      </div>
+    </DashboardWrapper>
   );
 }

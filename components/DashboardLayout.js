@@ -14,6 +14,7 @@ import {
   Bell,
   Menu,
   X,
+  Users,
 } from "lucide-react";
 
 function DashboardLayoutContent({ children, title, subtitle }) {
@@ -202,6 +203,7 @@ function DashboardLayoutContent({ children, title, subtitle }) {
       path: "/notifications",
     },
     { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
+    { id: "community", label: "Community", icon: Users, path: "/community" },
   ];
 
   const getCurrentDate = () => {
@@ -233,9 +235,8 @@ function DashboardLayoutContent({ children, title, subtitle }) {
 
       {/* Sidebar */}
       <aside
-        className={`w-80 bg-white/80 backdrop-blur-xl border-r border-white/20 fixed h-full z-50 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`w-80 bg-white/80 backdrop-blur-xl border-r border-white/20 fixed h-full z-50 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         {/* Logo */}
         <div className="p-6">
@@ -278,11 +279,10 @@ function DashboardLayoutContent({ children, title, subtitle }) {
                   router.push(item.path);
                   setMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-left transition-all duration-200 ${
-                  isActivePage(item.path)
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-left transition-all duration-200 ${isActivePage(item.path)
                     ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
                     : "text-gray-700 hover:bg-white/50"
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <item.icon className="w-5 h-5" />

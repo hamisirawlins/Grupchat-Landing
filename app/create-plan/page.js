@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import DashboardLoading from "@/components/dashboard/DashboardLoading";
-import DashboardSidebar from "@/components/navigation/DashboardSidebar";
+import DashboardWrapper from "@/components/layout/DashboardWrapper";
 import { plansAPI } from "@/lib/api";
 import {
   ArrowLeft,
@@ -15,7 +15,6 @@ import {
   Flag,
   Globe,
   Lock,
-  Menu,
   Sparkles,
   Settings,
   Tag,
@@ -25,7 +24,6 @@ import {
 export default function CreatePlanPage() {
   const { user, profile, logout, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("plans");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -52,7 +50,7 @@ export default function CreatePlanPage() {
 
   const primaryNavItems = useMemo(
     () => [
-      { id: "homepage", label: "Overview", icon: Flag, active: false },
+      { id: "homepage", label: "Overview", icon: Flag },
       { id: "plans", label: "Plans", icon: Tag },
       { id: "plot", label: "Plot", icon: BarChart3 },
       { id: "notifications", label: "Notifications", icon: Sparkles },
@@ -281,36 +279,16 @@ export default function CreatePlanPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex overflow-hidden">
+    <DashboardWrapper>
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-32 -right-28 w-72 h-72 bg-purple-200 rounded-full blur-3xl opacity-60" />
         <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-blue-200 rounded-full blur-3xl opacity-50" />
         <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-indigo-200 rounded-full blur-3xl opacity-30 -translate-x-1/2 -translate-y-1/2" />
       </div>
 
-      <DashboardSidebar
-        mobileMenuOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-        primaryNavItems={primaryNavItems}
-        accountNavItems={accountNavItems}
-        activeTab={activeTab}
-        onPrimaryNavClick={handlePrimaryNavClick}
-        onAccountNavClick={handleAccountNavClick}
-        onLogout={handleLogout}
-        user={user}
-        profile={profile}
-      />
-
-      <div className="flex-1 lg:ml-80 relative">
-        <main className="p-5 sm:p-6 lg:p-10 space-y-8">
+      <main className="p-5 sm:p-6 lg:p-10 space-y-8 relative">
           <header className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
               <button
                 onClick={() => router.push("/dashboard")}
                 className="hidden sm:flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900"
@@ -714,7 +692,6 @@ export default function CreatePlanPage() {
             </aside>
           </form>
         </main>
-      </div>
-    </div>
+      </DashboardWrapper>
   );
 }

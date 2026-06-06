@@ -5,6 +5,7 @@ import PageTransition from "@/components/PageTransition";
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import KeverdLoader from '@/components/KeverdLoader';
+import AppToaster from '@/components/AppToaster';
 
 const figtree = Figtree({
   variable: "--font-figtree",
@@ -54,6 +55,7 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <PageTransition>{children}</PageTransition>
         </AuthProvider>
+        <AppToaster />
         <KeverdLoader />
         <Analytics />
         <SpeedInsights />

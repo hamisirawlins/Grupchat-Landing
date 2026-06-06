@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLoading from "@/components/dashboard/DashboardLoading";
-import DashboardSidebar from "@/components/navigation/DashboardSidebar";
+import DashboardWrapper from "@/components/layout/DashboardWrapper";
 import { handleApiError, plansAPI, uploadsAPI, dashboardAPI, usersAPI, invitationsAPI } from "@/lib/api";
 import {
   ArrowDown,
@@ -44,7 +44,6 @@ export default function PlanDetailPage() {
   const router = useRouter();
   const params = useParams();
   const planId = params?.planId;
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("plans");
   const [plan, setPlan] = useState(null);
   const [planLoading, setPlanLoading] = useState(false);
@@ -640,41 +639,6 @@ export default function PlanDetailPage() {
     }
   };
 
-  const primaryNavItems = useMemo(
-    () => [
-      { id: "homepage", label: "Overview", icon: Flag },
-      { id: "plans", label: "Plans", icon: FolderOpen, active: true },
-      { id: "plot", label: "Plot", icon: BarChart3 },
-      { id: "notifications", label: "Notifications", icon: Sparkles },
-    ],
-    [],
-  );
-
-  const accountNavItems = useMemo(
-    () => [{ id: "settings", label: "Settings", icon: Settings }],
-    [],
-  );
-
-  const handlePrimaryNavClick = (item) => {
-    if (item.id === "homepage") {
-      setActiveTab(item.id);
-      router.push("/dashboard");
-      return;
-    }
-    setActiveTab(item.id);
-    router.push(`/${item.id}`);
-  };
-
-  const handleAccountNavClick = (item) => {
-    setActiveTab(item.id);
-    router.push(`/${item.id}`);
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    router.push("/");
-  };
-
   // Invitation handlers
   const handleSearchUsers = async (query) => {
     if (!query || query.trim().length === 0) {
@@ -931,27 +895,13 @@ export default function PlanDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f4ff] flex overflow-x-hidden">
+    <DashboardWrapper>
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-32 -right-28 w-72 h-72 bg-purple-200 rounded-full blur-3xl opacity-60" />
         <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-blue-200 rounded-full blur-3xl opacity-50" />
       </div>
 
-      <DashboardSidebar
-        mobileMenuOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-        primaryNavItems={primaryNavItems}
-        accountNavItems={accountNavItems}
-        activeTab={activeTab}
-        onPrimaryNavClick={handlePrimaryNavClick}
-        onAccountNavClick={handleAccountNavClick}
-        onLogout={handleLogout}
-        user={user}
-        profile={profile}
-      />
-
-      <div className="flex-1 lg:ml-80 min-w-0 overflow-x-hidden">
-        <main className="p-5 sm:p-6 lg:p-10 space-y-8 min-w-0">
+      <main className="p-5 sm:p-6 lg:p-10 space-y-8 min-w-0 relative">
           {confirmingMilestoneId && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
               <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
@@ -1052,13 +1002,6 @@ export default function PlanDetailPage() {
           )}
           <header className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
-                aria-label="Open navigation"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
               <button
                 onClick={() => router.push("/plans")}
                 className="hidden sm:flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900"
@@ -1674,10 +1617,9 @@ export default function PlanDetailPage() {
             </div>
           </div>
         </main>
-      </div>
 
       {/* Invite Members Modal */}
       <InviteMembersModal />
-    </div>
+    </DashboardWrapper>
   );
 }

@@ -1,0 +1,156 @@
+Founder,Startup Name,MONTH 1 MENTORS,MONTH 2 MENTORS,One Line Description,Link to the Product,Link to the pitchdeck,Baseline (Where are you now and what numbers quantify the progress you've made?),Trackable Metrics for this current sprint,WEEK 1 GOALS,WEEK 1 PROGRESS REPORT,WEEK 2 GOALS,WEEK 2 PROGRESS REPORT,WEEK 3 GOALS,WEEK 4 PROGRESS REPORT,WEEK 5 GOALS,WEEK 5 PROGRESS REPORT,WEEK 6 GOALS,WEEK 6 PROGRESS REPORT,WEEK 7 GOALS,WEEK 7 PROGRESS REPORT
+Joyce Achieng,TagWave,Ted,Wangu,"TagWave is a scalable NFC-powered event technology platform that enables seamless entry, instant digital networking and real-time analytics across diverse events and organizations.",The platform is currently undergoing quality assurance checks,https://docs.google.com/presentation/d/13vqEj63N3I5m4oxNMI9Z3vw_iX_baq9d/edit?usp=sharing&ouid=111485719440627963110&rtpof=true&sd=true,"Sales Traction: Achieved 246 tag sales to date, demonstrating early market adoption.
+Partnership Growth: Targeting collaborations with at least two major events or event companies.
+Operational Readiness: Initiated bulk shipping to support faster turnaround, including last-minute event needs.",The website landing page should be accessible.,Finalise on QA checks for the platform. Progress on ChezaCheza partnership. Get better suppliers for the tags.,"The platform is now live, waiting for the official launch on 27th May. 4500 tags are currently in transit for an event in June.",To ensure the tags are programmed on arrival and engraved with the company's logo. Final touches on the platform before the launch.,KRA taxes filed. Getting an auditor before finding a financial manager for the company. Onboarding a new partner to the company. Tags are currently being prepared for programming after engraving. ,Find a different printing company for the engraving. Going through potential business partners before signing a contract with them.,,,,,,,
+Dave,Nairobi Feast,Ted,Wangu,Nairobi Feast is a restaurant-discovery platform designed to connect food lovers with the best dining experiences across Nairobi,https://nairobifeast.com,https://docs.google.com/presentation/d/1ji17jUF-DOFrarAV3Oxsqpg8h0J4E1xA/edit?usp=drive_link&ouid=115608891489810794887&rtpof=true&sd=true,"Baseline: Nairobi Feast maintains 20,000+ monthly visitors, demonstrating consistent and growing interest in curated food and dining experiences.","Convert 20,000+ monthly visitors into active users engaging with restaurant discovery and dining experiences.","Begin the Nairobi Feast 3.0 revamp by improving core user flows, restaurant discovery, AI search, mobile responsiveness, and overall platform presentation, while tracking early engagement metrics to measure impact.","Completed the first phase of the Nairobi Feast 3.0 revamp, focusing on restaurant discovery, AI search, mobile responsiveness, and overall platform presentation. Early activity showed average daily users rising from about 900-1,000 to roughly 1,500+, suggesting improved visibility and engagement.","Strengthen Nairobi Feast 3.0 by refining key platform features, improving user engagement, and resuming partnership discussions with F&B stakeholders to explore collaboration opportunities based on the platform’s expanded feature set.","Continued refining Nairobi Feast 3.0 and resumed partnership discussions with an F&B Director, positioning the platform’s expanded features as a potential value-add for restaurants and hospitality brands. Reviewed early engagement trends, with average daily users remaining around 1,500+, and identified priority improvements for the next development phase.","Drive awareness and onboarding for Dine Reserve, an extension of Nairobi Feast, by continuing conversations with restaurants, presenting the reservation platform’s value, and identifying early restaurant partners willing to adopt the booking feature.",,,,,,,
+Leon Muli,ArbanGames,Ted,Wangu,A mobile gaming subscription platform enabling Kenyan developers to publish culturally resonant games and monetize via frictionless daily airtime micro-billing.,"we're currently migrating our internal server infra, the platform should be restored as soon as this is done.",currently working on refining current pitch deck { click here },"Conducted a 50-person closed beta with our Direct Carrier Billing (DCB) infrastructure live and fully operational, successfully processing daily micro-subscriptions natively through user airtime. This test established strong initial retention signals for localized content and proved our technical capacity to bypass credit-card friction. Early creator-led distribution experiments generated high top-of-funnel social impressions, and we are now focused on scaling our proven billing rails to convert that traffic.","Completion of total addressable market (TAM) quantification, finalization of the financial baseline model (stress-tested at an 8% billing success rate), and drafting of a 1-page B2B company profile targeted at distribution partners.","Quantify the market size and specific payment friction within the Kenyan gaming ecosystem.
+
+Build a realistic financial unit economic model .
+
+Draft a specialized company profile designed to secure top-of-funnel SMS and distribution partnerships.","Completed strategic market analysis quantifying the Kenyan gaming payment gap—contrasting 85.2% smartphone penetration and 91% mobile money adoption against critically low credit card usage. Validated the live Direct Carrier Billing monetization model used during our beta, running financial stress-tests that project massive viability even at a highly conservative 8% billing success rate. Currently synthesizing this data into the pitch deck and begin structuring the targeted B2B company profile to unlock distribution partnerships.",,,,,,,,,,
+Njeri Muciri,Earthwise Insights,Michira,Ted,"Circular businesses across Africa are generating real revenue from waste.
+Earthwise maps them, structures the data, and puts them in front of capital.",https://earthwiseinsights.netlify.app/,https://docs.google.com/presentation/d/16A0UVsRjokCKPPsM4XD1sblMFMSgG5AV/edit?slide=id.p1#slide=id.p1,"Processing volume — tonnes per day and per month tracked against pilot targets (100t/day → 3,000t/month)
+Platform growth — businesses mapped and verified monthly (current: 2, target: 40+, 11 sites mapped)
+Investor engagement — investment briefs requested and M&E clients onboarded
+Content consistency — 3 posts per week published across active channels, tracked by monthly engagement growth","Fundraising progress — 20M amount raised against target, number of investor conversations initiated monthly
+Platform growth — businesses mapped and verified monthly (current: 2, 11 field sites; target: 40+)
+Investor engagement — investment briefs requested and M&E clients onboarded
+Content consistency — 3 posts per week published across active channels, tracked by monthly engagement growth","Updating Platform and getting feedback
+Meeting BSF team to refine the strategy
+","Recorded and edited 3 posts, had a meeting with the BSF team to  discuss strategy, team structure, and conduct a field visit,Trained claude to be my operations  Assistant and Brand Manager, Finished the base model of the tool and collected feedback","1.        Finish BSF narrative report
+2.        Develop content strategy
+","1.        BSF narrative report done
+2.        Content strategy for 2weeks.
+","
+1.        Meet BSF team to review narrative and financial drafts
+2.        Update platform based on current feedback
+3.        Design the system backend architecture
+4.        Open linkedin Earthwise acc
+5.        Post 3 times a week on linkedin
+","1.Met with the BSF team; narrative and financial review is still ongoing
+2.Documented platform feedback and continuing to collect additional input
+3.Designed the draft backend system architecture
+4.Created the Earthwise LinkedIn account
+5.Published two LinkedIn posts this week",,,,,,
+"Hawona Rodgers , Robert Odhiambo
+, Ridan Hawi",KeverdAI,Nick,Ted,"Keverd is a device trust layer for Fintechs. Fintechs can now verify device 
+integrity before transactions, stopping multi-accounting, account take over and
+sim-swap. ",www.keverd.com,https://pitch.com/v/keverd-pitch-deck-v2-c93fpk,"- AHK Independent Feasibility Review
+- PaydHQ LOI
+- Working on Technical Review with Dr Gameli
+- CMA sandbox registration, AFIK Membership registration underway
+- Conversations with 5 potential clients.",,"- Follow up with Payd Integration
+- Follow up on Vabu and Nailinq integrations
+- 5 New client outreach","- Payd Integration for Q3(Stalled)
+- Reached out to Sam for Vabu and Nailinq Integration - no response yet
+- Ignited convo with 7 new microfinance, recently CBK accreditted, advancing
+3 send proposal and request demo.","- Draft Technical spec for Dr Bright Review
+- Finalize CMA Sandbox registration
+- Follow up on 3 new client prospect(Microfinance)
+- Plan Marketing videos(2), linkedin articles(2) for Keverd
+- Follow up with Sam for Nailinq and Vabu Integration","- Did not draft the Tech doc for Gameli
+- Called 13 DCP's and sent email reports
+- Wrote Linkedin Articles
+- Did not make Linkedin videos
+- Sam Snobbed me
+- Grup chat integration done",,"Didn't do this:
+- Send Email to 23 DCPs
+- Call 23 DCPs
+Did this - took much longer than expected:
+- Work on Nova Garage Pitch
+- Curated business plan for SBS
+- Made a client prospect, meeting requested","- Send Email to 23 DCPs
+- Call 23 DCPs
+- Do visits for DCPs in Westlands",,,,,
+Billy Nyaga,Space Fika,Nick,Nick,"Spacefika is a Space Company. We transition young people to active space builders. Simply, We are building a pipeline of Space Talent in Africa. ",https://cansatkenya254.wixstudio.com/spacefika?rc=test-site,https://drive.google.com/file/d/1EgIwTNTDAVuhQxzKVAkmKv9QZiHssKRO/view?usp=drivesdk,Officially Incorporated company. Trained 3000+ students since 2022. Working with 3 partners. Filling as a space company with KSA. ,Investor engagement — investment briefs requested and M&E clients onboarded,"1. Finish up on concept note for RIIS. 2. Prepare Budget for pilot program 3.Visit Alliance BG, musagitau, uthiru g, and 6 more schools across Nairobi to request for trainings. ",RIIS requested for finished budget. Not yet visited schools but going Tomorrow (Thursday). Finished Sales pitch to schools,- Have a meeting with potential Trainers                                                                          Startupsignup with KSA                                                                                                                          Have gone to schools and gotten about 5 ,"- Had meeting with Careers HOD at Alliance. SpaceFika invited to carrers day at Alliance. 1st Weekend of July. From then on frequent meetings can be heard. Also got contact of the head. Said to keep in touch.     
+- Reviewed with RIIS 
+- Did Linkedin Post 
+- Got contact in Nairobi School 
+- Got Linkup to National Society of Black Engineers (Want to be involved) ","- Get date for engagement with Embu schools                                                             
+- Open bank accounts","- Opened Bank accounts 
+- Meetings with EarthToDate for SpaceFika to represent them
+- Embu schools awiting dates
+- NEXA international school (Friday Program)",,,,,,
+Hamisi Rawlins,GrupChat,Ted,Nick,"Grupchat turns group chats into coordinated action - making it effortless for friends to plan, commit, and fund shared goals together.",https://www.grupchat.net/,Currently in-development,"1. Registered company, KRA set up + DUNS number
+2. 29 registered users + 2 plans created in pilot 
+3. 3 successful user transactions in pilot","1. Content consistency - 3 posts per week published across active channels, tracked by monthly engagement growth
+2. Backend service restoration","1. Setup pitch deck
+2. Footage collection + social media upload
+3. Hackerhouse onboarding
+4. Content strategy setup","1. Collected multiformat content, edited videos & posted content
+2. Set up remotely accessible personal agent
+3. Pitch deck development progress - slides ongoing
+4. 10 users gained","- Backend restoration *
+- Internal team onboarding & feedback incorporation
+- Keverd onboarding *
+- Content strategy","- keverd onboarding
+- backend service restoration
+- deerflow training
+- 23 users gained
+- Content strategy not done
+- Pitch deck not completed","- Seek AI tokens for Deerflow & OpenClaw functionality to support content strategy
+- Map & potentially MVP GrupChat community journeys. 
+- Refine current user onboarding for action triggering","- Contacted creative for design needs, working on onboarding structure and intended workflow 
+- Located free model routing means and set up automated agent and named it Jarvis 
+- Developed workplan and user flows for new community module",,,,,,
+"Lynn Koech , Robert Carlos , Francis Mwangi  , Bundi  Okeri",Kashlink,Wangu,Ted,KashLink is a payment platform that solves the trust problem in Kenya's social commerce.,https://kash-link.com/,,"1. Incorporated Company
+2.200K+Impressions across social media platforms
+3.100+ users signed up for our pilot program 
+4.An active live account .","1. Usability - Functional product, user activation rate, task success rate, transaction time, support tickets.
+2. Distribution- Minimum of 5 sellers with 5 buyers each. Totalling to a min of 25 transactions for the pilot (2 weeks). Channel mixed balance for the next 6 weeks (10% referrals, 40% direct B2C sales, 50% B2B sales.
+3. Visibility- Content & SEO, Organic traffic growth (20% over a month), Social platforms. ","1. Finalize on account with Paystack and NCBA 
+2.Get a publiation on the Economics magazine
+3.Identify 5 sellers who are willing to work with us for the 2 week pilot 
+4.videos","1.3 posts across social media platforms
+2.Finanlized issues with NCBA and Paystack
+3.Identified 5 sellers and in talks with them .
+4.Submitted an article to the economics magazine
+5. ","1. Get 5 sellers 
+2.3 posts acrross social media platforms
+3. Marketing and customer acquisition strategy
+4.","1.3 posts across all social media platforms
+2.Came up with a marketing and customer acquisition 
+3.Finished up with the delivery part of Kashlink  ; fine tuning the product 
+4.set up a meeting with one seller. ","1. 5 sellers integration / 5 transactions minimum
+2. 3 videos and posts across social media platforms
+3. complete 2 documents
+4. Reach out to existing users on the waitlist
+5.Create a blog of testimonials
+6.Segmenting the sellers form buyers in our website
+7","1. Posted 3 videos across social media platforms
+2.4 sellers joined and completed the KYC
+3.completed 1 document 
+4. Manged to resolve the segmetation of sellers and buyers.",,,,,,
+Soma App,,,,,,,,,,,,,,,,,,,,
+Lumeka,,,,,,,,,,,,,,,,,,,,
+Studioshop Kenya,,,,"Studioshop connects African eco-artists directly to commercial buyers; architects, designers, collectors, and developers looking for exactly what they make, through curated storytelling, fair terms, and real market access.",https://studioshopkenya.com/,,"
+1. 30+ pieces installed at Startup Garage Africa","1.        Organize 3 shows and openings
+2.        Secure 1 custom commissions client
+3.        Post at least 3 times a week.
+4.        Organize at least 1 paid mixer event 
+","
+1.        Conduct a social media audit
+2.        Review the site to ensure there’s no more down time
+","1.        Conducted a social Media audit
+2.        Currently resolving site issues with the hosting platform
+","1.        Develop at social media strategy
+2.        Work on the pitchdeck
+3.        Review team and distribute tasks
+","
+1.        Social Media Strategy and pitch deck are ongoing
+2.        Developed the Q3 workplan for the team
+","1.        Meet the unplugged groove team
+2.        Finish social Media Strategy
+3.        Develop at least 3 posts
+4.        Train claude
+5.        Confirm date for Startup Garage Opening and paid event
+6.        Ensure website is up and running
+7.        Set up payment systems for studioshop
+","1.        Met the unplugged groove team
+2.        Developed a strategy for 2weeks
+3.        Developed 3 posts but haven't posted
+4.        Trained  claude
+5.        Haven't confirm date for Startup Garage Opening and paid event
+6.        Website is up and running
+7.        Payment systems set-up is still ongoing
+",,,,,,

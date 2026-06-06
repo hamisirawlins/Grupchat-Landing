@@ -227,8 +227,9 @@ export default function Home() {
             className="text-base sm:text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed"
             variants={itemVariants}
           >
-            Turn group chat plans into group chat memories. Track progress,
-            celebrate milestones, and create lasting experiences with friends.
+            Leave your house. Come back. Phone stays in pocket.
+            Browse curated plans, join with friends, and let GrupChat handle
+            transport, venue, and payments end-to-end.
           </motion.p>
 
           <motion.div
@@ -261,12 +262,12 @@ export default function Home() {
             className="text-base sm:text-lg md:text-xl text-gray-600"
           >
             <RotatingText
-              baseText="Track progress for:"
+              baseText="Plans for:"
               words={[
-                "travel plans",
-                "meetups",
-                "events",
-                "many more group projects",
+                "museum visits",
+                "group dinners",
+                "friend groups",
+                "communities",
               ]}
             />
           </motion.div>
@@ -369,7 +370,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              <div className="text-5xl sm:text-6xl md:text-7xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">
+              <div className="text-5xl sm:text-6xl md:text-7xl font-bold text-purple-600 mb-3">
                 150+
               </div>
               <div className="text-base sm:text-lg text-gray-700 font-medium">
@@ -384,7 +385,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <div className="text-5xl sm:text-6xl md:text-7xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">
+              <div className="text-5xl sm:text-6xl md:text-7xl font-bold text-purple-600 mb-3">
                 2,000+
               </div>
               <div className="text-base sm:text-lg text-gray-700 font-medium">
@@ -399,7 +400,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <div className="text-5xl sm:text-6xl md:text-7xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">
+              <div className="text-5xl sm:text-6xl md:text-7xl font-bold text-purple-600 mb-3">
                 120+
               </div>
               <div className="text-base sm:text-lg text-gray-700 font-medium">
@@ -433,7 +434,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              Three simple steps to turn your plans into memories
+              Browse a plan. Join with friends. Show up — we handle the rest.
             </motion.p>
           </div>
 
@@ -453,12 +454,12 @@ export default function Home() {
                 </div>
                 <div className="lg:col-span-10">
                   <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-black mb-4">
-                    Create Your Goal
+                    Browse Plans
                   </h3>
                   <p className="text-sm sm:text-base text-gray-500 leading-relaxed">
-                    Set up a new goal or challenge — whether it's a trip, event,
-                    or activity. Add details, set a target date, and invite your
-                    friends.
+                    Explore curated experiences your group will love — museum
+                    visits, dinners, day trips. Every plan has transport and
+                    venue pre-sorted so no one has to do the organising.
                   </p>
                 </div>
               </div>
@@ -479,12 +480,13 @@ export default function Home() {
                 </div>
                 <div className="lg:col-span-10">
                   <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-black mb-4">
-                    Invite Your Friends
+                    Join & Pay Once
                   </h3>
                   <p className="text-sm sm:text-base text-gray-500 leading-relaxed">
-                    Add friends to your goal. Everyone stays in the loop with
-                    real-time updates and can contribute progress, photos, and
-                    milestones.
+                    Join a friend's plan or start your own and invite your
+                    people. Each person pays their share — activity and
+                    one-way transport bundled. Add a return ride if you want
+                    one. No chasing M-Pesa.
                   </p>
                 </div>
               </div>
@@ -505,12 +507,14 @@ export default function Home() {
                 </div>
                 <div className="lg:col-span-10">
                   <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-black mb-4">
-                    Track & Celebrate
+                    Show Up. Go Home.
                   </h3>
                   <p className="text-sm sm:text-base text-gray-500 leading-relaxed">
-                    Share progress updates, upload photos, and celebrate
-                    milestones together. Watch your plans transform into
-                    memories you'll cherish forever.
+                    Your ride arrives on time. Your name is on the list at the
+                    venue. When the night winds down, GrupChat pings the group —
+                    hop on the return ride or keep the night going. Either way,
+                    no cancellations, no fees. Phone stays in pocket except for
+                    photos.
                   </p>
                 </div>
               </div>
@@ -549,29 +553,24 @@ export default function Home() {
           <div className="space-y-4">
             {[
               {
-                question: "Do I need to pay to use GrupChat?",
+                question: "What's included in a GrupChat plan?",
                 answer:
-                  "GrupChat is completely free! Create goals, track progress, and build memories with friends at no cost. You can upgrade a successfully completed plan into a memory with a one-time fee to access all the premium features available.",
-              },
-              // {
-              //   question: "Can I track payments/progress manually?",
-              //   answer:
-              //     "Yes! You can manually log contributions and track progress toward financial goals. Payment integrations are provided, but manual tracking is provided for free to all our users. Feel free to share a coffee ☕, it helps us provide better value.",
-              // },
-              {
-                question: "What if we don't complete our goal?",
-                answer:
-                  "That's okay! GrupChat is about the journey, not just the destination. You can keep updating progress, extend deadlines, or archive plans to revisit later. The memories you create along the way matter most.",
+                  "Every curated plan bundles the experience, transport, and venue into a single price per person. You browse, join, pay once — and GrupChat handles the venue reservation, shared pickup coordination, and payments so nobody has to organise anything on the day.",
               },
               {
-                question: "Can I create multiple goals?",
+                question: "How does transport work?",
                 answer:
-                  "Absolutely! Create as many goals as you want—travel plans, event coordination, fitness challenges, or any shared activity. Each goal has its own timeline and memory gallery.",
+                  "GrupChat arranges a shared group pickup at a fixed per-person rate. Pricing is locked in when you join so there are no surprises on the day. A return ride is also included, and you can cancel it on the night if your plans change.",
+              },
+              {
+                question: "Do I need to coordinate with everyone before joining?",
+                answer:
+                  "No — that's the whole point. Each person joins and pays individually in their own time. GrupChat locks the plan before the date and confirms with the venue. No group thread, no M-Pesa back-and-forth, no arguments about transport.",
               },
               {
                 question: "Do all friends need the app?",
                 answer:
-                  "Not necessarily! Friends can access goals via web and participate through the web app. However, the mobile apps provide the best experience for real-time updates and notifications.",
+                  "Friends can join and access plans via the web app, no download required. The mobile app gives the best experience for real-time ride updates and push notifications, but it's not mandatory to participate.",
               },
             ].map((faq, index) => (
               <motion.div
@@ -630,9 +629,9 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              Ready to Create{" "}
+              Stop Planning.{" "}
               <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                Memories Together?
+                Start Going.
               </span>
             </motion.h2>
             <motion.p
@@ -642,8 +641,8 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              Start tracking your group goals today and turn plans into lasting
-              memories
+              Browse a plan, join with friends, and show up — we handle
+              transport, venue, and payments end-to-end.
             </motion.p>
           </motion.div>
 
@@ -770,8 +769,7 @@ export default function Home() {
                 </span>
               </div>
               <p className="text-gray-400 mb-6 max-w-md">
-                Powering plans beyond the chat. Track progress, celebrate
-                milestones, and create lasting memories with friends.
+                Plans on demand. Browse, join, show up, go home.
               </p>
               <div className="flex space-x-4">
                 {[
