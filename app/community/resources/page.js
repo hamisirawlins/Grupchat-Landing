@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import DashboardWrapper from "@/components/layout/DashboardWrapper";
 import SideoverPanel from "@/components/community/SideoverPanel";
@@ -8,6 +8,14 @@ import ResourceForm from "@/components/community/ResourceForm";
 import { Plus, ExternalLink, Trash2, ArrowLeft, ChevronDown } from "lucide-react";
 
 export default function ResourcesPage() {
+  return (
+    <Suspense>
+      <ResourcesPageContent />
+    </Suspense>
+  );
+}
+
+function ResourcesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const userRole = searchParams.get("role") || "pm";
