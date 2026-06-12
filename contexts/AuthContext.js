@@ -99,11 +99,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const isAdmin = profile?.role === "admin";
+
   const value = {
     user,
     loading,
     profile,
     profileLoading,
+    isAdmin,
     refreshProfile,
     signUp,
     signIn,
