@@ -33,15 +33,13 @@ export default function JoinPage() {
   const [doneMessage, setDoneMessage] = useState("");
 
   useEffect(() => {
-    load();
-  }, [inviteCode]);
-
-  useEffect(() => {
-    if (!authLoading && !user && invite) {
-      // Redirect to auth, then back
+    if (authLoading) return;
+    if (!user) {
       router.push(`/sign-in?redirect=/join/${inviteCode}`);
+      return;
     }
-  }, [authLoading, user, invite]);
+    load();
+  }, [authLoading, user, inviteCode]);
 
   const load = async () => {
     try {

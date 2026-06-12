@@ -600,9 +600,9 @@ export default function PlanDetailPage() {
     }
   };
 
-  const handleRemoveResource = async (url) => {
+  const handleRemoveResource = async (resourceId) => {
     try {
-      await plansAPI.removeResource(planId, { url });
+      await plansAPI.removeResource(planId, resourceId);
       fetchPlan();
     } catch (e) {
       setV2ActionMsg("Failed to remove resource.");
@@ -1858,7 +1858,7 @@ export default function PlanDetailPage() {
                       <li key={i} className="flex items-center justify-between gap-2 text-sm">
                         <a href={r.url} target="_blank" rel="noopener noreferrer"
                           className="text-[#7a73ff] hover:underline truncate">{r.label || r.url}</a>
-                        <button onClick={() => handleRemoveResource(r.url)}
+                        <button onClick={() => handleRemoveResource(r.id)}
                           className="text-gray-300 hover:text-red-500 flex-shrink-0">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
