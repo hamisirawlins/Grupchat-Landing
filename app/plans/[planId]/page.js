@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLoading from "@/components/dashboard/DashboardLoading";
 import DashboardWrapper from "@/components/layout/DashboardWrapper";
-import { handleApiError, plansAPI, uploadsAPI, dashboardAPI, usersAPI, invitationsAPI } from "@/lib/api";
+import { handleApiError, plansAPI, uploadsAPI, dashboardAPI, usersAPI, invitationsAPI, premiumAPI } from "@/lib/api";
 import {
   ArrowDown,
   ArrowLeft,
@@ -82,6 +82,27 @@ export default function PlanDetailPage() {
   const fileInputRef = useRef(null);
   const observerRef = useRef(null);
 
+  // V2 — Pool, Resources, Feed, Invite link
+  const [feed, setFeed] = useState([]);
+  const [feedLoading, setFeedLoading] = useState(false);
+  const [checkinText, setCheckinText] = useState("");
+  const [postingCheckin, setPostingCheckin] = useState(false);
+  const [resourceLabel, setResourceLabel] = useState("");
+  const [resourceUrl, setResourceUrl] = useState("");
+  const [addingResource, setAddingResource] = useState(false);
+  const [shareLink, setShareLink] = useState("");
+  const [generatingLink, setGeneratingLink] = useState(false);
+  const [contributeAmount, setContributeAmount] = useState("");
+  const [contributePhone, setContributePhone] = useState("");
+  const [contributing, setContributing] = useState(false);
+  const [payoutPhone, setPayoutPhone] = useState("");
+  const [payoutAmount, setPayoutAmount] = useState("");
+  const [payingOut, setPayingOut] = useState(false);
+  const [v2ActionMsg, setV2ActionMsg] = useState("");
+  const [joiningPaystack, setJoiningPaystack] = useState(false);
+  const [mpesaJoinPhone, setMpesaJoinPhone] = useState("");
+  const [joiningMpesa, setJoiningMpesa] = useState(false);
+
   // Invitation states
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -113,6 +134,7 @@ export default function PlanDetailPage() {
     fetchMilestones();
     fetchPlanImages();
     fetchPaystackPublicKey();
+    fetchFeed();
   }, [authLoading, user, planId]);
 
   useEffect(() => {
@@ -408,6 +430,18 @@ export default function PlanDetailPage() {
     }
   };
 
+  const fetchFeed = async () => {
+    setFeedLoading(true);
+    try {
+      const res = await plansAPI.getFeed(planId);
+      setFeed(res?.data || []);
+    } catch (e) {
+      console.error("Failed to load feed", e);
+    } finally {
+      setFeedLoading(false);
+    }
+  };
+
   const fetchMilestones = async () => {
     setMilestonesError("");
     try {
@@ -535,6 +569,128 @@ export default function PlanDetailPage() {
     const targetId = confirmingImageId;
     setConfirmingImageId(null);
     await handleDeleteImage(targetId);
+  };
+
+  const handleGenerateInvite = async () => {
+    setGeneratingLink(true);
+    setV2ActionMsg("");
+    try {
+      const res = await plansAPI.generateInvite(planId);
+      setShareLink(res?.data?.inviteUrl || "");
+    } catch (e) {
+      setV2ActionMsg("Failed to generate invite link.");
+    } finally {
+      setGeneratingLink(false);
+    }
+  };
+
+  const handleAddResource = async () => {
+    if (!resourceUrl.trim()) return;
+    setAddingResource(true);
+    setV2ActionMsg("");
+    try {
+      await plansAPI.addResource(planId, { label: resourceLabel.trim() || resourceUrl.trim(), url: resourceUrl.trim() });
+      setResourceLabel("");
+      setResourceUrl("");
+      fetchPlan();
+    } catch (e) {
+      setV2ActionMsg("Failed to add resource.");
+    } finally {
+      setAddingResource(false);
+    }
+  };
+
+  const handleRemoveResource = async (url) => {
+    try {
+      await plansAPI.removeResource(planId, { url });
+      fetchPlan();
+    } catch (e) {
+      setV2ActionMsg("Failed to remove resource.");
+    }
+  };
+
+  const handlePostCheckin = async () => {
+    if (!checkinText.trim()) return;
+    setPostingCheckin(true);
+    setV2ActionMsg("");
+    try {
+      await plansAPI.postCheckin(planId, { text: checkinText.trim() });
+      setCheckinText("");
+      fetchFeed();
+    } catch (e) {
+      setV2ActionMsg("Failed to post check-in.");
+    } finally {
+      setPostingCheckin(false);
+    }
+  };
+
+  const handleContribute = async () => {
+    if (!contributeAmount || !contributePhone.trim()) {
+      setV2ActionMsg("Enter amount and M-Pesa number.");
+      return;
+    }
+    setContributing(true);
+    setV2ActionMsg("");
+    try {
+      await premiumAPI.contribute(planId, { amount: Number(contributeAmount), phone: contributePhone.trim() });
+      setContributeAmount("");
+      setContributePhone("");
+      setV2ActionMsg("M-Pesa prompt sent. Enter your PIN to contribute.");
+      fetchPlan();
+    } catch (e) {
+      setV2ActionMsg(e?.message || "Failed to send M-Pesa prompt.");
+    } finally {
+      setContributing(false);
+    }
+  };
+
+  const handlePayout = async () => {
+    if (!payoutAmount || !payoutPhone.trim()) {
+      setV2ActionMsg("Enter amount and M-Pesa number.");
+      return;
+    }
+    setPayingOut(true);
+    setV2ActionMsg("");
+    try {
+      await premiumAPI.payout(planId, { amount: Number(payoutAmount), phone: payoutPhone.trim() });
+      setPayoutAmount("");
+      setPayoutPhone("");
+      setV2ActionMsg("Payout sent.");
+      fetchPlan();
+    } catch (e) {
+      setV2ActionMsg(e?.message || "Failed to send payout.");
+    } finally {
+      setPayingOut(false);
+    }
+  };
+
+  const handleJoinPaystack = async () => {
+    setJoiningPaystack(true);
+    setV2ActionMsg("");
+    try {
+      const res = await premiumAPI.joinPaystack(planId);
+      if (res?.data?.authorizationUrl) {
+        window.location.href = res.data.authorizationUrl;
+      }
+    } catch (e) {
+      setV2ActionMsg(e?.message || "Failed to initiate payment.");
+      setJoiningPaystack(false);
+    }
+  };
+
+  const handleJoinMpesa = async () => {
+    if (!mpesaJoinPhone.trim()) { setV2ActionMsg("Enter your M-Pesa number."); return; }
+    setJoiningMpesa(true);
+    setV2ActionMsg("");
+    try {
+      await premiumAPI.joinMpesa(planId, mpesaJoinPhone.trim());
+      setV2ActionMsg("M-Pesa prompt sent. Enter your PIN to pay.");
+      setMpesaJoinPhone("");
+    } catch (e) {
+      setV2ActionMsg(e?.message || "Failed to send M-Pesa prompt.");
+    } finally {
+      setJoiningMpesa(false);
+    }
   };
 
   const formatDate = (value) => {
@@ -1614,6 +1770,177 @@ export default function PlanDetailPage() {
                   </button>
                 </div>
               )}
+
+              {/* V2 — Premium payment status */}
+              {plan?.planType === "premium" && (() => {
+                const myMember = members.find((m) => m.uid === user?.uid || m.userId === user?.uid);
+                const paid = myMember?.paymentStatus === "paid";
+                return (
+                  <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Your payment</h3>
+                    {paid ? (
+                      <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
+                        <CheckCircle2 className="w-4 h-4" /> Paid — you&apos;re confirmed
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <p className="text-sm text-gray-500">You haven&apos;t paid yet. Pay now to confirm your spot.</p>
+                        {v2ActionMsg && <p className="text-sm text-[#7a73ff]">{v2ActionMsg}</p>}
+                        <div className="flex gap-2">
+                          <button onClick={handleJoinPaystack} disabled={joiningPaystack}
+                            className="flex-1 bg-[#7a73ff] text-white text-sm py-2.5 rounded-full font-medium hover:bg-[#6a63ef] disabled:opacity-50 transition-colors">
+                            {joiningPaystack ? "Redirecting…" : "Pay via Card / Bank"}
+                          </button>
+                        </div>
+                        <div className="space-y-2">
+                          <input type="tel" placeholder="M-Pesa number (07XXXXXXXX)"
+                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7a73ff]/30"
+                            value={mpesaJoinPhone} onChange={(e) => setMpesaJoinPhone(e.target.value)} />
+                          <button onClick={handleJoinMpesa} disabled={joiningMpesa}
+                            className="w-full border border-[#7a73ff] text-[#7a73ff] text-sm py-2.5 rounded-full font-medium hover:bg-[#f3f1ff] disabled:opacity-50 transition-colors">
+                            {joiningMpesa ? "Sending prompt…" : "Pay via M-Pesa"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* V2 — Pool balance + contribute / payout */}
+              {(plan?.poolMode === "pool" || plan?.poolMode === "both") && (
+                <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-1">Pool balance</h3>
+                  <p className="text-2xl font-bold text-gray-900 mb-4">
+                    {plan?.currency || "KES"} {(plan?.currentBalance || 0).toLocaleString()}
+                  </p>
+                  {v2ActionMsg && <p className="text-sm text-[#7a73ff] mb-3">{v2ActionMsg}</p>}
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="number" min="1" placeholder="Amount"
+                        className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7a73ff]/30"
+                        value={contributeAmount} onChange={(e) => setContributeAmount(e.target.value)} />
+                      <input type="tel" placeholder="07XXXXXXXX"
+                        className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7a73ff]/30"
+                        value={contributePhone} onChange={(e) => setContributePhone(e.target.value)} />
+                    </div>
+                    <button onClick={handleContribute} disabled={contributing}
+                      className="w-full bg-[#7a73ff] text-white text-sm py-2.5 rounded-full font-medium hover:bg-[#6a63ef] disabled:opacity-50 transition-colors">
+                      {contributing ? "Sending prompt…" : "Contribute via M-Pesa"}
+                    </button>
+                    {plan?.ownerId === user?.uid && (
+                      <div className="pt-3 border-t border-gray-100 space-y-2">
+                        <p className="text-xs font-medium text-gray-500">Payout (plan owner only)</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input type="number" min="1" placeholder="Amount"
+                            className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7a73ff]/30"
+                            value={payoutAmount} onChange={(e) => setPayoutAmount(e.target.value)} />
+                          <input type="tel" placeholder="07XXXXXXXX"
+                            className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7a73ff]/30"
+                            value={payoutPhone} onChange={(e) => setPayoutPhone(e.target.value)} />
+                        </div>
+                        <button onClick={handlePayout} disabled={payingOut}
+                          className="w-full border border-gray-200 text-gray-700 text-sm py-2.5 rounded-full font-medium hover:border-[#7a73ff]/40 disabled:opacity-50 transition-colors">
+                          {payingOut ? "Sending…" : "Send payout"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* V2 — Resource links */}
+              <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Resources</h3>
+                {plan?.resources?.length > 0 && (
+                  <ul className="space-y-2 mb-4">
+                    {plan.resources.map((r, i) => (
+                      <li key={i} className="flex items-center justify-between gap-2 text-sm">
+                        <a href={r.url} target="_blank" rel="noopener noreferrer"
+                          className="text-[#7a73ff] hover:underline truncate">{r.label || r.url}</a>
+                        <button onClick={() => handleRemoveResource(r.url)}
+                          className="text-gray-300 hover:text-red-500 flex-shrink-0">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {v2ActionMsg && <p className="text-sm text-[#7a73ff] mb-2">{v2ActionMsg}</p>}
+                <div className="space-y-2">
+                  <input type="text" placeholder="Label (optional)"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7a73ff]/30"
+                    value={resourceLabel} onChange={(e) => setResourceLabel(e.target.value)} />
+                  <input type="url" placeholder="URL"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7a73ff]/30"
+                    value={resourceUrl} onChange={(e) => setResourceUrl(e.target.value)} />
+                  <button onClick={handleAddResource} disabled={addingResource || !resourceUrl.trim()}
+                    className="w-full bg-[#7a73ff] text-white text-sm py-2.5 rounded-full font-medium hover:bg-[#6a63ef] disabled:opacity-50 transition-colors">
+                    {addingResource ? "Adding…" : "Add resource"}
+                  </button>
+                </div>
+              </div>
+
+              {/* V2 — Share / invite link */}
+              <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Invite link</h3>
+                {shareLink ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 border border-gray-200">
+                      <span className="text-sm text-gray-700 truncate flex-1">{shareLink}</span>
+                      <button onClick={() => { navigator.clipboard.writeText(shareLink); setV2ActionMsg("Copied!"); setTimeout(() => setV2ActionMsg(""), 2000); }}
+                        className="text-[#7a73ff] text-xs font-medium flex-shrink-0 hover:underline">Copy</button>
+                    </div>
+                    <button onClick={handleGenerateInvite} disabled={generatingLink}
+                      className="text-sm text-gray-400 hover:text-gray-600">Generate new link</button>
+                  </div>
+                ) : (
+                  <button onClick={handleGenerateInvite} disabled={generatingLink}
+                    className="w-full bg-[#7a73ff] text-white text-sm py-2.5 rounded-full font-medium hover:bg-[#6a63ef] disabled:opacity-50 transition-colors">
+                    {generatingLink ? "Generating…" : "Generate invite link"}
+                  </button>
+                )}
+              </div>
+
+              {/* V2 — Check-in feed */}
+              <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Feed</h3>
+                <div className="flex gap-2 mb-4">
+                  <input type="text" placeholder="Share a check-in or update…"
+                    className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7a73ff]/30"
+                    value={checkinText} onChange={(e) => setCheckinText(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handlePostCheckin()} />
+                  <button onClick={handlePostCheckin} disabled={postingCheckin || !checkinText.trim()}
+                    className="bg-[#7a73ff] text-white text-sm px-4 py-2.5 rounded-xl font-medium hover:bg-[#6a63ef] disabled:opacity-50 transition-colors flex-shrink-0">
+                    {postingCheckin ? "…" : "Post"}
+                  </button>
+                </div>
+                {feedLoading ? (
+                  <div className="flex justify-center py-4">
+                    <div className="w-5 h-5 border-2 border-[#7a73ff] border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : feed.length === 0 ? (
+                  <p className="text-sm text-gray-400 text-center py-4">No check-ins yet. Be the first!</p>
+                ) : (
+                  <ul className="space-y-3">
+                    {feed.map((item) => (
+                      <li key={item.id} className="flex gap-3">
+                        <div className="w-8 h-8 rounded-full bg-[#f3f1ff] flex items-center justify-center flex-shrink-0 text-xs font-semibold text-[#7a73ff]">
+                          {(item.displayName || item.authorName || "?")[0].toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-gray-400 mb-0.5">
+                            <span className="font-medium text-gray-700">{item.displayName || item.authorName}</span>
+                            {" · "}
+                            {item.createdAt ? new Date(item.createdAt?._seconds ? item.createdAt._seconds * 1000 : item.createdAt).toLocaleDateString("en-KE", { day: "numeric", month: "short" }) : ""}
+                          </p>
+                          <p className="text-sm text-gray-800">{item.text}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
           </div>
         </main>

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { handleApiError, planMemoriesAPI } from "@/lib/api";
+import { handleApiError, planMemoriesAPI, plansAPI } from "@/lib/api";
 
 const fallbackPlotPlans = [
   {
@@ -113,16 +113,18 @@ export default function PlotPage() {
     setPlotLoading(true);
     setPlotError("");
     try {
-      const response = await planMemoriesAPI.getPlanMemories({
-        limit: 20,
-        page: 1,
-      });
-      const memories = Array.isArray(response?.data) ? response.data : [];
+      const [memoriesRes, plansRes] = await Promise.allSettled([
+        planMemoriesAPI.getPlanMemories({ limit: 20, page: 1 }),
+        plansAPI.getPlans({ limit: 30, page: 1 }),
+      ]);
+
+      const memories = memoriesRes.status === "fulfilled" && Array.isArray(memoriesRes.value?.data) ? memoriesRes.value.data : [];
+      const allPlans = plansRes.status === "fulfilled" ? (plansRes.value?.data?.plans || plansRes.value?.data || []) : [];
+      const archivedPlans = allPlans.filter((p) => p.status === "archived");
+
       if (memories.length) {
         const mapped = memories.map((memory, index) => {
-          const memoryDate = memory.memoryDate
-            ? new Date(memory.memoryDate)
-            : null;
+          const memoryDate = memory.memoryDate ? new Date(memory.memoryDate) : null;
           return {
             id: memory.id || `memory-${index}`,
             title: memory.title || "Untitled memory",
@@ -131,12 +133,28 @@ export default function PlotPage() {
             status: memory.tier === "premium" ? "Memory" : "Active",
             premium: memory.tier === "premium",
             level: `L-${String(index + 1).padStart(2, "0")}`,
-            date: memoryDate
-              ? memoryDate.toLocaleDateString("en-US", {
-                month: "short",
-                year: "numeric",
-              })
-              : "TBD",
+            date: memoryDate ? memoryDate.toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "TBD",
+          };
+        });
+        setPlotPlans(mapped);
+      } else if (archivedPlans.length) {
+        const toDate = (v) => {
+          if (!v) return null;
+          if (v?.toDate) return v.toDate();
+          if (v?._seconds) return new Date(v._seconds * 1000);
+          return new Date(v);
+        };
+        const mapped = archivedPlans.map((plan, index) => {
+          const d = toDate(plan.targetDate || plan.createdAt);
+          return {
+            id: plan.id,
+            title: plan.name || "Untitled plan",
+            description: plan.description || "",
+            milestone: plan.category || "Completed",
+            status: "Memory",
+            premium: plan.planType === "premium",
+            level: `L-${String(index + 1).padStart(2, "0")}`,
+            date: d && !isNaN(d.getTime()) ? d.toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "TBD",
           };
         });
         setPlotPlans(mapped);

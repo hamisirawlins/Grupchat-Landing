@@ -36,6 +36,8 @@ export default function CreatePlanPage() {
     invitees: [],
     milestones: [],
     visibility: "private",
+    poolMode: "coordinate",
+    targetAmount: "",
   });
   const [inviteEmail, setInviteEmail] = useState("");
   const [milestoneInput, setMilestoneInput] = useState("");
@@ -246,6 +248,9 @@ export default function CreatePlanPage() {
         targetDate: formData.targetDate,
         visibility: formData.visibility,
         invitees: formData.invitees,
+        planType: "free",
+        poolMode: formData.poolMode,
+        targetAmount: formData.targetAmount ? Number(formData.targetAmount) : null,
         milestones: formData.milestones.map((milestone, index) => ({
           id: milestone.id,
           text: milestone.text,
@@ -412,6 +417,38 @@ export default function CreatePlanPage() {
                       <span>{formData.description.length}/500</span>
                     </div>
                   </div>
+
+                  <div>
+                    <label className="text-sm font-semibold text-gray-900">Pool mode</label>
+                    <p className="text-xs text-gray-400 mb-2">Should this plan collect money from members?</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { value: "coordinate", label: "Coordinate only", desc: "No money collected" },
+                        { value: "pool", label: "Pool money", desc: "Collect contributions" },
+                        { value: "both", label: "Both", desc: "Coordinate + pool" },
+                      ].map((opt) => (
+                        <button key={opt.value} type="button"
+                          onClick={() => setFormData((p) => ({ ...p, poolMode: opt.value }))}
+                          className={`rounded-2xl border p-3 text-left transition-colors ${formData.poolMode === opt.value ? "border-[#7a73ff] bg-[#f3f1ff]" : "border-gray-200 bg-white hover:border-[#7a73ff]/40"}`}>
+                          <div className="text-xs font-semibold text-gray-900">{opt.label}</div>
+                          <div className="text-xs text-gray-400 mt-0.5">{opt.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {(formData.poolMode === "pool" || formData.poolMode === "both") && (
+                    <div>
+                      <label className="text-sm font-semibold text-gray-900">Target amount <span className="font-normal text-gray-400">(KES)</span></label>
+                      <input
+                        type="number" min="1" name="targetAmount"
+                        value={formData.targetAmount}
+                        onChange={handleChange}
+                        placeholder="e.g. 50000"
+                        className="mt-2 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#7a73ff]/30 focus:border-[#7a73ff]"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
