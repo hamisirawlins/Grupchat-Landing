@@ -8,43 +8,27 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowUp,
-  BarChart3,
   Calendar,
   CheckCircle2,
   Eye,
-  Flag,
-  FolderOpen,
-  Lock,
   Mail,
-  Menu,
   MoreVertical,
-  Settings,
   UserPlus,
   X,
-  Sparkles,
   Tag,
   Trash2,
   Users,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-// Premium memory tier pricing configuration
-// Currency: KES (Kenyan Shilling) - ~250 KES ≈ $1.99 USD
-// Update these values when switching to USD account
-const MEMORY_TIER_PRICING = {
-  currency: "KES", // Change to "USD" when USD account is active
-  amount: 25000, // Amount in cents (250.00 KES)
-  displayAmount: "250 KES", // For UI display
-};
 
 export default function PlanDetailPage() {
-  const { user, profile, logout, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
   const planId = params?.planId;
-  const [activeTab, setActiveTab] = useState("plans");
   const [plan, setPlan] = useState(null);
   const [planLoading, setPlanLoading] = useState(false);
   const [planError, setPlanError] = useState("");
@@ -73,9 +57,6 @@ export default function PlanDetailPage() {
   const [addingMilestone, setAddingMilestone] = useState(false);
   const [savingMilestoneOrder, setSavingMilestoneOrder] = useState(false);
   const [openImageMenuId, setOpenImageMenuId] = useState(null);
-  const [memoryUpgradeModalOpen, setMemoryUpgradeModalOpen] = useState(false);
-  const [memoryUpgradeLoading, setMemoryUpgradeLoading] = useState(false);
-  const [memoryUpgradeError, setMemoryUpgradeError] = useState("");
   const [paystackPublicKey, setPaystackPublicKey] = useState("");
   const [paystackScriptReady, setPaystackScriptReady] = useState(false);
   const [visibleCards, setVisibleCards] = useState(new Set());
@@ -115,7 +96,6 @@ export default function PlanDetailPage() {
 
   // Pending invitations state
   const [pendingInvitations, setPendingInvitations] = useState([]);
-  const [pendingInvitationsLoading, setPendingInvitationsLoading] = useState(false);
   const [pendingInvitationsError, setPendingInvitationsError] = useState("");
   const [revokingInviteId, setRevokingInviteId] = useState(null);
 
@@ -1117,45 +1097,6 @@ export default function PlanDetailPage() {
               </div>
             </div>
           )}
-          {memoryUpgradeModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-              <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Unlock Memories
-                </h3>
-                <p className="mt-2 text-sm text-gray-600">
-                  Upgrade this plan to memory tier to unlock photo memories and archival features.
-                </p>
-                <p className="mt-3 text-sm font-semibold text-gray-900">
-                  Cost: {MEMORY_TIER_PRICING.displayAmount}
-                </p>
-                {memoryUpgradeError && (
-                  <p className="mt-3 text-sm text-red-600 bg-red-50 p-2 rounded-lg">
-                    {memoryUpgradeError}
-                  </p>
-                )}
-                <p className="mt-4 text-xs text-gray-500">
-                  Payment methods: Card, Apple Pay, Mobile Money
-                </p>
-                <div className="mt-6 flex items-center justify-end gap-3">
-                  <button
-                    onClick={() => setMemoryUpgradeModalOpen(false)}
-                    disabled={memoryUpgradeLoading}
-                    className="px-4 py-2 rounded-full text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-60"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleInitiateMemoryUpgrade}
-                    disabled={memoryUpgradeLoading}
-                    className="px-4 py-2 rounded-full text-sm font-semibold text-white bg-[#7a73ff] hover:bg-[#6a63ff] disabled:opacity-60"
-                  >
-                    {memoryUpgradeLoading ? "Opening..." : "Proceed to Payment"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
           <header className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
@@ -1173,13 +1114,6 @@ export default function PlanDetailPage() {
               >
                 <UserPlus className="w-4 h-4" />
                 Invite members
-              </button>
-              <button
-                onClick={handleMemoryUpgradeClick}
-                disabled={plan?.memoryTier}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#7a73ff] text-white text-sm font-semibold shadow-md hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {plan?.memoryTier ? "Memory Active" : "Upgrade to Memory"}
               </button>
             </div>
           </header>
@@ -1571,41 +1505,6 @@ export default function PlanDetailPage() {
               )}
 
               <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
-                {!plan?.memoryTier ? (
-                  <div className="relative min-h-64 flex flex-col items-center justify-center overflow-hidden">
-                    {/* Pinterest-style masonry grid background */}
-                    <div className="absolute inset-0 columns-3 gap-3 p-4 md:p-6 opacity-20 space-y-3">
-                      {Array.from({ length: 20 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className={`rounded-lg md:rounded-2xl bg-gray-500 animate-pulse break-inside-avoid ${
-                            i % 5 === 0 ? "h-40 md:h-56 lg:h-64" : i % 3 === 0 ? "h-32 md:h-44 lg:h-52" : "h-24 md:h-36 lg:h-40"
-                          }`}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Padlock button - centered and properly spaced */}
-                    <button
-                      onClick={handleMemoryUpgradeClick}
-                      className="group relative z-10 flex flex-col items-center gap-2 md:gap-3"
-                      title="Click to unlock memory tier"
-                    >
-                      <div className="relative transition-transform duration-300 group-hover:scale-110">
-                        <Lock className="w-10 h-10 md:w-12 md:h-12 text-gray-400 group-hover:text-[#7a73ff] transition-colors duration-300" />
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm md:text-base font-semibold text-gray-600 group-hover:text-[#7a73ff] transition-colors duration-300">
-                          Unlock Memories
-                        </p>
-                        <p className="text-xs md:text-sm text-gray-400 group-hover:text-gray-600 transition-colors duration-300 mt-1">
-                          Upgrade to memory tier
-                        </p>
-                      </div>
-                    </button>
-                  </div>
-                ) : (
-                  <>
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
@@ -1749,27 +1648,7 @@ export default function PlanDetailPage() {
                     )}
                       </div>
                     </div>
-                    </>
-                )}
               </div>
-
-              {!plan?.memoryTier && !plan?.memoryDate && (
-                <div className="bg-[#1b1b3a] text-white rounded-3xl p-6 shadow-lg">
-                  <p className="text-xs uppercase tracking-[0.3em] text-white/70">
-                    Make it a Memory
-                  </p>
-                  <h3 className="text-lg font-semibold mt-3">
-                    Save every moment forever
-                  </h3>
-                  <p className="text-sm text-white/70 mt-2">
-                    Upgrade this plan to a memory and unlock premium features. Duplicate
-                    plans, group insights, memorable milestone reminders, and track your group's progress over time.
-                  </p>
-                  <button className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white">
-                    Unlock Memories
-                  </button>
-                </div>
-              )}
 
               {/* V2 — Premium payment status */}
               {plan?.planType === "premium" && (() => {

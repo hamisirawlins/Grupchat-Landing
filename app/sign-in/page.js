@@ -186,21 +186,6 @@ export default function SignIn() {
           </motion.div>
 
           <motion.div
-            className="flex items-start gap-3 bg-purple-50 border border-purple-200 rounded-xl px-4 py-3 mb-6"
-            variants={itemVariants}
-          >
-            <span className="mt-0.5 w-4 h-4 rounded-full bg-purple-200 flex items-center justify-center flex-shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-600 block" />
-            </span>
-            <p className="text-sm text-purple-800 leading-relaxed">
-              We're updating the app with curated plans, managed transport, and
-              end-to-end group experiences.{" "}
-              <span className="font-semibold">Your account is safe</span> —
-              you'll be among the first in when we launch.
-            </p>
-          </motion.div>
-
-          <motion.div
             className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 shadow-sm"
             variants={itemVariants}
           >

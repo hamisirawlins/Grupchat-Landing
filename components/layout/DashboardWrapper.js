@@ -21,7 +21,6 @@ const getPrimaryNavItems = (isAdmin) => [
   { id: "plans", label: "Plans", icon: FolderOpen },
   { id: "catalogue", label: "Experiences", icon: Sparkles },
   { id: "plot", label: "Plot", icon: BarChart3 },
-  { id: "community", label: "Community", icon: Users },
   { id: "notifications", label: "Notifications", icon: Bell },
   ...(isAdmin ? [{ id: "admin", label: "Admin", icon: ShieldCheck }] : []),
 ];
