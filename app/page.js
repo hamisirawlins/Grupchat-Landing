@@ -432,7 +432,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              Browse a plan. Join with friends. Show up — we handle the rest.
+              Browse or create a plan. Join with friends. Coordinate and pool with with ease, without losing progress in group chats. 
             </motion.p>
           </div>
 
@@ -456,8 +456,7 @@ export default function Home() {
                   </h3>
                   <p className="text-sm sm:text-base text-gray-500 leading-relaxed">
                     Explore curated experiences your group will love — museum
-                    visits, dinners, day trips. Every plan has transport and
-                    venue pre-sorted so no one has to do the organising.
+                    visits, dinners, day trips, events etc. Optionally, create your own custom plans and checklist items.
                   </p>
                 </div>
               </div>
@@ -478,13 +477,11 @@ export default function Home() {
                 </div>
                 <div className="lg:col-span-10">
                   <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-black mb-4">
-                    Join & Pay Once
+                    Share with friends
                   </h3>
                   <p className="text-sm sm:text-base text-gray-500 leading-relaxed">
                     Join a friend's plan or start your own and invite your
-                    people. Each person pays their share — activity and
-                    one-way transport bundled. Add a return ride if you want
-                    one. No chasing M-Pesa.
+                    people. Coordinate and pool with ease, without losing progress in group chats. No more back-and-forths or lost messages.
                   </p>
                 </div>
               </div>
@@ -505,14 +502,10 @@ export default function Home() {
                 </div>
                 <div className="lg:col-span-10">
                   <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-black mb-4">
-                    Show Up. Go Home.
+                    Show Up. Enjoy the Experience.
                   </h3>
                   <p className="text-sm sm:text-base text-gray-500 leading-relaxed">
-                    Your ride arrives on time. Your name is on the list at the
-                    venue. When the night winds down, GrupChat pings the group —
-                    hop on the return ride or keep the night going. Either way,
-                    no cancellations, no fees. Phone stays in pocket except for
-                    photos.
+                    Enjoy the experience with your friends!
                   </p>
                 </div>
               </div>
@@ -553,22 +546,22 @@ export default function Home() {
               {
                 question: "What's included in a GrupChat plan?",
                 answer:
-                  "Every curated plan bundles the experience, transport, and venue into a single price per person. You browse, join, pay once — and GrupChat handles the venue reservation, shared pickup coordination, and payments so nobody has to organise anything on the day.",
+                  "A curated plan bundles the experience, venue, and a shared group pickup into one per-person price. You browse, join, pay once — and GrupChat handles the rest. No group chat coordination, no one collecting money from friends, no day-of logistics.",
               },
               {
-                question: "How does transport work?",
+                question: "Can I create my own plans?",
                 answer:
-                  "GrupChat arranges a shared group pickup at a fixed per-person rate. Pricing is locked in when you join so there are no surprises on the day. A return ride is also included, and you can cancel it on the night if your plans change.",
-              },
-              {
-                question: "Do I need to coordinate with everyone before joining?",
-                answer:
-                  "No — that's the whole point. Each person joins and pays individually in their own time. GrupChat locks the plan before the date and confirms with the venue. No group thread, no M-Pesa back-and-forth, no arguments about transport.",
+                  "Yes. Alongside curated experiences you can create a DIY plan — add a checklist, invite your people, and use GrupChat to coordinate and pool contributions without losing progress in group chats.",
               },
               {
                 question: "Do all friends need the app?",
                 answer:
-                  "Friends can join and access plans via the web app, no download required. The mobile app gives the best experience for real-time ride updates and push notifications, but it's not mandatory to participate.",
+                  "No download required. Friends can join, view the plan, and pay via the web app on any browser. The mobile app adds intuitive notifications for real-time updates, but it's optional.",
+              },
+              {
+                question: "Who is GrupChat for?",
+                answer:
+                  "Friend groups, communities, and anyone who wants to actually go somewhere together without the organising overhead. If you've ever had a group chat where the plan never left the chat — this is for you.",
               },
             ].map((faq, index) => (
               <motion.div
@@ -639,8 +632,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              Browse a plan, join with friends, and show up — we handle
-              transport, venue, and payments end-to-end.
+              Browse or create a plan, join with friends, and show up. Curate memories with ease.
             </motion.p>
           </motion.div>
 
@@ -767,7 +759,7 @@ export default function Home() {
                 </span>
               </div>
               <p className="text-gray-400 mb-6 max-w-md">
-                Plans on demand. Browse, join, show up, go home.
+                Group plans made easy. Browse or create a plan, join with friends, and show up. Curate memories with ease.
               </p>
               <div className="flex space-x-4">
                 {[

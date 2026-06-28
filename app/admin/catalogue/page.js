@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import DashboardWrapper from "@/components/layout/DashboardWrapper";
 import Link from "next/link";
 import { catalogueAPI } from "@/lib/api";
-import { Plus, Pencil, CheckCircle, PauseCircle, Archive } from "lucide-react";
+import { Plus, Pencil, PauseCircle, Archive, CheckCircle2 } from "lucide-react";
 
 const statusBadge = {
   active: { label: "Active", cls: "bg-green-100 text-green-700" },
@@ -20,6 +20,7 @@ export default function AdminCataloguePage() {
   const [items, setItems] = useState([]);
   const [fetching, setFetching] = useState(true);
   const [filter, setFilter] = useState("active");
+  const [updatingId, setUpdatingId] = useState(null);
 
   useEffect(() => {
     if (loading) return;
@@ -36,6 +37,18 @@ export default function AdminCataloguePage() {
       console.error(e);
     } finally {
       setFetching(false);
+    }
+  };
+
+  const handleStatusChange = async (itemId, status) => {
+    setUpdatingId(itemId);
+    try {
+      await catalogueAPI.updateItem(itemId, { status });
+      setItems((prev) => prev.filter((i) => i.id !== itemId));
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -78,10 +91,30 @@ export default function AdminCataloguePage() {
                     </div>
                     <p className="text-sm text-gray-500">{item.venue?.name} · {item.city} · KES {item.listedPrice?.toLocaleString()}</p>
                   </div>
-                  <Link href={`/admin/catalogue/${item.id}`}
-                    className="flex items-center gap-1.5 text-sm text-[#7a73ff] hover:underline flex-shrink-0">
-                    <Pencil className="w-3.5 h-3.5" /> Edit
-                  </Link>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {item.status !== "active" && (
+                      <button onClick={() => handleStatusChange(item.id, "active")} disabled={updatingId === item.id}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 disabled:opacity-40 transition-colors">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Activate
+                      </button>
+                    )}
+                    {item.status !== "paused" && item.status !== "archived" && (
+                      <button onClick={() => handleStatusChange(item.id, "paused")} disabled={updatingId === item.id}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700 hover:bg-yellow-100 disabled:opacity-40 transition-colors">
+                        <PauseCircle className="w-3.5 h-3.5" /> Pause
+                      </button>
+                    )}
+                    {item.status !== "archived" && (
+                      <button onClick={() => handleStatusChange(item.id, "archived")} disabled={updatingId === item.id}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-50 text-gray-500 hover:bg-gray-100 disabled:opacity-40 transition-colors">
+                        <Archive className="w-3.5 h-3.5" /> Archive
+                      </button>
+                    )}
+                    <Link href={`/admin/catalogue/${item.id}`}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-[#f3f1ff] text-[#7a73ff] hover:bg-[#ebe8ff] transition-colors">
+                      <Pencil className="w-3.5 h-3.5" /> Edit
+                    </Link>
+                  </div>
                 </div>
               );
             })}

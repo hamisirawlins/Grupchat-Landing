@@ -37,7 +37,8 @@ export default function CatalogueItemPage() {
 
   const formatDate = (ts) => {
     if (!ts) return "";
-    const d = ts?.toDate ? ts.toDate() : new Date(ts);
+    const d = ts?.toDate ? ts.toDate() : ts?._seconds ? new Date(ts._seconds * 1000) : new Date(ts);
+    if (isNaN(d.getTime())) return "Invalid date";
     return d.toLocaleDateString("en-KE", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
   };
 
@@ -118,7 +119,13 @@ export default function CatalogueItemPage() {
             {item.availableDates?.length > 0 ? (
               <div className="space-y-2">
                 {item.availableDates.map((d, i) => {
-                  const dateStr = d?.toDate ? d.toDate().toISOString() : String(d);
+                  const dateStr = d?.toDate
+                    ? d.toDate().toISOString()
+                    : d?._seconds
+                    ? new Date(d._seconds * 1000).toISOString()
+                    : typeof d === "string"
+                    ? d
+                    : String(d);
                   return (
                     <button key={i} type="button" onClick={() => setSelectedDate(dateStr)}
                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left transition-colors ${selectedDate === dateStr ? "border-[#7a73ff] bg-[#f3f1ff] text-[#7a73ff]" : "border-gray-200 bg-white text-gray-700 hover:border-[#7a73ff]/40"}`}>

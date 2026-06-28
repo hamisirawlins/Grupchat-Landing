@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import DashboardWrapper from "@/components/layout/DashboardWrapper";
 import { catalogueAPI } from "@/lib/api";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import DateInputSection from "@/components/admin/DateInputSection";
 
 const CATEGORIES = ["experiences", "dining", "adventure", "art", "wellness", "sports", "travel"];
 
@@ -26,12 +27,6 @@ export default function NewCatalogueItemPage() {
   }, [loading, user, isAdmin]);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-
-  const handleDateChange = (i, v) => {
-    const dates = [...form.availableDates];
-    dates[i] = v;
-    set("availableDates", dates);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -129,26 +124,10 @@ export default function NewCatalogueItemPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-2">Available dates</label>
-            <div className="space-y-2">
-              {form.availableDates.map((d, i) => (
-                <div key={i} className="flex gap-2">
-                  <input type="datetime-local" className={`${inputCls} flex-1`} value={d} onChange={(e) => handleDateChange(i, e.target.value)} />
-                  {form.availableDates.length > 1 && (
-                    <button type="button" onClick={() => set("availableDates", form.availableDates.filter((_, j) => j !== i))}
-                      className="text-gray-400 hover:text-red-500">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button type="button" onClick={() => set("availableDates", [...form.availableDates, ""])}
-                className="flex items-center gap-1 text-sm text-[#7a73ff] hover:underline">
-                <Plus className="w-3.5 h-3.5" /> Add date
-              </button>
-            </div>
-          </div>
+          <DateInputSection
+            dates={form.availableDates}
+            onChange={(dates) => set("availableDates", dates)}
+          />
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
