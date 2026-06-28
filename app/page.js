@@ -218,7 +218,7 @@ export default function Home() {
           >
             Powering Plans
             <br />
-            <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="text-[#b5975a]">
               Beyond The Chat
             </span>
           </motion.h1>
@@ -368,7 +368,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              <div className="text-5xl sm:text-6xl md:text-7xl font-bold text-purple-600 mb-3">
+              <div className="text-5xl sm:text-6xl md:text-7xl font-bold text-[#b5975a] mb-3">
                 150+
               </div>
               <div className="text-base sm:text-lg text-gray-700 font-medium">
@@ -383,7 +383,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <div className="text-5xl sm:text-6xl md:text-7xl font-bold text-purple-600 mb-3">
+              <div className="text-5xl sm:text-6xl md:text-7xl font-bold text-[#b5975a] mb-3">
                 2,000+
               </div>
               <div className="text-base sm:text-lg text-gray-700 font-medium">
@@ -398,7 +398,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <div className="text-5xl sm:text-6xl md:text-7xl font-bold text-purple-600 mb-3">
+              <div className="text-5xl sm:text-6xl md:text-7xl font-bold text-[#b5975a] mb-3">
                 10+
               </div>
               <div className="text-base sm:text-lg text-gray-700 font-medium">
@@ -535,7 +535,7 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.1 }}
             >
               Frequently Asked{" "}
-              <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="text-[#b5975a]">
                 Questions
               </span>
             </motion.h2>
@@ -621,7 +621,7 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.1 }}
             >
               Stop Planning.{" "}
-              <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="bg-purple-600 bg-clip-text text-transparent">
                 Start Going.
               </span>
             </motion.h2>
@@ -754,7 +754,7 @@ export default function Home() {
                   height={64}
                   className="w-16 h-16 object-contain"
                 />
-                <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                <span className="text-2xl font-bold text-[#b5975a]">
                   GrupChat
                 </span>
               </div>
@@ -804,7 +804,7 @@ export default function Home() {
                   href="https://buymeacoffee.com/grupchat"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center px-4 py-2 bg-yellow-400 text-black rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-200"
+                  className="inline-flex items-center px-4 py-2 bg-[#b5975a] text-black rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-200"
                 >
                   <span className="mr-2">☕️</span>
                   Buy Us a Coffee

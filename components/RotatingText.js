@@ -17,7 +17,7 @@ export default function RotatingText({ words, baseText, className = "" }) {
   return (
     <div className={`flex items-center justify-center gap-2 ${className}`}>
       <span>{baseText}</span>
-      <div className="relative bg-purple-600 rounded-full px-3 py-1 min-w-[120px] flex items-center justify-center">
+      <div className="relative bg-[#b5975a] rounded-full px-3 py-1 min-w-[120px] flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.span
             key={currentIndex}
