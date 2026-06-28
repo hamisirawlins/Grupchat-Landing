@@ -15,11 +15,11 @@ const figtree = Figtree({
 
 export const metadata = {
   title: "GrupChat - Powering Plans Beyond The Chat",
-  description: "Transform your group chats into powerful collaborations. Pool funds with friends and family seamlessly, turning dreams into reality.",
+  description: "Transform your group plans into memories. Browse or create and coordinate custom plans, join with friends, and enjoy! Curate memories with ease.",
   metadataBase: new URL('https://grupchat.net'),
   openGraph: {
     title: "GrupChat - Powering Plans Beyond The Chat",
-    description: "Transform your group chats into powerful collaborations. Pool funds with friends and family seamlessly, turning dreams into reality.",
+    description: "Transform your group plans into memories. Browse or create and coordinate custom plans, join with friends, and enjoy! Curate memories with ease.",
     url: 'https://grupchat.net',
     siteName: 'GrupChat',
     images: [
@@ -36,7 +36,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: "GrupChat - Powering Plans Beyond The Chat",
-    description: "Transform your group chats into powerful collaborations. Pool funds with friends and family seamlessly, turning dreams into reality.",
+    description: "Transform your group plans into memories. Browse or create and coordinate custom plans, join with friends, and enjoy! Curate memories with ease.",
     images: ['/preview.png'],
   },
   icons: {
