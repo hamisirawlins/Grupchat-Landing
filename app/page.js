@@ -546,7 +546,7 @@ export default function Home() {
               {
                 question: "What's included in a GrupChat plan?",
                 answer:
-                  "A curated plan bundles the experience, venue, and a shared group pickup into one per-person price. You browse, join, pay once — and GrupChat handles the rest. No group chat coordination, no one collecting money from friends, no day-of logistics.",
+                  "A curated plan bundles the experience and venue into one per-person price. You browse, join, pay once — and GrupChat handles the rest. No group chat coordination, no one collecting money from friends, no day-of logistics.",
               },
               {
                 question: "Can I create my own plans?",
