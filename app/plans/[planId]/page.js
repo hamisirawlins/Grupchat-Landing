@@ -67,6 +67,30 @@ export default function PlanDetails() {
 
   const [sheet, setSheet] = useState(null); // "pay" | "invite" | "edit" | "resource"
 
+  // While any of my payments is pending, keep watching the ledger (every 15s, up to 30 min)
+  // so a callback or the reconciliation job shows up here without a manual refresh.
+  const watchPolls = useRef(0);
+  const myPending = useMemo(
+    () => (txs$.data ?? []).filter((t) => t.userId === uid && t.status === "pending").map((t) => t.id),
+    [txs$.data, uid],
+  );
+  useEffect(() => {
+    if (myPending.length === 0 || watchPolls.current >= 120) return undefined;
+    const t = setInterval(async () => {
+      watchPolls.current += 1;
+      try {
+        const list = asList(unwrap(await plansAPI.getPlanTransactions(planId)));
+        const changed = list.filter((x) => myPending.includes(x.id) && x.status !== "pending");
+        if (changed.length) {
+          if (changed.some((x) => x.status === "success")) toast.success("Payment received");
+          else toast.error("Payment didn't go through");
+          plan$.reload(); members$.reload(); txs$.reload();
+        }
+      } catch { /* try again next tick */ }
+    }, 15000);
+    return () => clearInterval(t);
+  }, [myPending, planId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Landing back from Paystack (?payment=…): the webhook may not have arrived yet,
   // so verify my latest pending transaction against the provider (P4.4).
   const verifiedRef = useRef(false);

@@ -27,7 +27,9 @@ Preconditions enforced server-side: plan exists and `status == active`; for `con
 | Path | Provider | Verification | On success |
 |---|---|---|---|
 | `POST /v2/paystack/webhook` | Paystack `charge.success` | HMAC-SHA512 of raw body with `PAYSTACK_SECRET_KEY` vs `x-paystack-signature` | see settlement |
-| `POST /v2/mpesa/stk-callback` | Daraja STK result | `ResultCode == 0` | see settlement |
+| `POST /v2/mpesa/stk-callback` | Daraja STK result | `ResultCode == 0` | see settlement. **V2 STK pushes must name this URL** (`stkCallbackUrlV2()`, D-022) |
+| `POST /core/deposit_callback` (V1) | Daraja STK result | — | bridges to the V2 handler when the `CheckoutRequestID` is a Firestore transaction (D-022) |
+| `POST /core/paybill-confirmation`, `/core/paybill-callback` (V1 C2B) | Daraja | — | raw payload → `mpesa_logs`; always 200 |
 | `POST /v2/payments/*` | Daraja deposit/withdrawal/B2B/paybill/timeouts | per handler | legacy V1-era set; review in P5 |
 
 **Note (P4.2):** the Paystack handler recomputes the signature from `JSON.stringify(req.body)`, not the raw bytes. That works only while Express's JSON parser reserialises identically. Use `express.raw()` on that route and hash the raw buffer.
@@ -46,7 +48,7 @@ Callbacks now only verify the signature, find the pending tx by provider referen
 - `payout` decrements `currentBalance` at initiation, not on callback — a failed payout must be **reversed** (P4: add compensating increment on failure; today it isn't).
 
 ## Timeouts and reconciliation (P4.1 — shipped 2026-09-06)
-`services/reconciliationService.js`: starts 30s after boot, then every 5 min. Loads `transactions where status == pending` (single-field, no index), keeps those ≥15 min old (callbacks own the first 15 min), reconciles up to 50 per run, and marks anything still unconfirmed after **48h** as `failed` ("No provider confirmation within 48 hours"). Survives restarts by construction — the old in-process `setTimeout` is gone.
+`services/reconciliationService.js`: starts 30s after boot, then every 2 min. Loads `transactions where status == pending` (single-field, no index), keeps those ≥3 min old (callbacks own the first 3 minutes), reconciles up to 50 per run, and marks anything still unconfirmed after **48h** as `failed` ("No provider confirmation within 48 hours"). Survives restarts by construction — the old in-process `setTimeout` is gone.
 
 ## Verify endpoint (P4.4 — shipped 2026-09-06)
 `GET /v2/transactions/:txId/verify` (auth; payer or plan member) → reconciles if pending → `{ id, status, outcome, type, provider, amount, currency, planId }`. Plan details calls it when the browser lands back with `?payment=…`, on the caller's latest pending transaction, then refreshes and clears the query string.
@@ -59,7 +61,9 @@ onSnapshot(doc(db, "plans", planId),      snap => setPlan(snap.data()));        
 ```
 Rules allow the payer to read their own transaction and members to read the plan (21). Unsubscribe on unmount; stop listening once `status` is terminal.
 
-## Client UX contract (from `MVP_USER_JOURNEYS.md` §UX)
+## Client UX contract
+- Plan details keeps a **pending-payment watcher**: while any of the viewer's transactions is pending it re-reads the ledger every 15s (up to 30 min) and toasts + refreshes when one settles — so a callback or the reconciliation job surfaces without a manual refresh.
+ (from `MVP_USER_JOURNEYS.md` §UX)
 - Never block Home on payment completion. After initiation, route to Plan Details; show pending state there.
 - No provider jargon in copy ("callback", "STK") — say "Check your phone for the M-Pesa prompt."
 - Debug logs: `lib/debug.js`, scope `api` / `journey/*`; enable in prod via `localStorage.gc.debug = "1"`.

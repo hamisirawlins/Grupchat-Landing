@@ -73,6 +73,9 @@ node --input-type=module -e 'import { firebaseService } from "./services/firebas
 3. `status: pending` for > 15 min ⇒ callback never arrived: check provider dashboard (Paystack → Webhooks; Daraja → callback URL reachability). Until P4.1 exists, settle by re-sending the webhook from the Paystack dashboard.
 4. Common causes seen: `"Plan does not have pooling enabled"` — plan created without `poolMode: pool`; `"Invitation ID required"` — client sent `inviteCode` where the endpoint wants `invitationId`.
 
+## A payment settled but the page didn't update / callback hit `/core/deposit_callback`
+Symptom in Railway logs: `POST /core/deposit_callback 500` + `Supabase query error: fetch failed` right after a V2 `contribute`. Cause: STK push carried the V1 `DEPOSIT_CALLBACK_URL`. Fixed 2026-09-06 (D-022): V2 pushes use `/v2/mpesa/stk-callback`; the V1 route bridges; reconciliation settles stragglers within ~3–5 min. To retire the bridge hop, re-register the Safaricom app's callback URLs to `/v2/mpesa/stk-callback` (and C2B URLs to `/v2/payments/paybill-*`). Verify a transaction by hand: `GET /v2/transactions/:id/verify` (auth) or `npm run` a one-off `reconcileTransaction` from `services/settlementService.js`.
+
 ## Webhooks locally
 `ngrok http 4000`, set the Paystack webhook URL to `https://<ngrok>/v2/paystack/webhook` (test mode), and `DEPOSIT_CALLBACK_URL` etc. for Daraja sandbox.
 
