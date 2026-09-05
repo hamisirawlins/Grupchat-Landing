@@ -106,7 +106,7 @@ export function StickyAction({ children }) {
   return (
     <>
       <div className="h-24 sm:hidden" aria-hidden="true" />
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-black/[0.08] bg-white/90 px-6 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur sm:static sm:z-auto sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-0">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-black/[0.08] bg-white/90 px-6 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur sm:static sm:z-auto sm:flex-1 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-0">
         <div className="mx-auto max-w-3xl">{children}</div>
       </div>
     </>
