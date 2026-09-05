@@ -54,8 +54,8 @@ Test before deploy: `npx firebase emulators:exec --only firestore "node firebase
 ## Deleting things
 There is no hard delete. `softDeleteDoc(ref, { actorUid, action, entity, planId, reason })` or `stageSoftDelete(batch, ref, uid)`; filter reads with `omitDeleted(snap)` / `activeItems(arr)`. Before pushing backend changes: `npm run check:no-hard-delete`.
 
-## A payout is stuck (`needsReview`)
-Reconciliation flags payouts pending >30 min (audit `payout.review_required`); the hold stays. Check the M-Pesa org portal for the B2C transfer `WITHDRAW_<txId>`: confirmed → `POST /v2/payouts/<txId>/resolve { "outcome": "success", "receipt": "<TransactionReceipt>" }`; absent/failed → `{ "outcome": "failed", "reason": "…" }`. Both are audited as `payout.resolved` and settle exactly like the callback would.
+## A payout needs review (`needsReview`)
+Failed, timed-out or rejected B2C transfers — and any still unconfirmed after 30 min — are parked (audit `payout.review_required`); the hold stays. Work them from `/admin/payouts`: **Refund to pool** releases the full amount (owner can retry); **Mark as sent** needs the portal receipt. Check the M-Pesa org portal for the B2C transfer `WITHDRAW_<txId>`: confirmed → `POST /v2/payouts/<txId>/resolve { "outcome": "success", "receipt": "<TransactionReceipt>" }`; absent/failed → `{ "outcome": "failed", "reason": "…" }`. Both are audited as `payout.resolved` and settle exactly like the callback would.
 
 ## Ledger
 `cd gc-payments && npm run ledger:verify` — every plan's ledger balance vs `currentBalance`; exits 1 on drift. `npm run ledger:backfill [--dry]` — posts entries for transactions settled before the ledger existed (idempotent). Drift means a balance moved outside `settlementService`/`payout` — find the write, then post an audited `adjustment` (not yet tooled).

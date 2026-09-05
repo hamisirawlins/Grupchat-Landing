@@ -79,7 +79,7 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 - [x] K1 Backend: `scope` + `completions` on milestones; per-member toggle · [x] K2 Plan details: Checklist section (add sheet with Group/Everyone, tick, remove), coordinate-only hero ring shows checklist progress
 
 ## W · Withdrawals (D-026)
-- [x] W1 Payout with hold (`heldBalance`), 2% fee, member/custom recipient, B2C V2 result/timeout + V1 bridges, review flag, admin resolve · [x] W2 Plan details: Withdraw sheet (fee preview, recipient picker, awaits confirmation), hold shown in hero · [ ] W3 Admin list of payouts needing review (endpoint exists; UI pending)
+- [x] W1 Payout with hold (`heldBalance`), 2% fee, member/custom recipient, B2C V2 result/timeout + V1 bridges, review flag, admin resolve · [x] W2 Plan details: Withdraw sheet (fee preview, recipient picker, awaits confirmation), hold shown in hero · [x] W3 `/admin/payouts`: parked payouts with Refund-to-pool / Mark-as-sent · [x] W4 Failures park for review (no auto-release); no user-facing hold wording
 
 ## L · Ledger + pagination (D-025)
 - [x] L1 `ledgerEntries` posted atomically with settlement; payout debit at initiation · [x] L2 `GET /v2/ledger`, `/verify/:planId`, `/plans/:planId` · [x] L3 `/admin/ledger` (filters, totals, verify, Show more) · [x] L4 `ledger:backfill` / `ledger:verify` scripts · [x] L5 Cursor pagination: audit trail, console Latest activity; Show more on Plan Activity and Notifications
@@ -96,6 +96,7 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 - [ ] Z1 All screens pass 25 §Accessibility · [ ] Z2 ≤375px and ≥1280px walkthrough · [ ] Z3 `MVP_USER_JOURNEYS.md` acceptance criteria ticked · [ ] Z4 KB rows `updated` within the release week
 
 ## Log (newest first)
+- 2026-09-06 · Payout failures now park for admin review; refund releases the full hold; `/admin/payouts`; hold wording removed from the UI.
 - 2026-09-06 · Withdrawals with hold-until-confirmation, 2% fee, member/custom recipients (D-026).
 - 2026-09-06 · Ledger (D-025) and list pagination shipped.
 - 2026-09-06 · Plan checklists (D-024): group tasks and everyone-does-this items on all plan types; coordinate-only plans now have a purpose.

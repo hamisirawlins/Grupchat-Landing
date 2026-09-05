@@ -24,12 +24,14 @@ const COMMITMENT = { in: "In", tentative: "Tentative", watching: "Watching" };
 const WAIT_SECONDS = 25; // server-side hold per await (D-023)
 const MAX_AWAITS = 12;   // ≈5 minutes of awaiting before we stop and say so
 
-/** Await a transaction's outcome. Each call holds until settlement or the server's window closes. */
+/** Await a transaction's outcome. Each call holds until settlement or the server's window closes.
+ *  Returns "success" | "failed" | "review" (parked for admin, D-026) | "pending". */
 async function awaitSettlement(txId, alive = () => true, maxAwaits = MAX_AWAITS) {
   let status = "pending";
   for (let i = 0; i < maxAwaits && status === "pending" && alive(); i += 1) {
     try {
-      status = unwrap(await premiumAPI.verifyTransaction(txId, { wait: WAIT_SECONDS }))?.status ?? "pending";
+      const data = unwrap(await premiumAPI.verifyTransaction(txId, { wait: WAIT_SECONDS }));
+      status = data?.needsReview ? "review" : (data?.status ?? "pending");
     } catch {
       /* transient; await again */
     }
@@ -152,8 +154,8 @@ export default function PlanDetails() {
 
   const progress = fraction(plan.currentBalance, plan.targetAmount);
   const currency = plan.currency || "KES";
-  const held = Number(plan.heldBalance) || 0;
-  const available = Math.max((Number(plan.currentBalance) || 0) - held, 0);
+  // Funds awaiting M-Pesa confirmation or admin review are simply not offered for withdrawal.
+  const available = Math.max((Number(plan.currentBalance) || 0) - (Number(plan.heldBalance) || 0), 0);
   const memberCount = plan.membersCount ?? members$.data?.length ?? 0;
   const meta = [planTypeLabel(plan), plan.category, date(plan.targetDate) ? `${date(plan.targetDate)} · ${relative(plan.targetDate)}` : null, plural(memberCount, "member")].filter(Boolean).join(" · ");
   const priceLabel = item$.data?.listedPrice ? money(item$.data.listedPrice, item$.data.currency || currency) : null;
@@ -172,7 +174,7 @@ export default function PlanDetails() {
             <Ring value={progress} size={88} stroke={8} />
             <div>
               <p className="text-2xl font-semibold tracking-tight tabular-nums">{money(plan.currentBalance, currency)}</p>
-              <p className="text-sm text-gray-500">of {money(plan.targetAmount, currency)} · {Math.round(progress * 100)}%{held > 0 ? ` · ${money(held, currency)} on hold` : ""}</p>
+              <p className="text-sm text-gray-500">of {money(plan.targetAmount, currency)} · {Math.round(progress * 100)}%</p>
             </div>
           </>
         ) : pooled ? (
@@ -180,7 +182,7 @@ export default function PlanDetails() {
           <div>
             <p className="text-2xl font-semibold tracking-tight tabular-nums">{money(plan.currentBalance, currency)} <span className="text-base font-normal text-gray-500">pooled</span></p>
             <p className="text-sm text-gray-500">
-              {held > 0 ? `${money(held, currency)} on hold · ` : ""}No target set.{" "}
+              No target set.{" "}
               {isOwner && (
                 <button type="button" onClick={() => setSheet("edit")} className="font-medium text-purple-600 hover:text-purple-700">Set a target</button>
               )}
@@ -333,7 +335,7 @@ function WithdrawSheet({ open, onClose, plan, available, members, onSettled }) {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [stage, setStage] = useState("form"); // form | waiting | success | failed | timeout
+  const [stage, setStage] = useState("form"); // form | waiting | success | review | timeout
   const [receipt, setReceipt] = useState(null);
   const alive = useRef(true);
   useEffect(() => () => { alive.current = false; }, []);
@@ -361,10 +363,11 @@ function WithdrawSheet({ open, onClose, plan, available, members, onSettled }) {
     try {
       const res = unwrap(await premiumAPI.payout(plan.id, { amount: gross, recipient }));
       setReceipt(res);
+      if (res?.needsReview) { setStage("review"); onSettled(); return; }
       setStage("waiting");
       const status = await awaitSettlement(res.txId, () => alive.current);
       if (!alive.current) return;
-      setStage(status === "success" ? "success" : status === "failed" ? "failed" : "timeout");
+      setStage(status === "success" ? "success" : status === "review" || status === "failed" ? "review" : "timeout");
       if (status !== "pending") onSettled();
     } catch (err) {
       setError(err.message || "Couldn't start the withdrawal.");
@@ -390,18 +393,15 @@ function WithdrawSheet({ open, onClose, plan, available, members, onSettled }) {
       ) : stage !== "form" ? (
         <div className="space-y-4">
           <h3 className="text-[17px] font-semibold tracking-tight">
-            {stage === "waiting" ? "Sending…" : stage === "failed" ? "The transfer didn't go through" : "Still waiting on M-Pesa"}
+            {stage === "waiting" ? "Sending…" : stage === "review" ? "We couldn't complete the transfer" : "M-Pesa is taking longer than usual"}
           </h3>
           <p className="text-sm text-gray-500">
-            {stage === "waiting" ? `${money(gross, currency)} is on hold until M-Pesa confirms the transfer to ${recipientLabel}.`
-              : stage === "failed" ? "Nothing was deducted — the amount is back in the pool."
-              : "The funds stay on hold until M-Pesa confirms. It's safe to close this; the plan will update."}
+            {stage === "waiting" ? `You'll see it confirmed here once M-Pesa completes the transfer to ${recipientLabel}.`
+              : stage === "review" ? "Our team is checking it. The amount will be restored to the plan so you can try again."
+              : "It's safe to close this — the plan will update when M-Pesa confirms."}
           </p>
           {stage === "waiting" && <div className="h-1 w-full overflow-hidden rounded-full bg-gray-100"><div className="h-full w-1/3 animate-pulse rounded-full bg-purple-600" /></div>}
-          <div className="flex gap-3">
-            {stage === "failed" && <OutlineButton onClick={() => setStage("form")}>Try again</OutlineButton>}
-            <PrimaryButton type="button" onClick={onClose}>{stage === "waiting" ? "I'll wait on the plan" : "Close"}</PrimaryButton>
-          </div>
+          <PrimaryButton type="button" onClick={onClose}>{stage === "waiting" ? "I'll wait on the plan" : "Close"}</PrimaryButton>
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-4">
@@ -416,7 +416,7 @@ function WithdrawSheet({ open, onClose, plan, available, members, onSettled }) {
               <span className="font-semibold tabular-nums">{money(net, currency)}</span>
             </div>
           </FieldGroup>
-          <p className="text-xs text-gray-400">{money(available, currency)} available. The amount stays on hold until M-Pesa confirms.</p>
+          <p className="text-xs text-gray-400">{money(available, currency)} available to withdraw.</p>
 
           <Segmented name="wd-mode" value={mode} onChange={setMode} options={[{ value: "member", label: "A member" }, { value: "custom", label: "Someone else" }]} />
           {mode === "member" ? (

@@ -30,7 +30,7 @@ Preconditions enforced server-side: plan exists and `status == active`; for `con
 | `POST /v2/mpesa/stk-callback` | Daraja STK result | `ResultCode == 0` | see settlement. **V2 STK pushes must name this URL** (`stkCallbackUrlV2()`, D-022) |
 | `POST /core/deposit_callback` (V1) | Daraja STK result | — | bridges to the V2 handler when the `CheckoutRequestID` is a Firestore transaction (D-022) |
 | `POST /core/paybill-confirmation`, `/core/paybill-callback` (V1 C2B) | Daraja | — | raw payload → `mpesa_logs`; always 200 |
-| `POST /v2/mpesa/b2c-result`, `/v2/mpesa/b2c-timeout` | Daraja B2C payout result / queue timeout | matched by `OriginatorConversationID = WITHDRAW_<txId>` | `settlePayoutSuccess` (debit pool, release hold, ledger) / `settlePayoutFailure` (release hold) |
+| `POST /v2/mpesa/b2c-result`, `/v2/mpesa/b2c-timeout` | Daraja B2C payout result / queue timeout | matched by `OriginatorConversationID = WITHDRAW_<txId>` | `settlePayoutSuccess` (debit pool, release hold, ledger) / `holdPayoutForReview` (hold kept; admin decides) |
 | `POST /core/withdrawal_callback`, `/core/queue_timeout` (V1) | same | — | bridge to the V2 handlers for `WITHDRAW_` transactions |
 | `POST /v2/payments/*` | Daraja deposit/withdrawal/B2B/paybill/timeouts | per handler | legacy V1-era set; review in P5 |
 
@@ -47,7 +47,7 @@ Callbacks now only verify the signature, find the pending tx by provider referen
 ## Amount semantics
 - Firestore stores **major units** (KES). Paystack sends **minor units**; the webhook divides by 100.
 - `platformFee` is computed at initiation from `plans.platformFeeRate ?? 0.01`; premium plans carry an explicit `0`. The plan is credited **net**.
-- `payout` **holds** the gross at initiation and debits on confirmation (D-026); failure releases the hold. Fee is 2% of gross; the recipient receives the net.
+- `payout` **holds** the gross at initiation and debits on confirmation (D-026). Failure parks it for review; only an admin refund (`settlePayoutFailure`) releases the hold. Fee is 2% of gross; the recipient receives the net.
 
 ## Timeouts and reconciliation (P4.1 — shipped 2026-09-06)
 `services/reconciliationService.js`: starts 30s after boot, then every 2 min. Loads `transactions where status == pending` (single-field, no index), keeps those ≥3 min old (callbacks own the first 3 minutes), reconciles up to 50 per run, and marks anything still unconfirmed after **48h** as `failed` ("No provider confirmation within 48 hours"). Survives restarts by construction — the old in-process `setTimeout` is gone.
