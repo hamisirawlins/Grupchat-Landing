@@ -14,11 +14,12 @@ import { unwrap } from "@/lib/data/shape";
 
 const CATEGORIES = ["Trip", "Dinner", "Event", "Gift", "Outing", "Other"].map((c) => ({ value: c.toLowerCase(), label: c }));
 const STEPS = ["Basics", "Money", "Review"];
+// Self-managed pools collect via M-Pesa only (D-017), so there is no "both" and the currency is KES.
 const POOL_MODES = [
   { value: "coordinate", label: "Coordinate only" },
   { value: "pool", label: "Pool money" },
-  { value: "both", label: "Both" },
 ];
+const POOL_CURRENCY = "KES";
 
 export default function NewPlan() {
   const router = useRouter();
@@ -28,11 +29,11 @@ export default function NewPlan() {
   const [description, setDescription] = useState("");
   const [poolMode, setPoolMode] = useState("pool");
   const [target, setTarget] = useState("");
-  const [currency, setCurrency] = useState("KES");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const pooled = poolMode !== "coordinate";
+  const pooled = poolMode === "pool";
+  const currency = POOL_CURRENCY;
 
   const next = () => {
     setError("");
@@ -89,7 +90,10 @@ export default function NewPlan() {
             {pooled && (
               <FieldGroup>
                 <Field id="target" label="Target amount" type="number" inputMode="decimal" min={1} step="1" prefix={currency} value={target} onChange={(e) => setTarget(e.target.value)} autoComplete="off" />
-                <SelectField id="currency" label="Currency" value={currency} onChange={(e) => setCurrency(e.target.value)} options={[{ value: "KES", label: "KES — Kenyan shilling" }, { value: "USD", label: "USD — US dollar" }]} />
+                <div className="flex h-14 items-center justify-between px-4">
+                  <span className="text-[15px] text-gray-500">Currency</span>
+                  <span className="text-[15px] font-medium">KES <span className="font-normal text-gray-400">· M-Pesa</span></span>
+                </div>
               </FieldGroup>
             )}
             <FormError>{error}</FormError>

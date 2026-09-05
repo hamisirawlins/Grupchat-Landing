@@ -162,10 +162,10 @@ export function PasswordField({ id, label, value, onChange, autoComplete = "curr
 
 // Primary — the landing's purple-600, darkening a step on hover.
 export const PRIMARY =
-  "flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-purple-600 text-[15px] font-semibold text-white transition-colors duration-300 hover:bg-purple-700 disabled:opacity-40 disabled:hover:bg-purple-600";
+  "flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-purple-600 px-6 text-[15px] font-semibold text-white transition-colors duration-300 hover:bg-purple-700 disabled:opacity-40 disabled:hover:bg-purple-600";
 // Alternatives — the landing's "Open Web App" outline: a 2px rule that fills on hover.
 export const OUTLINE =
-  "flex h-12 w-full items-center justify-center gap-3 rounded-xl border-2 border-purple-600 bg-white text-[15px] font-semibold text-purple-600 transition-all duration-300 hover:bg-purple-600 hover:text-white disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-purple-600";
+  "flex h-12 w-full items-center justify-center gap-3 rounded-xl border-2 border-purple-600 bg-white px-6 text-[15px] font-semibold text-purple-600 transition-all duration-300 hover:bg-purple-600 hover:text-white disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-purple-600";
 
 export function Spinner({ className = "" }) {
   return (
