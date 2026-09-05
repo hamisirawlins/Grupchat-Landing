@@ -115,3 +115,13 @@ Format: `D-nnn · date · title` → **Decision** · **Why** · **Consequences**
 **Decision.** `settlementService.js` is the sole writer of transaction outcomes and plan balances. Callbacks, the 5-minute reconciliation job and the verify endpoint all call it. Pending transactions are re-checked against the provider after 15 min and failed after 48 h without confirmation. The in-process `setTimeout` that used to fail STK pushes is deleted.
 **Why.** Three code paths booking money three ways is how double-increments and stuck transactions happen; a restart must not lose a payment's fate.
 **Consequences.** `settleSuccess` re-reads inside the transaction and no-ops unless still `pending` — replays are safe. The job queries `status == pending` only and filters age in memory (no new index, D-018). Daraja needs `STK_QUERY_URL` or derives it from `STK_PUSH_URL`.
+
+### D-022 · 2026-09-06 · V2 STK callbacks go to the V2 route; V1 callback routes bridge and always acknowledge
+**Decision.** V2 STK pushes set `CallBackURL` to `mpesaService.stkCallbackUrlV2()` (`STK_CALLBACK_URL`, else `/v2/mpesa/stk-callback` on `DEPOSIT_CALLBACK_URL`'s origin). `/core/deposit_callback` (V1) first checks Firestore for the `CheckoutRequestID` and, if found, delegates to the V2 handler. `/core/paybill-*` (C2B) persist the raw payload to `mpesa_logs` and always return 200.
+**Why.** Incident 2026-09-05 22:39Z: a V2 contribution's STK result was delivered to the V1 URL (still in `DEPOSIT_CALLBACK_URL`), whose Supabase lookup failed → 500 ×3; the transaction sat pending until the reconciliation job settled it 18 min later. Safaricom retries non-200 acknowledgements, and C2B confirmations for V2 payments never match a V1 pool.
+**Consequences.** No env change needed in production. Reconciliation now runs every 2 min for transactions ≥3 min old. Re-registering the Safaricom callback URLs to `/v2/...` is still worthwhile (removes the bridge hop) — see 40.
+
+### D-023 · 2026-09-06 · Clients await settlement; no timers
+**Decision.** No `setInterval`/polling on the client for payment state. The pay sheet, the Plan-details pending watcher and the post-redirect check all `await premiumAPI.verifyTransaction(id, { wait: 25 })`, which the server holds on a Firestore listener until the transaction leaves `pending` (then asks the provider once). Loops are bounded by attempts, not clocks.
+**Why.** Timers guess; an awaited listener knows. It is also the REST-era shape of D-005's `onSnapshot`, so phase I swaps the transport without touching the UI.
+**Consequences.** `waitForTerminal` in `settlementService.js`; `?wait` capped at 25s per request to stay under proxy limits. Reconciliation's cadence stays timer-based — that is server infrastructure, not UX.

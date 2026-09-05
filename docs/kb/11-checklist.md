@@ -87,6 +87,8 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 - [ ] Z1 All screens pass 25 §Accessibility · [ ] Z2 ≤375px and ≥1280px walkthrough · [ ] Z3 `MVP_USER_JOURNEYS.md` acceptance criteria ticked · [ ] Z4 KB rows `updated` within the release week
 
 ## Log (newest first)
+- 2026-09-06 · D-023: all client payment timers replaced by awaited `verify?wait`; `createPlan` now persists `targetAmount`/`currency`, `updatePlan` accepts them; Plan details shows pooled balance + Set-a-target when no target.
+- 2026-09-06 · Production test found: STK callbacks routed to the V1 URL (fixed, D-022), C2B handlers 500ing (now always-ack + `mpesa_logs`), Plan details lacked a pending-payment watcher (added), and `createPlan` dropped `targetAmount`/`currency` (ring showed 0%) — fix in progress.
 - 2026-09-06 · P4.1/P4.3/P4.4/P4.5 shipped (D-021): `settlementService`, `reconciliationService`, `GET /v2/transactions/:id/verify`, socket emits removed, journeys doc aligned.
 - 2026-09-06 · Pull-to-refresh (A14) on all data screens; billing-specific upload message reverted.
 - 2026-09-06 · Fixed button width conflicts (`tailwind-merge` in Form.js) that squeezed the Dates/Links add-rows on `/admin/catalogue/[id]`. Upload failure traced to **GCP billing disabled** (Storage writes refused) — endpoint now returns a clear 503; runbook added. Billing since restored; the billing-specific 503 message was removed (generic handling).

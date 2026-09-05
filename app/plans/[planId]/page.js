@@ -15,13 +15,25 @@ import { auditAPI, catalogueAPI, plansAPI, premiumAPI } from "@/lib/api";
 import { date, dateTime, fraction, money, plural, relative } from "@/lib/format";
 import { asList, isPooled, planTypeLabel, STATUS_TONE, unwrap } from "@/lib/data/shape";
 import { useAsync } from "@/lib/useAsync";
-import { debugLog } from "@/lib/debug";
 
 const TX_TONE = { success: "success", pending: "warning", failed: "critical" };
 const TX_LABEL = { contribution: "Contribution", "premium-join": "Payment", payout: "Payout" };
 const COMMITMENT = { in: "In", tentative: "Tentative", watching: "Watching" };
-const POLL_MS = 5000;
-const POLL_MAX = 24; // 2 minutes
+const WAIT_SECONDS = 25; // server-side hold per await (D-023)
+const MAX_AWAITS = 12;   // ≈5 minutes of awaiting before we stop and say so
+
+/** Await a transaction's outcome. Each call holds until settlement or the server's window closes. */
+async function awaitSettlement(txId, alive = () => true, maxAwaits = MAX_AWAITS) {
+  let status = "pending";
+  for (let i = 0; i < maxAwaits && status === "pending" && alive(); i += 1) {
+    try {
+      status = unwrap(await premiumAPI.verifyTransaction(txId, { wait: WAIT_SECONDS }))?.status ?? "pending";
+    } catch {
+      /* transient; await again */
+    }
+  }
+  return status;
+}
 
 /** Accepts 07XXXXXXXX, 7XXXXXXXX, 2547…, +2547…; returns 2547XXXXXXXX or null. */
 function normalizePhone(raw) {
@@ -66,6 +78,29 @@ export default function PlanDetails() {
   }, [plan?.id]);
 
   const [sheet, setSheet] = useState(null); // "pay" | "invite" | "edit" | "resource"
+  const reloadPlan = plan$.reload;
+  const reloadMembers = members$.reload;
+  const reloadTxs = txs$.reload;
+
+  // While any of my payments is pending, await its outcome (no timers) and refresh when it lands.
+  const myPending = useMemo(
+    () => (txs$.data ?? []).filter((t) => t.userId === uid && t.status === "pending").map((t) => t.id),
+    [txs$.data, uid],
+  );
+  useEffect(() => {
+    if (myPending.length === 0) return undefined;
+    let alive = true;
+    (async () => {
+      for (const id of myPending) {
+        const status = await awaitSettlement(id, () => alive);
+        if (!alive || status === "pending") continue;
+        if (status === "success") toast.success("Payment received");
+        else if (status === "failed") toast.error("Payment didn't go through");
+        reloadPlan(); reloadMembers(); reloadTxs();
+      }
+    })();
+    return () => { alive = false; };
+  }, [myPending, reloadPlan, reloadMembers, reloadTxs]);
 
   // Landing back from Paystack (?payment=…): the webhook may not have arrived yet,
   // so verify my latest pending transaction against the provider (P4.4).
@@ -77,20 +112,13 @@ export default function PlanDetails() {
     window.history.replaceState(null, "", window.location.pathname);
     const mine = txs$.data.filter((t) => t.userId === uid && t.status === "pending").sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
     if (!mine[0]) return;
-    premiumAPI
-      .verifyTransaction(mine[0].id)
-      .then((res) => {
-        const status = unwrap(res)?.status;
-        if (status === "success") toast.success("Payment received");
-        else if (status === "failed") toast.error("Payment didn't go through");
-        else toast.message("Payment is still processing — this page will update.");
-      })
-      .catch(() => {})
-      .finally(() => { plan$.reload(); members$.reload(); txs$.reload(); });
-  }, [txs$.data, uid]); // eslint-disable-line react-hooks/exhaustive-deps
-  const reloadPlan = plan$.reload;
-  const reloadMembers = members$.reload;
-  const reloadTxs = txs$.reload;
+    (async () => {
+      const status = await awaitSettlement(mine[0].id, () => true, 2);
+      if (status === "success") toast.success("Payment received");
+      else if (status === "failed") toast.error("Payment didn't go through");
+      reloadPlan(); reloadMembers(); reloadTxs();
+    })();
+  }, [txs$.data, uid, reloadPlan, reloadMembers, reloadTxs]);
   const refresh = useCallback(() => {
     reloadPlan();
     reloadMembers();
@@ -127,14 +155,25 @@ export default function PlanDetails() {
       meta={meta}
     >
       <Reveal className="mb-10 flex items-center gap-6">
-        {pooled ? (
+        {pooled && Number(plan.targetAmount) > 0 ? (
           <>
             <Ring value={progress} size={88} stroke={8} />
             <div>
               <p className="text-2xl font-semibold tracking-tight tabular-nums">{money(plan.currentBalance, currency)}</p>
-              <p className="text-sm text-gray-500">of {Number(plan.targetAmount) > 0 ? money(plan.targetAmount, currency) : "an open target"} · {Math.round(progress * 100)}%</p>
+              <p className="text-sm text-gray-500">of {money(plan.targetAmount, currency)} · {Math.round(progress * 100)}%</p>
             </div>
           </>
+        ) : pooled ? (
+          // Pooling without a target: show what's in, and let the owner set one rather than drawing an empty ring.
+          <div>
+            <p className="text-2xl font-semibold tracking-tight tabular-nums">{money(plan.currentBalance, currency)} <span className="text-base font-normal text-gray-500">pooled</span></p>
+            <p className="text-sm text-gray-500">
+              No target set.{" "}
+              {isOwner && (
+                <button type="button" onClick={() => setSheet("edit")} className="font-medium text-purple-600 hover:text-purple-700">Set a target</button>
+              )}
+            </p>
+          </div>
         ) : plan.planType === "premium" ? (
           <div>
             <p className="text-2xl font-semibold tracking-tight">{me?.paymentStatus === "paid" ? "You're paid up" : "Payment due"}</p>
@@ -248,30 +287,25 @@ function PaySheet({ open, onClose, plan, pooled, item, onSettled }) {
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState(null); // { txId }
   const [result, setResult] = useState(null);   // "success" | "failed" | "timeout"
-  const polls = useRef(0);
+  const alive = useRef(true);
+  useEffect(() => () => { alive.current = false; }, []);
   const currency = item?.currency || plan.currency || "KES";
   const fixed = !pooled ? Number(item?.listedPrice) || null : null;
 
   useEffect(() => {
-    if (!open) { setError(""); setBusy(false); setPending(null); setResult(null); polls.current = 0; }
+    if (!open) { setError(""); setBusy(false); setPending(null); setResult(null); }
   }, [open]);
 
-  // Poll the plan ledger until our transaction settles (interim for onSnapshot — D-013).
-  useEffect(() => {
-    if (!pending?.txId) return undefined;
-    const t = setInterval(async () => {
-      polls.current += 1;
-      try {
-        const list = asList(unwrap(await plansAPI.getPlanTransactions(plan.id)));
-        const tx = list.find((x) => x.id === pending.txId);
-        debugLog("plan/pay", "poll", { n: polls.current, status: tx?.status });
-        if (tx?.status === "success") { setResult("success"); setPending(null); onSettled(); return; }
-        if (tx?.status === "failed") { setResult("failed"); setPending(null); return; }
-      } catch { /* keep polling */ }
-      if (polls.current >= POLL_MAX) { setResult("timeout"); setPending(null); }
-    }, POLL_MS);
-    return () => clearInterval(t);
-  }, [pending, plan.id, onSettled]);
+  // Await the outcome — the server holds each request until the callback lands (D-023).
+  const settle = async (txId) => {
+    setPending({ txId });
+    const status = await awaitSettlement(txId, () => alive.current);
+    if (!alive.current) return;
+    setPending(null);
+    if (status === "success") { setResult("success"); onSettled(); }
+    else if (status === "failed") setResult("failed");
+    else setResult("timeout");
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -295,9 +329,8 @@ function PaySheet({ open, onClose, plan, pooled, item, onSettled }) {
       }
       const res = pooled ? await premiumAPI.contribute(plan.id, { amount: amt, phone: msisdn }) : await premiumAPI.joinMpesa(plan.id, msisdn);
       const txId = res?.data?.txId || res?.data?.transactionId || null;
-      polls.current = 0;
-      setPending({ txId });
-      if (!txId) toast.message("Check your phone for the M-Pesa prompt.");
+      if (txId) settle(txId);
+      else toast.message("Check your phone for the M-Pesa prompt.");
     } catch (err) {
       setError(err.message || "Something went wrong. Try again.");
     } finally {
