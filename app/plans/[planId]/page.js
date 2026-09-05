@@ -151,14 +151,25 @@ export default function PlanDetails() {
       meta={meta}
     >
       <Reveal className="mb-10 flex items-center gap-6">
-        {pooled ? (
+        {pooled && Number(plan.targetAmount) > 0 ? (
           <>
             <Ring value={progress} size={88} stroke={8} />
             <div>
               <p className="text-2xl font-semibold tracking-tight tabular-nums">{money(plan.currentBalance, currency)}</p>
-              <p className="text-sm text-gray-500">of {Number(plan.targetAmount) > 0 ? money(plan.targetAmount, currency) : "an open target"} · {Math.round(progress * 100)}%</p>
+              <p className="text-sm text-gray-500">of {money(plan.targetAmount, currency)} · {Math.round(progress * 100)}%</p>
             </div>
           </>
+        ) : pooled ? (
+          // Pooling without a target: show what's in, and let the owner set one rather than drawing an empty ring.
+          <div>
+            <p className="text-2xl font-semibold tracking-tight tabular-nums">{money(plan.currentBalance, currency)} <span className="text-base font-normal text-gray-500">pooled</span></p>
+            <p className="text-sm text-gray-500">
+              No target set.{" "}
+              {isOwner && (
+                <button type="button" onClick={() => setSheet("edit")} className="font-medium text-purple-600 hover:text-purple-700">Set a target</button>
+              )}
+            </p>
+          </div>
         ) : plan.planType === "premium" ? (
           <div>
             <p className="text-2xl font-semibold tracking-tight">{me?.paymentStatus === "paid" ? "You're paid up" : "Payment due"}</p>
