@@ -22,6 +22,9 @@ export default function DeleteAccount() {
     });
   };
 
+  // Notification dialog state
+  const [notification, setNotification] = useState({ show: false, message: '' });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -49,7 +52,7 @@ export default function DeleteAccount() {
       }
     } catch (error) {
       console.error("Account deletion error:", error);
-      alert(`Error: ${error.message}`);
+      setNotification({ show: true, message: `Error: ${error.message}` });
     } finally {
       setIsSubmitting(false);
     }
@@ -484,6 +487,24 @@ export default function DeleteAccount() {
           </div>
         </motion.main>
       </section>
+
+      {/* Notification dialog */}
+      {notification.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl border border-gray-200 bg-surface p-6 shadow-sheet">
+            <h4 className="text-lg font-semibold text-gray-900 mb-1">Notice</h4>
+            <p className="text-sm text-gray-700 mb-5">{notification.message}</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setNotification({ show: false, message: "" })}
+                className="rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

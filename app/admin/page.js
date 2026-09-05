@@ -1,45 +1,57 @@
 "use client";
 
+import { ShieldCheck, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import DashboardWrapper from "@/components/layout/DashboardWrapper";
-import Link from "next/link";
-import { BookOpen, LayoutList, ShieldCheck } from "lucide-react";
+import { PageFrame, Reveal, Section } from "@/components/app/PageFrame";
+import { ListGroup, Row } from "@/components/ui/ListGroup";
+import { StatCard } from "@/components/home/Charts";
+import { EmptyState, Skeleton, Tag } from "@/components/ui/Bits";
+import { getAdminSummary } from "@/lib/data/admin";
+import { relative } from "@/lib/format";
+import { useAsync } from "@/lib/useAsync";
 
-export default function AdminPage() {
-  const { user, isAdmin, loading } = useAuth();
-  const router = useRouter();
+export default function Admin() {
+  const { isAdmin, profileLoading } = useAuth();
+  const { data: stats, loading, reload } = useAsync(() => getAdminSummary(), [isAdmin], { enabled: isAdmin });
 
-  useEffect(() => {
-    if (loading) return;
-    if (!user || !isAdmin) router.replace("/dashboard");
-  }, [loading, user, isAdmin, router]);
-
-  if (loading || !isAdmin) return null;
+  if (!isAdmin) {
+    return (
+      <PageFrame eyebrow="Admin" title="Console">
+        <Reveal><EmptyState title={profileLoading ? "Checking access…" : "Nothing here"} /></Reveal>
+      </PageFrame>
+    );
+  }
 
   return (
-    <DashboardWrapper>
-      <div className="p-6 lg:p-10 max-w-4xl mx-auto">
-        <div className="flex items-center gap-3 mb-8">
-          <ShieldCheck className="w-7 h-7 text-[#7a73ff]" />
-          <h1 className="text-2xl font-semibold text-gray-900">Admin</h1>
-        </div>
+    <PageFrame eyebrow="Admin" title="Console" meta="Today at a glance." onRefresh={reload}>
+      <Reveal className="grid gap-4 sm:grid-cols-3">
+        {loading && !stats ? (
+          [0, 1, 2].map((i) => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)
+        ) : (
+          <>
+            <StatCard label="Audit events" value={stats?.auditToday ?? "—"} sub={stats?.auditTruncated ? "within the latest 500" : "since midnight"} />
+            <StatCard label="Invite previews" value={stats?.publicPreviews ?? "—"} sub="public link opens today" />
+            <StatCard label="Live experiences" value={stats?.catalogueActive ?? "—"} sub="in the catalogue" />
+          </>
+        )}
+      </Reveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Link href="/admin/catalogue" className="group bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-            <BookOpen className="w-8 h-8 text-[#7a73ff] mb-4" />
-            <h2 className="font-semibold text-gray-900 mb-1">Catalogue</h2>
-            <p className="text-sm text-gray-500">Manage premium experience listings — create, edit, pause, archive.</p>
-          </Link>
+      <Section title="Views" className="mt-10">
+        <ListGroup>
+          <Row href="/admin/audit" leading={<span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><ShieldCheck className="h-4 w-4" /></span>} title="Audit trail" footnote="Who did what, to which plan, when" />
+          <Row href="/admin/catalogue" leading={<span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><Sparkles className="h-4 w-4" /></span>} title="Curated plans" footnote="Add, edit, pause and relaunch experiences" />
+        </ListGroup>
+      </Section>
 
-          <Link href="/admin/plans" className="group bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-            <LayoutList className="w-8 h-8 text-[#7a73ff] mb-4" />
-            <h2 className="font-semibold text-gray-900 mb-1">Active Plans</h2>
-            <p className="text-sm text-gray-500">Monitor premium plans — member counts, payment status, lock dates.</p>
-          </Link>
-        </div>
-      </div>
-    </DashboardWrapper>
+      {stats?.latest?.length > 0 && (
+        <Section title="Latest activity" className="mt-10">
+          <ListGroup>
+            {stats.latest.map((e) => (
+              <Row key={e.id} href="/admin/audit" title={<Tag tone="accent">{e.action}</Tag>} footnote={`${e.source}${e.planId ? ` · plan ${String(e.planId).slice(0, 8)}` : ""}`} trailing={relative(e.at)} />
+            ))}
+          </ListGroup>
+        </Section>
+      )}
+    </PageFrame>
   );
 }

@@ -1,13 +1,21 @@
 @import "tailwindcss";
 
+/* Foundation for the rebuilt experience: white, Figtree, quiet.
+   Deliberately small — everything else stays with Tailwind utilities until
+   the new design system is decided. */
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Apple's standard ease-out: settles rather than bounces. */
+  --ease-out-soft: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
 html {
@@ -18,8 +26,11 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-figtree), sans-serif;
+  font-family: var(--font-figtree), ui-sans-serif, system-ui, -apple-system, sans-serif;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -28,76 +39,46 @@ main {
   background: transparent;
 }
 
-.coffee-cta {
-  position: relative;
-  animation: coffeeGlow 3s ease-in-out infinite;
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 
-.coffee-chip {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.coffee-chip__emoji {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.1rem 0.4rem;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.1);
-  font-size: 0.95rem;
-  animation: coffeeBob 3.5s ease-in-out infinite;
-}
-
-@keyframes coffeeGlow {
-  0%,
-  100% {
-    box-shadow: 0 0 0 rgba(255, 221, 135, 0);
-  }
-  50% {
-    box-shadow: 0 0 18px rgba(255, 221, 135, 0.55);
-  }
-}
-
-@keyframes coffeeBob {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-@keyframes slideUpBounce {
-  0% {
-    opacity: 0;
-    transform: translateY(32px);
-  }
-  60% {
-    opacity: 1;
-    transform: translateY(-6px);
-  }
-  80% {
-    transform: translateY(2px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+::selection {
+  background: rgba(0, 0, 0, 0.08);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .coffee-cta,
-  .coffee-chip__emoji {
-    animation: none;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
-  
-  [data-card-id] {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
+}
+
+/* Browser autofill paints its own background; inside a grouped field that
+   reads as a broken row. Keep it white. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #171717;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  transition: background-color 9999s ease-out;
+}
+
+/* We draw our own pressed states; iOS's grey tap flash fights them. */
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Our own pull-to-refresh runs on touch devices; stop the browser's native
+   overscroll reload/bounce from competing with it. */
+html,
+body {
+  overscroll-behavior-y: contain;
 }

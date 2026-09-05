@@ -1,126 +1,54 @@
 "use client";
 
-import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import DashboardWrapper from "@/components/layout/DashboardWrapper";
+import { useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
+import { PageFrame, Reveal } from "@/components/app/PageFrame";
+import { ListGroup, Row } from "@/components/ui/ListGroup";
+import { Segmented } from "@/components/ui/Segmented";
+import { EmptyState, Skeleton, Tag } from "@/components/ui/Bits";
+import { ButtonLink, FormError } from "@/components/ui/Form";
 import { catalogueAPI } from "@/lib/api";
-import { Plus, Pencil, PauseCircle, Archive, CheckCircle2 } from "lucide-react";
+import { money, plural } from "@/lib/format";
+import { asList, unwrap } from "@/lib/data/shape";
+import { useAsync } from "@/lib/useAsync";
 
-const statusBadge = {
-  active: { label: "Active", cls: "bg-green-100 text-green-700" },
-  paused: { label: "Paused", cls: "bg-yellow-100 text-yellow-700" },
-  archived: { label: "Archived", cls: "bg-gray-100 text-gray-500" },
-};
-
-export default function AdminCataloguePage() {
-  const { user, isAdmin, loading } = useAuth();
-  const router = useRouter();
-  const [items, setItems] = useState([]);
-  const [fetching, setFetching] = useState(true);
-  const [filter, setFilter] = useState("active");
-  const [updatingId, setUpdatingId] = useState(null);
-
-  useEffect(() => {
-    if (loading) return;
-    if (!user || !isAdmin) { router.replace("/dashboard"); return; }
-    fetchItems();
-  }, [loading, user, isAdmin, filter]);
-
-  const fetchItems = async () => {
-    setFetching(true);
-    try {
-      const res = await catalogueAPI.list({ status: filter });
-      setItems(res.data || []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setFetching(false);
-    }
-  };
-
-  const handleStatusChange = async (itemId, status) => {
-    setUpdatingId(itemId);
-    try {
-      await catalogueAPI.updateItem(itemId, { status });
-      setItems((prev) => prev.filter((i) => i.id !== itemId));
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setUpdatingId(null);
-    }
-  };
-
-  if (loading || !isAdmin) return null;
-
+function Thumb({ item }) {
   return (
-    <DashboardWrapper>
-      <div className="p-6 lg:p-10 max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900">Catalogue</h1>
-          <Link href="/admin/catalogue/new"
-            className="flex items-center gap-2 bg-[#7a73ff] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#6a63ef] transition-colors">
-            <Plus className="w-4 h-4" /> New listing
-          </Link>
-        </div>
+    <span className="block h-10 w-14 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+      {item.coverUrl ? <img src={item.coverUrl} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full items-center justify-center text-sm font-semibold text-purple-200">{item.title?.[0]}</span>}
+    </span>
+  );
+}
 
-        <div className="flex gap-2 mb-6">
-          {["active", "paused", "archived"].map((s) => (
-            <button key={s} onClick={() => setFilter(s)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${filter === s ? "bg-[#7a73ff] text-white" : "bg-white text-gray-600 border border-gray-200"}`}>
-              {s.charAt(0).toUpperCase() + s.slice(1)}
-            </button>
-          ))}
-        </div>
+export default function AdminCatalogue() {
+  const { isAdmin, profileLoading } = useAuth();
+  const [status, setStatus] = useState("active");
+  const { data, loading, error, reload } = useAsync(async () => asList(unwrap(await catalogueAPI.list({ status })), "items"), [status], { enabled: isAdmin });
 
-        {fetching ? (
-          <div className="flex justify-center py-16"><div className="w-8 h-8 border-4 border-[#7a73ff] border-t-transparent rounded-full animate-spin" /></div>
-        ) : items.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">No {filter} listings.</div>
+  if (!isAdmin) return <PageFrame eyebrow="Admin" title="Curated plans"><Reveal><EmptyState title={profileLoading ? "Checking access…" : "Nothing here"} /></Reveal></PageFrame>;
+
+  const items = data ?? [];
+  return (
+    <PageFrame eyebrow={<Link href="/admin" className="text-purple-600 hover:text-purple-700">Admin</Link>} title="Curated plans" meta={data ? plural(items.length, `${status} experience`) : undefined} onRefresh={reload}>
+      <Reveal className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Segmented name="cat-status" value={status} onChange={setStatus} options={[{ value: "active", label: "Live" }, { value: "inactive", label: "Paused" }]} />
+        <ButtonLink href="/admin/catalogue/new" className="sm:w-56">New experience</ButtonLink>
+      </Reveal>
+      <Reveal>
+        {error && <FormError>{error.message || "Couldn't load the catalogue."}</FormError>}
+        {loading && !data ? <div className="space-y-2">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-16 w-full rounded-2xl" />)}</div> : items.length === 0 ? (
+          <EmptyState title={status === "active" ? "No live experiences" : "Nothing paused"} text={status === "active" ? "Add your first curated plan." : undefined} action={status === "active" ? <ButtonLink href="/admin/catalogue/new" className="sm:w-56">New experience</ButtonLink> : null} />
         ) : (
-          <div className="space-y-3">
-            {items.map((item) => {
-              const badge = statusBadge[item.status] || statusBadge.active;
-              return (
-                <div key={item.id} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-gray-900 truncate">{item.title}</h3>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.cls}`}>{badge.label}</span>
-                    </div>
-                    <p className="text-sm text-gray-500">{item.venue?.name} · {item.city} · KES {item.listedPrice?.toLocaleString()}</p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {item.status !== "active" && (
-                      <button onClick={() => handleStatusChange(item.id, "active")} disabled={updatingId === item.id}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 disabled:opacity-40 transition-colors">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Activate
-                      </button>
-                    )}
-                    {item.status !== "paused" && item.status !== "archived" && (
-                      <button onClick={() => handleStatusChange(item.id, "paused")} disabled={updatingId === item.id}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700 hover:bg-yellow-100 disabled:opacity-40 transition-colors">
-                        <PauseCircle className="w-3.5 h-3.5" /> Pause
-                      </button>
-                    )}
-                    {item.status !== "archived" && (
-                      <button onClick={() => handleStatusChange(item.id, "archived")} disabled={updatingId === item.id}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-50 text-gray-500 hover:bg-gray-100 disabled:opacity-40 transition-colors">
-                        <Archive className="w-3.5 h-3.5" /> Archive
-                      </button>
-                    )}
-                    <Link href={`/admin/catalogue/${item.id}`}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-[#f3f1ff] text-[#7a73ff] hover:bg-[#ebe8ff] transition-colors">
-                      <Pencil className="w-3.5 h-3.5" /> Edit
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <ListGroup>
+            {items.map((item) => (
+              <Row key={item.id} href={`/admin/catalogue/${item.id}`} leading={<Thumb item={item} />} title={item.title}
+                footnote={[item.category, item.city, `${money(item.listedPrice, item.currency)} / person`, item.availableDates?.length ? plural(item.availableDates.length, "date") : "no dates"].filter(Boolean).join(" · ")}
+                trailing={<Tag tone={item.status === "active" ? "success" : "neutral"}>{item.status === "active" ? "live" : "paused"}</Tag>} />
+            ))}
+          </ListGroup>
         )}
-      </div>
-    </DashboardWrapper>
+      </Reveal>
+    </PageFrame>
   );
 }

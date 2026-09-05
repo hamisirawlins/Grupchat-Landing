@@ -15,6 +15,9 @@ export default function ManageData() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  // Notification state
+  const [notification, setNotification] = useState({ show: false, message: '' });
+
   const handleRequestSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -62,7 +65,7 @@ export default function ManageData() {
       }
     } catch (error) {
       console.error('Data request error:', error);
-      alert(`Error: ${error.message}`);
+      setNotification({ show: true, message: `Error: ${error.message}` });
     } finally {
       setIsSubmitting(false);
     }
@@ -529,6 +532,19 @@ export default function ManageData() {
           </div>
         </motion.main>
       </section>
+
+      {/* Notification dialog */}
+      {notification?.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h4 className="text-lg font-semibold mb-2">Notice</h4>
+            <p className="text-sm text-gray-700 mb-4">{notification.message}</p>
+            <div className="flex justify-end">
+              <button onClick={()=>setNotification({ show: false, message: '' })} className="px-4 py-2 rounded-full border">OK</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -20,6 +20,9 @@ export default function ReportBug() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reportId, setReportId] = useState('');
 
+  // Notification dialog state
+  const [notification, setNotification] = useState({ show: false, message: '' });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -51,7 +54,7 @@ export default function ReportBug() {
       }
     } catch (error) {
       console.error('Bug report error:', error);
-      alert(`Error: ${error.message}`);
+      setNotification({ show: true, message: `Error: ${error.message}` });
     } finally {
       setIsSubmitting(false);
     }
@@ -334,6 +337,19 @@ export default function ReportBug() {
           </div>
         </motion.main>
       </section>
+
+      {/* Notification dialog */}
+      {notification.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h4 className="text-lg font-semibold mb-2">Notice</h4>
+            <p className="text-sm text-gray-700 mb-4">{notification.message}</p>
+            <div className="flex justify-end">
+              <button onClick={()=>setNotification({ show: false, message: '' })} className="px-4 py-2 rounded-full border">OK</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

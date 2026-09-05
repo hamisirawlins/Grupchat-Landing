@@ -37,7 +37,7 @@ export default function Home() {
     if (!authLoading) {
       if (user) {
         // User is authenticated, redirect to dashboard
-        router.push("/dashboard");
+        router.push("/home");
       }
     }
   }, [user, authLoading, router]);
