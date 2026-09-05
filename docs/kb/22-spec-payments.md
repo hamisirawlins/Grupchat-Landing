@@ -51,10 +51,10 @@ Callbacks now only verify the signature, find the pending tx by provider referen
 `services/reconciliationService.js`: starts 30s after boot, then every 2 min. Loads `transactions where status == pending` (single-field, no index), keeps those ≥3 min old (callbacks own the first 3 minutes), reconciles up to 50 per run, and marks anything still unconfirmed after **48h** as `failed` ("No provider confirmation within 48 hours"). Survives restarts by construction — the old in-process `setTimeout` is gone.
 
 ## Verify endpoint (P4.4 — shipped 2026-09-06)
-`GET /v2/transactions/:txId/verify` (auth; payer or plan member) → reconciles if pending → `{ id, status, outcome, type, provider, amount, currency, planId }`. Plan details calls it when the browser lands back with `?payment=…`, on the caller's latest pending transaction, then refreshes and clears the query string.
+`GET /v2/transactions/:txId/verify[?wait=25]` (auth; payer or plan member). With `wait`, the server holds the request on a listener until the transaction settles, then asks the provider once if it hasn't → `{ id, status, outcome, … }`. Clients **await** this (D-023): the pay sheet after an STK push, the pending-payment watcher on Plan details, and the post-redirect check — no client timers.
 
 ## Realtime (client)
-Socket emits are **retired** (P4.5, 2026-09-06): no `websocketService.*` calls remain in controllers/services; the socket server init in `index.js` goes with the dependency in P5.3. Until phase I the client polls `getPlanTransactions` every 5s during a payment. Target: document listeners —
+Socket emits are **retired** (P4.5, 2026-09-06): no `websocketService.*` calls remain in controllers/services; the socket server init in `index.js` goes with the dependency in P5.3. Until phase I the client awaits `verify?wait` (server-held listener) during a payment — no polling. Target: document listeners —
 ```js
 onSnapshot(doc(db, "transactions", txId), snap => setStatus(snap.data().status));   // during payment
 onSnapshot(doc(db, "plans", planId),      snap => setPlan(snap.data()));            // Plan Details
@@ -62,7 +62,7 @@ onSnapshot(doc(db, "plans", planId),      snap => setPlan(snap.data()));        
 Rules allow the payer to read their own transaction and members to read the plan (21). Unsubscribe on unmount; stop listening once `status` is terminal.
 
 ## Client UX contract
-- Plan details keeps a **pending-payment watcher**: while any of the viewer's transactions is pending it re-reads the ledger every 15s (up to 30 min) and toasts + refreshes when one settles — so a callback or the reconciliation job surfaces without a manual refresh.
+- Plan details keeps a **pending-payment watcher**: while any of the viewer's transactions is pending it awaits `verify?wait=25` (bounded by attempts) and toasts + refreshes when one settles — so a callback or the reconciliation job surfaces without a manual refresh.
  (from `MVP_USER_JOURNEYS.md` §UX)
 - Never block Home on payment completion. After initiation, route to Plan Details; show pending state there.
 - No provider jargon in copy ("callback", "STK") — say "Check your phone for the M-Pesa prompt."
