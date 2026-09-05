@@ -24,7 +24,7 @@ planId | null, meta { … sanitized }, source ("server" | "public" | "client"), 
 | server | `plan.created` `plan.updated` `plan.locked` | planController, autoLockService |
 | server | `invite.issued` `invite.accepted` `invite.declined` `invite.revoked` | planExtController, invitationController |
 | server | `member.committed` | planExtController |
-| server | `payment.initiated` `payment.settled` `payment.failed` `payout.initiated` | premiumController (initiation + webhook/callback) |
+| server | `payment.initiated` `payment.settled` `payment.failed` `payout.initiated` `payout.settled` `payout.failed` `payout.review_required` `payout.resolved` | premiumController, settlementService, reconciliationService |
 | server | `catalogue.created` `catalogue.updated` | catalogueController |
 | server | `milestone.deleted` `image.deleted` `resource.removed` | soft deletes via `services/softDelete.js` (D-019) |
 | public | `invite.previewed` | invitesPublicController |

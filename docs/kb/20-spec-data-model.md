@@ -56,7 +56,8 @@ targetDate       Timestamp | null
 lockDate         Timestamp | null                  (premium: derived from targetDate)
 targetAmount     number | null
 currency         "KES" | …
-currentBalance   number  ⚙   ← net of platformFee; incremented by callbacks
+currentBalance   number  ⚙   ← net of platformFee; incremented by callbacks; debited when a payout is confirmed
+heldBalance      number  ⚙   ← payouts awaiting M-Pesa confirmation (D-026); available = currentBalance − heldBalance
 platformFeeRate  number  ⚙
 membersCount     number      (denormalised; incremented on join)
 resources        [{ id, title, url, type, removedAt?, removedBy? }]   (arrayUnion; removal = mark, never arrayRemove)
@@ -127,6 +128,7 @@ mpesaPhone        string | null   (no leading +)
 darajaCheckoutRequestId, darajaReceiptNumber,
 darajaConversationId, darajaOriginatorConversationId          string | null
 processedAt       Timestamp | null
+# payouts (D-026): netAmount, holdAmount, recipientType "member"|"custom", recipientUserId, recipientName, needsReview
 ```
 Provider references are the idempotency keys: `paystackReference`, `darajaCheckoutRequestId`.
 

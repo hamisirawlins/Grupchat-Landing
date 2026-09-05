@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
-import { CheckCircle2, Circle, Copy, Link2, Pencil, Share2, Users } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Circle, Copy, Link2, Pencil, Share2, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageFrame, Reveal, Section } from "@/components/app/PageFrame";
 import { ListGroup, Row } from "@/components/ui/ListGroup";
@@ -80,7 +80,7 @@ export default function PlanDetails() {
     if (plan?.id) auditAPI.emit({ action: "ui.plan_viewed", entity: "plan", entityId: plan.id, planId: plan.id });
   }, [plan?.id]);
 
-  const [sheet, setSheet] = useState(null); // "pay" | "invite" | "edit" | "resource" | "item"
+  const [sheet, setSheet] = useState(null); // "pay" | "invite" | "edit" | "resource" | "item" | "withdraw"
   const [activityShown, setActivityShown] = useState(10);
   const reloadPlan = plan$.reload;
   const reloadMembers = members$.reload;
@@ -152,6 +152,8 @@ export default function PlanDetails() {
 
   const progress = fraction(plan.currentBalance, plan.targetAmount);
   const currency = plan.currency || "KES";
+  const held = Number(plan.heldBalance) || 0;
+  const available = Math.max((Number(plan.currentBalance) || 0) - held, 0);
   const memberCount = plan.membersCount ?? members$.data?.length ?? 0;
   const meta = [planTypeLabel(plan), plan.category, date(plan.targetDate) ? `${date(plan.targetDate)} · ${relative(plan.targetDate)}` : null, plural(memberCount, "member")].filter(Boolean).join(" · ");
   const priceLabel = item$.data?.listedPrice ? money(item$.data.listedPrice, item$.data.currency || currency) : null;
@@ -170,7 +172,7 @@ export default function PlanDetails() {
             <Ring value={progress} size={88} stroke={8} />
             <div>
               <p className="text-2xl font-semibold tracking-tight tabular-nums">{money(plan.currentBalance, currency)}</p>
-              <p className="text-sm text-gray-500">of {money(plan.targetAmount, currency)} · {Math.round(progress * 100)}%</p>
+              <p className="text-sm text-gray-500">of {money(plan.targetAmount, currency)} · {Math.round(progress * 100)}%{held > 0 ? ` · ${money(held, currency)} on hold` : ""}</p>
             </div>
           </>
         ) : pooled ? (
@@ -178,7 +180,7 @@ export default function PlanDetails() {
           <div>
             <p className="text-2xl font-semibold tracking-tight tabular-nums">{money(plan.currentBalance, currency)} <span className="text-base font-normal text-gray-500">pooled</span></p>
             <p className="text-sm text-gray-500">
-              No target set.{" "}
+              {held > 0 ? `${money(held, currency)} on hold · ` : ""}No target set.{" "}
               {isOwner && (
                 <button type="button" onClick={() => setSheet("edit")} className="font-medium text-purple-600 hover:text-purple-700">Set a target</button>
               )}
@@ -209,6 +211,9 @@ export default function PlanDetails() {
           <div className="sm:w-56"><StickyAction><PrimaryButton type="button" onClick={() => setSheet("pay")}>{primaryLabel}</PrimaryButton></StickyAction></div>
         )}
         <OutlineButton onClick={() => setSheet("invite")} className="sm:w-48"><Share2 className="h-4 w-4" aria-hidden="true" /> Invite</OutlineButton>
+        {isOwner && pooled && available > 0 && (
+          <OutlineButton onClick={() => setSheet("withdraw")} className="sm:w-48"><ArrowUpRight className="h-4 w-4" aria-hidden="true" /> Withdraw</OutlineButton>
+        )}
         {isOwner && <OutlineButton onClick={() => setSheet("edit")} className="sm:w-40"><Pencil className="h-4 w-4" aria-hidden="true" /> Edit</OutlineButton>}
       </Reveal>
 
@@ -292,6 +297,7 @@ export default function PlanDetails() {
       {isOwner && <EditSheet open={sheet === "edit"} onClose={() => setSheet(null)} plan={plan} onSaved={refresh} />}
       <ResourceSheet open={sheet === "resource"} onClose={() => setSheet(null)} planId={plan.id} onSaved={refresh} />
       <ChecklistSheet open={sheet === "item"} onClose={() => setSheet(null)} planId={plan.id} onSaved={reloadItems} />
+      {isOwner && <WithdrawSheet open={sheet === "withdraw"} onClose={() => setSheet(null)} plan={plan} available={available} members={(members$.data ?? []).filter((m) => m.userId)} onSettled={refresh} />}
     </PageFrame>
   );
 }
@@ -312,6 +318,131 @@ function RemoveResource({ planId, resource, onDone }) {
     >
       Remove
     </button>
+  );
+}
+
+/* ---------------- Withdraw (owner) ---------------- */
+const PAYOUT_FEE_RATE = 0.02;
+
+function WithdrawSheet({ open, onClose, plan, available, members, onSettled }) {
+  const currency = plan.currency || "KES";
+  const [amount, setAmount] = useState("");
+  const [mode, setMode] = useState("member");
+  const [memberId, setMemberId] = useState(null);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [stage, setStage] = useState("form"); // form | waiting | success | failed | timeout
+  const [receipt, setReceipt] = useState(null);
+  const alive = useRef(true);
+  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => {
+    if (open) { setAmount(String(available || "")); setMode("member"); setMemberId(null); setName(""); setPhone(""); setError(""); setBusy(false); setStage("form"); setReceipt(null); }
+  }, [open, available]);
+
+  const gross = Number(amount) || 0;
+  const fee = Math.round(gross * PAYOUT_FEE_RATE);
+  const net = Math.max(gross - fee, 0);
+  const chosen = members.find((m) => m.userId === memberId);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!(gross > 0)) return setError("Enter an amount.");
+    if (gross > available) return setError(`Only ${money(available, currency)} is available.`);
+    if (net < 1) return setError("Amount is too small to withdraw.");
+    const recipient = mode === "member"
+      ? { type: "member", userId: memberId, phone: phone.trim() || undefined }
+      : { type: "custom", name: name.trim(), phone: phone.trim() };
+    if (mode === "member" && !memberId) return setError("Choose who receives it.");
+    if (mode === "custom" && !normalizePhone(phone)) return setError("Enter a valid Kenyan M-Pesa number.");
+    setBusy(true);
+    try {
+      const res = unwrap(await premiumAPI.payout(plan.id, { amount: gross, recipient }));
+      setReceipt(res);
+      setStage("waiting");
+      const status = await awaitSettlement(res.txId, () => alive.current);
+      if (!alive.current) return;
+      setStage(status === "success" ? "success" : status === "failed" ? "failed" : "timeout");
+      if (status !== "pending") onSettled();
+    } catch (err) {
+      setError(err.message || "Couldn't start the withdrawal.");
+      setStage("form");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const recipientLabel = receipt?.recipientName || chosen?.displayName || name.trim() || (phone.trim() ? phone.trim() : "the recipient");
+
+  return (
+    <Sheet open={open} onClose={onClose} title={stage === "form" ? "Withdraw" : undefined}>
+      {stage === "success" ? (
+        <div className="flex flex-col items-start gap-4">
+          <SuccessMark />
+          <div>
+            <h3 className="text-[17px] font-semibold tracking-tight">Sent {money(receipt?.net ?? net, currency)} to {recipientLabel}</h3>
+            <p className="mt-1 text-sm text-gray-500">{money(receipt?.gross ?? gross, currency)} left the pool, including a {money(receipt?.fee ?? fee, currency)} fee.</p>
+          </div>
+          <PrimaryButton type="button" onClick={onClose}>Done</PrimaryButton>
+        </div>
+      ) : stage !== "form" ? (
+        <div className="space-y-4">
+          <h3 className="text-[17px] font-semibold tracking-tight">
+            {stage === "waiting" ? "Sending…" : stage === "failed" ? "The transfer didn't go through" : "Still waiting on M-Pesa"}
+          </h3>
+          <p className="text-sm text-gray-500">
+            {stage === "waiting" ? `${money(gross, currency)} is on hold until M-Pesa confirms the transfer to ${recipientLabel}.`
+              : stage === "failed" ? "Nothing was deducted — the amount is back in the pool."
+              : "The funds stay on hold until M-Pesa confirms. It's safe to close this; the plan will update."}
+          </p>
+          {stage === "waiting" && <div className="h-1 w-full overflow-hidden rounded-full bg-gray-100"><div className="h-full w-1/3 animate-pulse rounded-full bg-purple-600" /></div>}
+          <div className="flex gap-3">
+            {stage === "failed" && <OutlineButton onClick={() => setStage("form")}>Try again</OutlineButton>}
+            <PrimaryButton type="button" onClick={onClose}>{stage === "waiting" ? "I'll wait on the plan" : "Close"}</PrimaryButton>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={submit} className="space-y-4">
+          <FieldGroup>
+            <Field id="wd-amount" label="Amount to withdraw" type="number" inputMode="decimal" min={1} max={available} step="1" prefix={currency} value={amount} onChange={(e) => setAmount(e.target.value)} autoComplete="off" />
+            <div className="flex h-14 items-center justify-between px-4 text-[15px]">
+              <span className="text-gray-500">Fee (2%)</span>
+              <span className="tabular-nums text-gray-500">− {money(fee, currency)}</span>
+            </div>
+            <div className="flex h-14 items-center justify-between px-4 text-[15px]">
+              <span className="text-gray-500">They receive</span>
+              <span className="font-semibold tabular-nums">{money(net, currency)}</span>
+            </div>
+          </FieldGroup>
+          <p className="text-xs text-gray-400">{money(available, currency)} available. The amount stays on hold until M-Pesa confirms.</p>
+
+          <Segmented name="wd-mode" value={mode} onChange={setMode} options={[{ value: "member", label: "A member" }, { value: "custom", label: "Someone else" }]} />
+          {mode === "member" ? (
+            <>
+              {members.length === 0 ? <p className="text-sm text-gray-400">No members yet.</p> : (
+                <ListGroup>
+                  {members.map((m) => (
+                    <Row key={m.userId} onClick={() => setMemberId(m.userId)} leading={<Avatar name={m.displayName || m.username || ""} size={32} />} title={m.displayName || (m.username ? `@${m.username}` : "Member")} footnote={m.role === "owner" ? "You" : undefined} trailing={memberId === m.userId ? <Tag tone="accent">Chosen</Tag> : undefined} chevron={false} />
+                  ))}
+                </ListGroup>
+              )}
+              <FieldGroup>
+                <Field id="wd-phone-m" label="M-Pesa number (only if we don't have it)" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required={false} autoComplete="off" />
+              </FieldGroup>
+            </>
+          ) : (
+            <FieldGroup>
+              <Field id="wd-name" label="Recipient name" value={name} onChange={(e) => setName(e.target.value)} required={false} autoComplete="off" />
+              <Field id="wd-phone" label="M-Pesa number" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="off" />
+            </FieldGroup>
+          )}
+          <FormError>{error}</FormError>
+          <PrimaryButton loading={busy}>Send {money(net, currency)}</PrimaryButton>
+        </form>
+      )}
+    </Sheet>
   );
 }
 
