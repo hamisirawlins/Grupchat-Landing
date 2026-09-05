@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
-import { Copy, Link2, Pencil, Share2 } from "lucide-react";
+import { CheckCircle2, Circle, Copy, Link2, Pencil, Share2, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageFrame, Reveal, Section } from "@/components/app/PageFrame";
 import { ListGroup, Row } from "@/components/ui/ListGroup";
 import { Sheet } from "@/components/ui/Sheet";
 import { Avatar, EmptyState, Skeleton, StickyAction, Tag } from "@/components/ui/Bits";
+import { Segmented } from "@/components/ui/Segmented";
 import { Ring } from "@/components/home/Charts";
 import { Field, FieldGroup, FormError, OutlineButton, PrimaryButton, SuccessMark, TextAreaField } from "@/components/ui/Form";
 import { auditAPI, catalogueAPI, plansAPI, premiumAPI } from "@/lib/api";
@@ -59,6 +60,7 @@ export default function PlanDetails() {
   const plan$ = useAsync(async () => unwrap(await plansAPI.getPlan(planId)), [planId], { enabled: !!user });
   const members$ = useAsync(async () => asList(unwrap(await plansAPI.getPlanMembers(planId)), "members"), [planId], { enabled: !!user });
   const txs$ = useAsync(async () => asList(unwrap(await plansAPI.getPlanTransactions(planId))), [planId], { enabled: !!user });
+  const items$ = useAsync(async () => asList(unwrap(await plansAPI.getPlanMilestones(planId))), [planId], { enabled: !!user });
 
   const plan = plan$.data;
   const isOwner = !!plan && plan.ownerId === uid;
@@ -77,10 +79,11 @@ export default function PlanDetails() {
     if (plan?.id) auditAPI.emit({ action: "ui.plan_viewed", entity: "plan", entityId: plan.id, planId: plan.id });
   }, [plan?.id]);
 
-  const [sheet, setSheet] = useState(null); // "pay" | "invite" | "edit" | "resource"
+  const [sheet, setSheet] = useState(null); // "pay" | "invite" | "edit" | "resource" | "item"
   const reloadPlan = plan$.reload;
   const reloadMembers = members$.reload;
   const reloadTxs = txs$.reload;
+  const reloadItems = items$.reload;
 
   // While any of my payments is pending, await its outcome (no timers) and refresh when it lands.
   const myPending = useMemo(
@@ -123,7 +126,12 @@ export default function PlanDetails() {
     reloadPlan();
     reloadMembers();
     reloadTxs();
-  }, [reloadPlan, reloadMembers, reloadTxs]);
+    reloadItems();
+  }, [reloadPlan, reloadMembers, reloadTxs, reloadItems]);
+
+  const items = items$.data ?? [];
+  const itemsDone = items.filter((m) => m.completed).length;
+  const checklistProgress = items.length ? itemsDone / items.length : 0;
 
   if (plan$.error) {
     return (
@@ -180,7 +188,17 @@ export default function PlanDetails() {
             <p className="text-sm text-gray-500">{priceLabel ? `${priceLabel} per person` : "Listed price per person"}</p>
           </div>
         ) : (
-          <p className="text-sm text-gray-500">This plan coordinates without collecting money.</p>
+          <>
+            <Ring value={checklistProgress} size={88} stroke={8} />
+            <div>
+              <p className="text-2xl font-semibold tracking-tight tabular-nums">
+                {items.length ? `${itemsDone} of ${items.length}` : "Checklist"}
+              </p>
+              <p className="text-sm text-gray-500">
+                {items.length ? "done" : "Add what needs to happen before the day."}
+              </p>
+            </div>
+          </>
         )}
       </Reveal>
 
@@ -206,6 +224,22 @@ export default function PlanDetails() {
                 trailing={plan.planType === "premium" && !pooled ? <Tag tone={m.paymentStatus === "paid" ? "success" : "warning"}>{m.paymentStatus || "unpaid"}</Tag> : undefined}
                 chevron={false}
               />
+            ))}
+          </ListGroup>
+        )}
+      </Section>
+
+      <Section
+        title="Checklist"
+        className="mt-10"
+        action={(isOwner || me) ? <button type="button" onClick={() => setSheet("item")} className="py-2 text-sm font-medium text-purple-600 hover:text-purple-700">Add item</button> : null}
+      >
+        {items$.loading && !items$.data ? <Skeleton className="h-16 w-full rounded-2xl" /> : items.length === 0 ? (
+          <p className="text-sm text-gray-400">Nothing on the list yet — tasks for the group, or for everyone to do.</p>
+        ) : (
+          <ListGroup>
+            {items.map((m) => (
+              <ChecklistRow key={m.id} item={m} planId={plan.id} uid={uid} isOwner={isOwner} memberCount={members$.data?.length ?? plan.membersCount ?? 1} onChanged={reloadItems} />
             ))}
           </ListGroup>
         )}
@@ -254,6 +288,7 @@ export default function PlanDetails() {
       <InviteSheet open={sheet === "invite"} onClose={() => setSheet(null)} planId={plan.id} />
       {isOwner && <EditSheet open={sheet === "edit"} onClose={() => setSheet(null)} plan={plan} onSaved={refresh} />}
       <ResourceSheet open={sheet === "resource"} onClose={() => setSheet(null)} planId={plan.id} onSaved={refresh} />
+      <ChecklistSheet open={sheet === "item"} onClose={() => setSheet(null)} planId={plan.id} onSaved={reloadItems} />
     </PageFrame>
   );
 }
@@ -274,6 +309,104 @@ function RemoveResource({ planId, resource, onDone }) {
     >
       Remove
     </button>
+  );
+}
+
+/* ---------------- Checklist ---------------- */
+function ChecklistRow({ item, planId, uid, isOwner, memberCount, onChanged }) {
+  const [busy, setBusy] = useState(false);
+  const everyone = item.scope === "everyone";
+  const doneBy = Object.keys(item.completions ?? {});
+  const mine = everyone ? doneBy.includes(uid) : !!item.completed;
+
+  const toggle = async () => {
+    setBusy(true);
+    try {
+      await plansAPI.updateMilestoneStatus(planId, item.id, !mine);
+      onChanged();
+    } catch (e) {
+      toast.error(e.message || "Couldn't update the item.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async () => {
+    setBusy(true);
+    try {
+      await plansAPI.deletePlanMilestone(planId, item.id);
+      toast.success("Removed");
+      onChanged();
+    } catch (e) {
+      toast.error(e.message || "Couldn't remove the item.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const footnote = [
+    everyone ? `${doneBy.length} of ${memberCount} done` : item.completed ? "Done" : "Group task",
+    item.dueDate ? `due ${date(item.dueDate)}` : null,
+  ].filter(Boolean).join(" · ");
+
+  return (
+    <div className="flex items-center gap-4 px-4 py-3.5">
+      <button
+        type="button"
+        onClick={toggle}
+        disabled={busy}
+        aria-pressed={mine}
+        aria-label={mine ? "Mark not done" : "Mark done"}
+        className="shrink-0 rounded-full text-purple-600 transition-transform duration-200 active:scale-90 disabled:opacity-50"
+      >
+        {mine ? <CheckCircle2 className="h-6 w-6" /> : <Circle className="h-6 w-6 text-gray-300" />}
+      </button>
+      <span className="min-w-0 flex-1">
+        <span className={`block truncate text-[15px] font-medium ${item.completed ? "text-gray-400 line-through" : "text-black"}`}>{item.title}</span>
+        <span className="mt-0.5 flex items-center gap-1 truncate text-[13px] text-gray-500">
+          {everyone && <Users className="h-3.5 w-3.5" aria-hidden="true" />}
+          {footnote}
+        </span>
+      </span>
+      {isOwner && (
+        <button type="button" onClick={remove} disabled={busy} className="py-2 text-[13px] text-gray-400 hover:text-red-600 disabled:opacity-50">Remove</button>
+      )}
+    </div>
+  );
+}
+
+function ChecklistSheet({ open, onClose, planId, onSaved }) {
+  const [title, setTitle] = useState("");
+  const [scope, setScope] = useState("group");
+  const [dueDate, setDueDate] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { if (open) { setTitle(""); setScope("group"); setDueDate(""); setError(""); } }, [open]);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!title.trim()) return setError("Give the item a name.");
+    setBusy(true);
+    try {
+      await plansAPI.addPlanMilestone(planId, { title: title.trim(), scope, dueDate: dueDate || null });
+      toast.success("Added to the checklist");
+      onSaved(); onClose();
+    } catch (err) { setError(err.message || "Couldn't add the item."); } finally { setBusy(false); }
+  };
+
+  return (
+    <Sheet open={open} onClose={onClose} title="Add to checklist">
+      <form onSubmit={submit} className="space-y-4">
+        <Segmented name="item-scope" value={scope} onChange={setScope} options={[{ value: "group", label: "Group task" }, { value: "everyone", label: "Everyone does this" }]} />
+        <p className="text-sm text-gray-500">{scope === "group" ? "One item for the plan — anyone can tick it off." : "Each member ticks their own; it's done when everyone has."}</p>
+        <FieldGroup>
+          <Field id="item-title" label={scope === "group" ? "What needs doing?" : "What should everyone do?"} value={title} onChange={(e) => setTitle(e.target.value)} autoComplete="off" />
+          <Field id="item-due" label="Due (optional)" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required={false} />
+        </FieldGroup>
+        <FormError>{error}</FormError>
+        <PrimaryButton loading={busy}>Add</PrimaryButton>
+      </form>
+    </Sheet>
   );
 }
 
