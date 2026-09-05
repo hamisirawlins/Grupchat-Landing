@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageFrame, Reveal } from "@/components/app/PageFrame";
@@ -8,6 +8,7 @@ import { ListGroup, Row } from "@/components/ui/ListGroup";
 import { Segmented } from "@/components/ui/Segmented";
 import { Sheet } from "@/components/ui/Sheet";
 import { EmptyState, Skeleton, Tag } from "@/components/ui/Bits";
+import { ShowMore } from "@/components/ui/ShowMore";
 import { Field, FieldGroup, FormError, OutlineButton, SelectField } from "@/components/ui/Form";
 import { auditAPI } from "@/lib/api";
 import { dateTime, relative } from "@/lib/format";
@@ -27,10 +28,25 @@ export default function AdminAudit() {
   const [selected, setSelected] = useState(null);
 
   const { data, loading, error, reload } = useAsync(
-    async () => unwrap(await auditAPI.list({ source, limit: 100, ...applied })),
+    async () => unwrap(await auditAPI.list({ source, limit: 50, ...applied })),
     [source, applied],
     { enabled: isAdmin },
   );
+  const [extra, setExtra] = useState([]);   // pages appended after the first
+  const [cursor, setCursor] = useState(null);
+  const [moreLoading, setMoreLoading] = useState(false);
+  useEffect(() => { setExtra([]); setCursor(data?.nextCursor ?? null); }, [data]);
+  const loadMore = async () => {
+    if (!cursor) return;
+    setMoreLoading(true);
+    try {
+      const page = unwrap(await auditAPI.list({ source, limit: 50, ...applied, before: cursor }));
+      setExtra((x) => [...x, ...(page?.events ?? [])]);
+      setCursor(page?.nextCursor ?? null);
+    } finally {
+      setMoreLoading(false);
+    }
+  };
 
   const actions = useMemo(() => {
     const a = data?.actions;
@@ -41,7 +57,7 @@ export default function AdminAudit() {
     return <PageFrame eyebrow="Admin" title="Audit trail"><Reveal><EmptyState title={profileLoading ? "Checking access…" : "Nothing here"} /></Reveal></PageFrame>;
   }
 
-  const events = data?.events ?? [];
+  const events = [...(data?.events ?? []), ...extra];
 
   return (
     <PageFrame eyebrow={<Link href="/admin" className="text-purple-600 hover:text-purple-700">Admin</Link>} onRefresh={reload} title="Audit trail" meta={data ? `${data.matched} matched · ${data.scanned} scanned${data.truncated ? " · within the latest 500" : ""}` : undefined} wide>
@@ -73,6 +89,7 @@ export default function AdminAudit() {
             ))}
           </ListGroup>
         )}
+        <ShowMore onClick={loadMore} loading={moreLoading} hasMore={!!cursor} />
       </Reveal>
 
       <Sheet open={!!selected} onClose={() => setSelected(null)} title={selected?.action}>

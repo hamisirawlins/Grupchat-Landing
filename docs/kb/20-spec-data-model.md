@@ -21,7 +21,7 @@ Fields marked ⚙ are **backend-owned**: clients may read, never write. Timestam
 | `plans/{planId}` | yes (owner) | owner: metadata fields | ⚙ `currentBalance`, `lastActivityAt`, `status: locked`, `platformFeeRate` | |
 | `planMembers/{id}` | self (via invite accept / commit) | own `commitmentStatus` | ⚙ `paymentStatus`, `amountPaid`, `currency` | |
 | `invitations/{id}` | plan owner/member | invitee: `status`, `inviteeUserId`; inviter: `revoked` | — | |
-| `milestones/{id}` | plan member | plan member | — | |
+| `milestones/{id}` | plan member | plan member (own tick for `everyone` items) | — | `scope` group\|everyone; `completions` map (D-024) |
 | `planCatalogue/{id}` | admin claim | admin claim | — | curated inventory |
 | `transactions/{id}` | **no** | **no** | ⚙ everything | read: own `userId`, or member of `planId` |
 | `notifications/{id}` | no | own: `read` | backend creates | |
@@ -31,6 +31,7 @@ Fields marked ⚙ are **backend-owned**: clients may read, never write. Timestam
 | `checkins`, `planMemories` | plan member | — | — | feed |
 | `adminUsers/{uid}` | no | no | admin script | mirrors custom claim |
 | `mpesa_logs`, `processedEvents` | no | no | ⚙ | audit / idempotency |
+| `ledgerEntries/{txId:n}` | **no** | **no** | ⚙ | money journal (D-025); read: admin, or plan members via `/v2/ledger/plans/:id` |
 
 Community collections (`communityGroups`, `communityGroupMembers`, `communityGoals`,
 `communityInvites`, `goalCompletionEvents`) exist in the backend; **Community is deprecated
@@ -55,7 +56,8 @@ targetDate       Timestamp | null
 lockDate         Timestamp | null                  (premium: derived from targetDate)
 targetAmount     number | null
 currency         "KES" | …
-currentBalance   number  ⚙   ← net of platformFee; incremented by callbacks
+currentBalance   number  ⚙   ← net of platformFee; incremented by callbacks; debited when a payout is confirmed
+heldBalance      number  ⚙   ← payouts awaiting M-Pesa confirmation (D-026); available = currentBalance − heldBalance
 platformFeeRate  number  ⚙
 membersCount     number      (denormalised; incremented on join)
 resources        [{ id, title, url, type, removedAt?, removedBy? }]   (arrayUnion; removal = mark, never arrayRemove)
@@ -75,6 +77,17 @@ currency          string ⚙
 joinedAt
 ```
 Uniqueness on `(planId, userId)` is by convention — queries use `limit(1)`. Consider doc id `${planId}_${userId}` in P3 (D-011).
+
+### `milestones/{id}` (plan checklist, D-024)
+```
+planId, title, description | null, dueDate Timestamp | null
+scope        "group" | "everyone"
+completed    boolean        (group: the shared tick; everyone: all active members ticked)
+completedAt  Timestamp | null
+completions  { [uid]: Timestamp }   (everyone items)
+order        number
+createdBy    uid
+```
 
 ### `invitations/{id}`
 ```
@@ -115,8 +128,22 @@ mpesaPhone        string | null   (no leading +)
 darajaCheckoutRequestId, darajaReceiptNumber,
 darajaConversationId, darajaOriginatorConversationId          string | null
 processedAt       Timestamp | null
+# payouts (D-026): netAmount, holdAmount, recipientType "member"|"custom", recipientUserId, recipientName, needsReview
 ```
 Provider references are the idempotency keys: `paystackReference`, `darajaCheckoutRequestId`.
+
+### `ledgerEntries/{txId:n}`  ⚙ (D-025)
+```
+id (= txId:n), txId, planId, userId
+kind         "contribution" | "fee" | "premium-join" | "payout" | "adjustment"
+direction    "credit" | "debit"
+account      "plan:<planId>" | "platform:fees"
+amount, currency
+balanceAfter number | null      (plan account entries: pool balance after this entry)
+provider, providerRef            (receipt / reference when known)
+source       "settlement" | "initiation" | "backfill" | "adjustment"
+memo, at
+```
 
 ### `users/{uid}` · `usernames/{username}`
 ```

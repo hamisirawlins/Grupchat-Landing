@@ -1,6 +1,10 @@
 "use client";
 
-import { ShieldCheck, Sparkles } from "lucide-react";
+import { BookOpen, ShieldCheck, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { auditAPI } from "@/lib/api";
+import { unwrap } from "@/lib/data/shape";
+import { ShowMore } from "@/components/ui/ShowMore";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageFrame, Reveal, Section } from "@/components/app/PageFrame";
 import { ListGroup, Row } from "@/components/ui/ListGroup";
@@ -13,6 +17,22 @@ import { useAsync } from "@/lib/useAsync";
 export default function Admin() {
   const { isAdmin, profileLoading } = useAuth();
   const { data: stats, loading, reload } = useAsync(() => getAdminSummary(), [isAdmin], { enabled: isAdmin });
+  const [more, setMore] = useState([]);
+  const [cursor, setCursor] = useState(null);
+  const [moreLoading, setMoreLoading] = useState(false);
+  useEffect(() => { setMore([]); setCursor(stats?.latestCursor ?? null); }, [stats]);
+  const loadMore = async () => {
+    if (!cursor) return;
+    setMoreLoading(true);
+    try {
+      const page = unwrap(await auditAPI.list({ limit: 10, before: cursor }));
+      setMore((x) => [...x, ...(page?.events ?? [])]);
+      setCursor(page?.nextCursor ?? null);
+    } finally {
+      setMoreLoading(false);
+    }
+  };
+  const latest = [...(stats?.latest ?? []), ...more];
 
   if (!isAdmin) {
     return (
@@ -39,17 +59,19 @@ export default function Admin() {
       <Section title="Views" className="mt-10">
         <ListGroup>
           <Row href="/admin/audit" leading={<span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><ShieldCheck className="h-4 w-4" /></span>} title="Audit trail" footnote="Who did what, to which plan, when" />
+          <Row href="/admin/ledger" leading={<span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><BookOpen className="h-4 w-4" /></span>} title="Ledger" footnote="Every movement of money, independent of provider records" />
           <Row href="/admin/catalogue" leading={<span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><Sparkles className="h-4 w-4" /></span>} title="Curated plans" footnote="Add, edit, pause and relaunch experiences" />
         </ListGroup>
       </Section>
 
-      {stats?.latest?.length > 0 && (
+      {latest.length > 0 && (
         <Section title="Latest activity" className="mt-10">
           <ListGroup>
-            {stats.latest.map((e) => (
+            {latest.map((e) => (
               <Row key={e.id} href="/admin/audit" title={<Tag tone="accent">{e.action}</Tag>} footnote={`${e.source}${e.planId ? ` · plan ${String(e.planId).slice(0, 8)}` : ""}`} trailing={relative(e.at)} />
             ))}
           </ListGroup>
+          <ShowMore onClick={loadMore} loading={moreLoading} hasMore={!!cursor} />
         </Section>
       )}
     </PageFrame>

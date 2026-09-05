@@ -76,6 +76,7 @@ Hairlines, not shadows. Shadow only on layers that float over content (sheets, m
 - **List**: large title · optional segmented filter · `ListGroup` of rows (title, footnote, trailing value/chevron) · empty state dashed.
 - **Detail**: large title · one meta line (`Footnote`) · progress (ring or bar) · sections split by hairlines · **one** primary action, sticky bottom bar under 640px · "Home" back link always present (journeys rule).
 - **Form / Flow**: `Stepper` dots · one `FieldGroup` per step · one primary button · skip as text link when optional.
+- **Checklist rows**: a 24px circle/check toggle in purple, title strikes through when the item is complete, footnote carries `n of m done` for everyone-items; remove is a quiet text action (soft delete).
 - **Admin**: same shell; data-dense tables allowed but still hairlines, tabular numbers, no colour fills. Long forms are sectioned `FieldGroup`s with a caps label per section; destructive-ish actions (pause) are outline buttons, never red, because they're reversible.
 
 ## Copy

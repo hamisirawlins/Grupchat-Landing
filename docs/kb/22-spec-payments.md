@@ -18,7 +18,7 @@ then observes the outcome in Firestore. Provider callbacks land on the backend.
 | `POST /v2/plans/:planId/contribute/paystack` | Paystack contribution | `{ amount, currency? }` | `transactions` (`paystack`, `contribution`, `pending`) → returns `authorizationUrl`, `txId`, `reference` |
 | `POST /v2/plans/:planId/join-premium/paystack` | Pay listed price to join a curated plan | `{ currency }` | `planMembers` (unpaid) + `transactions` (`premium-join`) |
 | `POST /v2/plans/:planId/join-premium/mpesa` | Same via STK | `{ phone }` | as above |
-| `POST /v2/plans/:planId/payout` | Owner withdraws pooled funds | `{ amount, … }` | `transactions` (`payout`) and **decrements** `currentBalance` immediately |
+| `POST /v2/plans/:planId/payout` | Owner withdraws pooled funds (2% fee) | `{ amount, recipient: { type: "member", userId, phone? } \| { type: "custom", name?, phone } }` | `transactions` (`payout`, `pending`); **holds** gross on `plans.heldBalance`; B2C sends `amount − fee`. Pool debited + ledger posted only on `/v2/mpesa/b2c-result` (D-026) |
 
 Preconditions enforced server-side: plan exists and `status == active`; for `contribute*` the plan has `poolMode in [pool, both]` (else `"Plan does not have pooling enabled"`); **rails follow plan type (D-017)** — `contribute` (M-Pesa) requires `planType == free`, `contributePaystack` requires `planType == premium`; for legacy premium joins the catalogue item is active and the plan isn't locked.
 
@@ -30,6 +30,8 @@ Preconditions enforced server-side: plan exists and `status == active`; for `con
 | `POST /v2/mpesa/stk-callback` | Daraja STK result | `ResultCode == 0` | see settlement. **V2 STK pushes must name this URL** (`stkCallbackUrlV2()`, D-022) |
 | `POST /core/deposit_callback` (V1) | Daraja STK result | — | bridges to the V2 handler when the `CheckoutRequestID` is a Firestore transaction (D-022) |
 | `POST /core/paybill-confirmation`, `/core/paybill-callback` (V1 C2B) | Daraja | — | raw payload → `mpesa_logs`; always 200 |
+| `POST /v2/mpesa/b2c-result`, `/v2/mpesa/b2c-timeout` | Daraja B2C payout result / queue timeout | matched by `OriginatorConversationID = WITHDRAW_<txId>` | `settlePayoutSuccess` (debit pool, release hold, ledger) / `settlePayoutFailure` (release hold) |
+| `POST /core/withdrawal_callback`, `/core/queue_timeout` (V1) | same | — | bridge to the V2 handlers for `WITHDRAW_` transactions |
 | `POST /v2/payments/*` | Daraja deposit/withdrawal/B2B/paybill/timeouts | per handler | legacy V1-era set; review in P5 |
 
 **Note (P4.2):** the Paystack handler recomputes the signature from `JSON.stringify(req.body)`, not the raw bytes. That works only while Express's JSON parser reserialises identically. Use `express.raw()` on that route and hash the raw buffer.
@@ -37,7 +39,7 @@ Preconditions enforced server-side: plan exists and `status == active`; for `con
 ## Settlement — one path (D-021)
 `gc-payments/services/settlementService.js` is the **only** code that books money. Three triggers call it:
 provider callbacks (`paystackWebhook`, `mpesaStkCallback`), the reconciliation job, and `GET /v2/transactions/:id/verify`.
-- `settleSuccess(txDoc, { amount, currency, providerFields })` — inside `runTransaction`: re-reads the tx and returns if it is no longer `pending` (race-safe); sets `success`, `processedAt`, provider ids; `contribution` → `plans.currentBalance += amount − platformFee`; `premium-join` → member `paymentStatus: paid`; plan `lastActivityAt`. Then audit `payment.settled` and in-app notifications (`services/paymentNotifications.js`).
+- `settleSuccess(txDoc, { amount, currency, providerFields })` — inside `runTransaction` (which also **stages the ledger entries**, D-025): re-reads the tx and returns if it is no longer `pending` (race-safe); sets `success`, `processedAt`, provider ids; `contribution` → `plans.currentBalance += amount − platformFee`; `premium-join` → member `paymentStatus: paid`; plan `lastActivityAt`. Then audit `payment.settled` and in-app notifications (`services/paymentNotifications.js`).
 - `settleFailure(txDoc, { reason, resultCode })` — `failed` + `description`; audit `payment.failed`.
 - `reconcileTransaction(txDoc)` — asks the provider (Paystack `verify/:reference`; Daraja STK query, pending while `errorCode 500.001.1001`) and calls one of the above. Returns `success | failed | pending | unknown`.
 Callbacks now only verify the signature, find the pending tx by provider reference, and hand it over.
@@ -45,7 +47,7 @@ Callbacks now only verify the signature, find the pending tx by provider referen
 ## Amount semantics
 - Firestore stores **major units** (KES). Paystack sends **minor units**; the webhook divides by 100.
 - `platformFee` is computed at initiation from `plans.platformFeeRate ?? 0.01`; premium plans carry an explicit `0`. The plan is credited **net**.
-- `payout` decrements `currentBalance` at initiation, not on callback — a failed payout must be **reversed** (P4: add compensating increment on failure; today it isn't).
+- `payout` **holds** the gross at initiation and debits on confirmation (D-026); failure releases the hold. Fee is 2% of gross; the recipient receives the net.
 
 ## Timeouts and reconciliation (P4.1 — shipped 2026-09-06)
 `services/reconciliationService.js`: starts 30s after boot, then every 2 min. Loads `transactions where status == pending` (single-field, no index), keeps those ≥3 min old (callbacks own the first 3 minutes), reconciles up to 50 per run, and marks anything still unconfirmed after **48h** as `failed` ("No provider confirmation within 48 hours"). Survives restarts by construction — the old in-process `setTimeout` is gone.

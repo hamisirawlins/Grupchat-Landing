@@ -75,6 +75,15 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 ## H · Audit system + admin view
 - [x] H1 Spec written (26/27) · [x] H2 backend `auditService.log()` · [x] H3 `POST/GET /v2/audit/events` (live, verified 401 unauth) · [x] H4 18 emits: plan create/update/lock, invite issue/accept/decline/revoke, member commit, payment initiated/settled/failed, payout, catalogue create/update · [x] H5 `app/admin/audit/page.js` (admin-gated, filters, detail sheet) · [x] H6 `app/admin/page.js` index · [x] H7 Admin card on Home (admins only, live counts) + console stats header and latest activity · [x] H9 Soft-delete convention (D-019): `softDelete.js`, 3 hard deletes converted, `getPlan` hides removed resources, guard script; [x] H9b `deletedAt` filtered in `getPlanMilestones` / `getPlanImages` (links and image docs) · [x] H8 Curated-plan management `/admin/catalogue` (list live/paused, new, edit, pause/relaunch, cover upload, dates, links) via `POST/PUT /v2/catalogue` — audited as `catalogue.created/updated`
 
+## K · Checklists (D-024)
+- [x] K1 Backend: `scope` + `completions` on milestones; per-member toggle · [x] K2 Plan details: Checklist section (add sheet with Group/Everyone, tick, remove), coordinate-only hero ring shows checklist progress
+
+## W · Withdrawals (D-026)
+- [x] W1 Payout with hold (`heldBalance`), 2% fee, member/custom recipient, B2C V2 result/timeout + V1 bridges, review flag, admin resolve · [x] W2 Plan details: Withdraw sheet (fee preview, recipient picker, awaits confirmation), hold shown in hero · [ ] W3 Admin list of payouts needing review (endpoint exists; UI pending)
+
+## L · Ledger + pagination (D-025)
+- [x] L1 `ledgerEntries` posted atomically with settlement; payout debit at initiation · [x] L2 `GET /v2/ledger`, `/verify/:planId`, `/plans/:planId` · [x] L3 `/admin/ledger` (filters, totals, verify, Show more) · [x] L4 `ledger:backfill` / `ledger:verify` scripts · [x] L5 Cursor pagination: audit trail, console Latest activity; Show more on Plan Activity and Notifications
+
 ## P · Payments hardening (workplan P4)
 - [x] P4.1 Reconciliation job · [x] P4.3 journeys doc `currentBalance` · [x] P4.4 verify endpoint + post-redirect verification on Plan details · [x] P4.5 socket emits retired · [ ] P4.2 idempotency guard doc + raw-body signature
 
@@ -87,6 +96,9 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 - [ ] Z1 All screens pass 25 §Accessibility · [ ] Z2 ≤375px and ≥1280px walkthrough · [ ] Z3 `MVP_USER_JOURNEYS.md` acceptance criteria ticked · [ ] Z4 KB rows `updated` within the release week
 
 ## Log (newest first)
+- 2026-09-06 · Withdrawals with hold-until-confirmation, 2% fee, member/custom recipients (D-026).
+- 2026-09-06 · Ledger (D-025) and list pagination shipped.
+- 2026-09-06 · Plan checklists (D-024): group tasks and everyone-does-this items on all plan types; coordinate-only plans now have a purpose.
 - 2026-09-06 · `/plans/new`: removed "Both" pool mode (self-managed pools are M-Pesa/KES only, D-017); currency fixed to KES; buttons gained horizontal padding and Continue fills the Back/Continue row.
 - 2026-09-06 · D-023: all client payment timers replaced by awaited `verify?wait`; `createPlan` now persists `targetAmount`/`currency`, `updatePlan` accepts them; Plan details shows pooled balance + Set-a-target when no target.
 - 2026-09-06 · Production test found: STK callbacks routed to the V1 URL (fixed, D-022), C2B handlers 500ing (now always-ack + `mpesa_logs`), Plan details lacked a pending-payment watcher (added), and `createPlan` dropped `targetAmount`/`currency` (ring showed 0%) — fix in progress.
