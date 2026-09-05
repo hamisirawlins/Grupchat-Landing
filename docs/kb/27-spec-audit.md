@@ -33,7 +33,7 @@ planId | null, meta { … sanitized }, source ("server" | "public" | "client"), 
 Adding an action: register it in `AUDIT_ACTIONS`, emit with `auditService.log({...})` **after** the write succeeds, inside the handler's success path. Never `await` it in a way that can fail the response — `log()` already swallows errors.
 
 ## API
-- `GET /v2/audit/events?action&planId&actorUid&entity&source&since&limit` — **admin** (`users/{uid}.role == "admin"`). Newest first. Filters apply in memory over the latest 500 events (no composite index needed yet); response includes `matched`, `scanned`, `truncated` so the UI can say when a filter hit the window.
+- `GET /v2/audit/events?action&planId&actorUid&entity&source&since&before&limit` — **admin**; `before` (ISO `at` of the last event seen) pages; response carries `nextCursor` (`users/{uid}.role == "admin"`). Newest first. Filters apply in memory over the latest 500 events (no composite index needed yet); response includes `matched`, `scanned`, `truncated` so the UI can say when a filter hit the window.
 - `POST /v2/audit/events { action, entity?, entityId?, planId?, meta? }` — any signed-in user, `ui.*` only.
 
 ## Admin view — `/admin/audit`

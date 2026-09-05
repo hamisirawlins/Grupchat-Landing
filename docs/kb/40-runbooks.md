@@ -54,6 +54,9 @@ Test before deploy: `npx firebase emulators:exec --only firestore "node firebase
 ## Deleting things
 There is no hard delete. `softDeleteDoc(ref, { actorUid, action, entity, planId, reason })` or `stageSoftDelete(batch, ref, uid)`; filter reads with `omitDeleted(snap)` / `activeItems(arr)`. Before pushing backend changes: `npm run check:no-hard-delete`.
 
+## Ledger
+`cd gc-payments && npm run ledger:verify` — every plan's ledger balance vs `currentBalance`; exits 1 on drift. `npm run ledger:backfill [--dry]` — posts entries for transactions settled before the ledger existed (idempotent). Drift means a balance moved outside `settlementService`/`payout` — find the write, then post an audited `adjustment` (not yet tooled).
+
 ## Grant admin
 `cd gc-payments && npm run admin:grant -- you@example.com` (or a uid). Revoke with `npm run admin:revoke -- …`. The user must have signed in once (a `users/{uid}` doc must exist). Frontend reads the same `role` via `useAuth().isAdmin`.
 

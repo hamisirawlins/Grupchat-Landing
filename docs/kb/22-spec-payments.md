@@ -18,7 +18,7 @@ then observes the outcome in Firestore. Provider callbacks land on the backend.
 | `POST /v2/plans/:planId/contribute/paystack` | Paystack contribution | `{ amount, currency? }` | `transactions` (`paystack`, `contribution`, `pending`) → returns `authorizationUrl`, `txId`, `reference` |
 | `POST /v2/plans/:planId/join-premium/paystack` | Pay listed price to join a curated plan | `{ currency }` | `planMembers` (unpaid) + `transactions` (`premium-join`) |
 | `POST /v2/plans/:planId/join-premium/mpesa` | Same via STK | `{ phone }` | as above |
-| `POST /v2/plans/:planId/payout` | Owner withdraws pooled funds | `{ amount, … }` | `transactions` (`payout`) and **decrements** `currentBalance` immediately |
+| `POST /v2/plans/:planId/payout` | Owner withdraws pooled funds | `{ amount, … }` | `transactions` (`payout`), **decrements** `currentBalance` immediately and posts the ledger debit |
 
 Preconditions enforced server-side: plan exists and `status == active`; for `contribute*` the plan has `poolMode in [pool, both]` (else `"Plan does not have pooling enabled"`); **rails follow plan type (D-017)** — `contribute` (M-Pesa) requires `planType == free`, `contributePaystack` requires `planType == premium`; for legacy premium joins the catalogue item is active and the plan isn't locked.
 
@@ -37,7 +37,7 @@ Preconditions enforced server-side: plan exists and `status == active`; for `con
 ## Settlement — one path (D-021)
 `gc-payments/services/settlementService.js` is the **only** code that books money. Three triggers call it:
 provider callbacks (`paystackWebhook`, `mpesaStkCallback`), the reconciliation job, and `GET /v2/transactions/:id/verify`.
-- `settleSuccess(txDoc, { amount, currency, providerFields })` — inside `runTransaction`: re-reads the tx and returns if it is no longer `pending` (race-safe); sets `success`, `processedAt`, provider ids; `contribution` → `plans.currentBalance += amount − platformFee`; `premium-join` → member `paymentStatus: paid`; plan `lastActivityAt`. Then audit `payment.settled` and in-app notifications (`services/paymentNotifications.js`).
+- `settleSuccess(txDoc, { amount, currency, providerFields })` — inside `runTransaction` (which also **stages the ledger entries**, D-025): re-reads the tx and returns if it is no longer `pending` (race-safe); sets `success`, `processedAt`, provider ids; `contribution` → `plans.currentBalance += amount − platformFee`; `premium-join` → member `paymentStatus: paid`; plan `lastActivityAt`. Then audit `payment.settled` and in-app notifications (`services/paymentNotifications.js`).
 - `settleFailure(txDoc, { reason, resultCode })` — `failed` + `description`; audit `payment.failed`.
 - `reconcileTransaction(txDoc)` — asks the provider (Paystack `verify/:reference`; Daraja STK query, pending while `errorCode 500.001.1001`) and calls one of the above. Returns `success | failed | pending | unknown`.
 Callbacks now only verify the signature, find the pending tx by provider reference, and hand it over.

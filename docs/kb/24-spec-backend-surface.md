@@ -18,6 +18,7 @@ Express 4, ESM, port **4000**, firebase-admin 13, socket.io (to be retired). Ent
 | Reconciliation (P4, shipped) | `GET /v2/transactions/:id/verify`; 5-min job | `services/reconciliationService.js`, `settlementService.js` |
 | Uploads | `POST /v2/uploads/image` | `routes/v2/uploads.js` |
 | Admin | `npm run admin:grant -- <uid|email>` / `admin:revoke` (sets `users/{uid}.role`); `planCatalogue` writes (`POST /v2/catalogue`, `PUT /v2/catalogue/:id` incl. `status`) driven by `/admin/catalogue`; `GET /v2/audit/events` | `scripts/admin-grant.js`, `controllers/v2/auditController.js` |
+| Ledger | `GET /v2/ledger` (admin, cursor `before`), `GET /v2/ledger/verify/:planId` (admin), `GET /v2/ledger/plans/:planId` (members) | `controllers/v2/ledgerController.js`, `services/ledgerService.js` |
 | Public | `GET /v2/invites/:code/preview` — signed-out invite projection (26) | `controllers/v2/invitesPublicController.js` |
 | Health | `GET /` | `index.js` |
 

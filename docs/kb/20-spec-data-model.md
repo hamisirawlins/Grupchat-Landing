@@ -31,6 +31,7 @@ Fields marked ⚙ are **backend-owned**: clients may read, never write. Timestam
 | `checkins`, `planMemories` | plan member | — | — | feed |
 | `adminUsers/{uid}` | no | no | admin script | mirrors custom claim |
 | `mpesa_logs`, `processedEvents` | no | no | ⚙ | audit / idempotency |
+| `ledgerEntries/{txId:n}` | **no** | **no** | ⚙ | money journal (D-025); read: admin, or plan members via `/v2/ledger/plans/:id` |
 
 Community collections (`communityGroups`, `communityGroupMembers`, `communityGoals`,
 `communityInvites`, `goalCompletionEvents`) exist in the backend; **Community is deprecated
@@ -128,6 +129,19 @@ darajaConversationId, darajaOriginatorConversationId          string | null
 processedAt       Timestamp | null
 ```
 Provider references are the idempotency keys: `paystackReference`, `darajaCheckoutRequestId`.
+
+### `ledgerEntries/{txId:n}`  ⚙ (D-025)
+```
+id (= txId:n), txId, planId, userId
+kind         "contribution" | "fee" | "premium-join" | "payout" | "adjustment"
+direction    "credit" | "debit"
+account      "plan:<planId>" | "platform:fees"
+amount, currency
+balanceAfter number | null      (plan account entries: pool balance after this entry)
+provider, providerRef            (receipt / reference when known)
+source       "settlement" | "initiation" | "backfill" | "adjustment"
+memo, at
+```
 
 ### `users/{uid}` · `usernames/{username}`
 ```

@@ -78,6 +78,9 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 ## K · Checklists (D-024)
 - [x] K1 Backend: `scope` + `completions` on milestones; per-member toggle · [x] K2 Plan details: Checklist section (add sheet with Group/Everyone, tick, remove), coordinate-only hero ring shows checklist progress
 
+## L · Ledger + pagination (D-025)
+- [x] L1 `ledgerEntries` posted atomically with settlement; payout debit at initiation · [x] L2 `GET /v2/ledger`, `/verify/:planId`, `/plans/:planId` · [x] L3 `/admin/ledger` (filters, totals, verify, Show more) · [x] L4 `ledger:backfill` / `ledger:verify` scripts · [x] L5 Cursor pagination: audit trail, console Latest activity; Show more on Plan Activity and Notifications
+
 ## P · Payments hardening (workplan P4)
 - [x] P4.1 Reconciliation job · [x] P4.3 journeys doc `currentBalance` · [x] P4.4 verify endpoint + post-redirect verification on Plan details · [x] P4.5 socket emits retired · [ ] P4.2 idempotency guard doc + raw-body signature
 
@@ -90,6 +93,7 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 - [ ] Z1 All screens pass 25 §Accessibility · [ ] Z2 ≤375px and ≥1280px walkthrough · [ ] Z3 `MVP_USER_JOURNEYS.md` acceptance criteria ticked · [ ] Z4 KB rows `updated` within the release week
 
 ## Log (newest first)
+- 2026-09-06 · Ledger (D-025) and list pagination shipped.
 - 2026-09-06 · Plan checklists (D-024): group tasks and everyone-does-this items on all plan types; coordinate-only plans now have a purpose.
 - 2026-09-06 · `/plans/new`: removed "Both" pool mode (self-managed pools are M-Pesa/KES only, D-017); currency fixed to KES; buttons gained horizontal padding and Continue fills the Back/Continue row.
 - 2026-09-06 · D-023: all client payment timers replaced by awaited `verify?wait`; `createPlan` now persists `targetAmount`/`currency`, `updatePlan` accepts them; Plan details shows pooled balance + Set-a-target when no target.

@@ -10,6 +10,7 @@ import { ListGroup, Row } from "@/components/ui/ListGroup";
 import { Sheet } from "@/components/ui/Sheet";
 import { Avatar, EmptyState, Skeleton, StickyAction, Tag } from "@/components/ui/Bits";
 import { Segmented } from "@/components/ui/Segmented";
+import { ShowMore } from "@/components/ui/ShowMore";
 import { Ring } from "@/components/home/Charts";
 import { Field, FieldGroup, FormError, OutlineButton, PrimaryButton, SuccessMark, TextAreaField } from "@/components/ui/Form";
 import { auditAPI, catalogueAPI, plansAPI, premiumAPI } from "@/lib/api";
@@ -80,6 +81,7 @@ export default function PlanDetails() {
   }, [plan?.id]);
 
   const [sheet, setSheet] = useState(null); // "pay" | "invite" | "edit" | "resource" | "item"
+  const [activityShown, setActivityShown] = useState(10);
   const reloadPlan = plan$.reload;
   const reloadMembers = members$.reload;
   const reloadTxs = txs$.reload;
@@ -269,7 +271,7 @@ export default function PlanDetails() {
       <Section title="Activity" className="mt-10">
         {txs$.loading && !txs$.data ? <Skeleton className="h-16 w-full rounded-2xl" /> : (txs$.data ?? []).length === 0 ? <p className="text-sm text-gray-400">No activity yet.</p> : (
           <ListGroup>
-            {[...txs$.data].sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt)).slice(0, 20).map((tx) => (
+            {[...txs$.data].sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt)).slice(0, activityShown).map((tx) => (
               <Row
                 key={tx.id}
                 title={`${TX_LABEL[tx.type] || tx.type} · ${money(tx.amount, tx.currency || currency)}`}
@@ -280,6 +282,7 @@ export default function PlanDetails() {
             ))}
           </ListGroup>
         )}
+        <ShowMore onClick={() => setActivityShown((n) => n + 10)} hasMore={(txs$.data?.length ?? 0) > activityShown} />
       </Section>
 
       {plan.description && <Section title="About" className="mt-10"><p className="text-[15px] leading-relaxed text-gray-600">{plan.description}</p></Section>}

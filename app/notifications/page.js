@@ -9,6 +9,7 @@ import { PageFrame, Reveal, Section } from "@/components/app/PageFrame";
 import { ListGroup, Row } from "@/components/ui/ListGroup";
 import { Avatar, EmptyState, Skeleton, Tag } from "@/components/ui/Bits";
 import { FormError } from "@/components/ui/Form";
+import { ShowMore } from "@/components/ui/ShowMore";
 import { invitationsAPI, notificationsAPI } from "@/lib/api";
 import { relative } from "@/lib/format";
 import { asList, unwrap } from "@/lib/data/shape";
@@ -18,7 +19,9 @@ export default function Notifications() {
   const { user } = useAuth();
   const router = useRouter();
   const invites$ = useAsync(async () => asList(unwrap(await invitationsAPI.getPending())), [], { enabled: !!user });
-  const notes$ = useAsync(async () => asList(unwrap(await notificationsAPI.getNotifications({ limit: 30 }))), [], { enabled: !!user });
+  const PAGE = 20;
+  const [pages, setPages] = useState(1);
+  const notes$ = useAsync(async () => asList(unwrap(await notificationsAPI.getNotifications({ limit: PAGE * pages }))), [pages], { enabled: !!user });
   const [busy, setBusy] = useState(null);
 
   const act = async (inv, kind) => {
@@ -95,6 +98,7 @@ export default function Notifications() {
             ))}
           </ListGroup>
         )}
+        <ShowMore onClick={() => setPages((n) => n + 1)} loading={notes$.loading} hasMore={notes.length >= PAGE * pages} />
       </Section>
     </PageFrame>
   );
