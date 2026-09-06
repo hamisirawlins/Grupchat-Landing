@@ -9,6 +9,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { usersAPI } from "@/lib/api";
 import {
   AuthShell,
   AuthItem,
@@ -79,6 +80,9 @@ export default function SignUp() {
       const data = await completeSignIn(user);
 
       if (data.success) {
+        // The profile may have been created from the pre-updateProfile token (auth state
+        // fires before the name lands); make the name explicit before moving on.
+        if (fullName) await usersAPI.updateMe({ displayName: fullName }).catch(() => {});
         window.location.href = postAuthDestination();
       } else {
         setError("Sign up failed");

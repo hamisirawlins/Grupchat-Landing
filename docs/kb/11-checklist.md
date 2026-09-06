@@ -97,6 +97,7 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 - [ ] Z1 All screens pass 25 §Accessibility · [ ] Z2 ≤375px and ≥1280px walkthrough · [ ] Z3 `MVP_USER_JOURNEYS.md` acceptance criteria ticked · [ ] Z4 KB rows `updated` within the release week
 
 ## Log (newest first)
+- 2026-09-06 · Sign-up name race fixed both ways (explicit `updateMe` after session; `getMe` self-heals placeholders); recordings re-cut.
 - 2026-09-06 · Journey recordings (sign-up → self-managed plan) at phone and desktop sizes in `docs/media/`; found and fixed profile display-name creation (backend `getMe`), sign-up token refresh, dev badge hidden.
 - 2026-09-06 · Mobile navigation: sticky header and iOS-style bottom tab bar (A15).
 - 2026-09-06 · Admin guard audited: all admin routes server-guarded; `ledger/plans/:id` admin path fixed; denials audited; `check:admin-guards` gate added.
