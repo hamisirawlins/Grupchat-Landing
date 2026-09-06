@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, ShieldCheck, Sparkles } from "lucide-react";
+import { BookOpen, ShieldCheck, Sparkles, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { auditAPI } from "@/lib/api";
 import { unwrap } from "@/lib/data/shape";
@@ -59,6 +59,7 @@ export default function Admin() {
       <Section title="Views" className="mt-10">
         <ListGroup>
           <Row href="/admin/audit" leading={<span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><ShieldCheck className="h-4 w-4" /></span>} title="Audit trail" footnote="Who did what, to which plan, when" />
+          <Row href="/admin/payouts" leading={<span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><Wallet className="h-4 w-4" /></span>} title="Payouts to review" footnote="Refund to the pool, or mark as sent with the receipt" />
           <Row href="/admin/ledger" leading={<span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><BookOpen className="h-4 w-4" /></span>} title="Ledger" footnote="Every movement of money, independent of provider records" />
           <Row href="/admin/catalogue" leading={<span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><Sparkles className="h-4 w-4" /></span>} title="Curated plans" footnote="Add, edit, pause and relaunch experiences" />
         </ListGroup>
