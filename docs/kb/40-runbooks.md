@@ -60,6 +60,9 @@ Failed, timed-out or rejected B2C transfers — and any still unconfirmed after 
 ## Ledger
 `cd gc-payments && npm run ledger:verify` — every plan's ledger balance vs `currentBalance`; exits 1 on drift. `npm run ledger:backfill [--dry]` — posts entries for transactions settled before the ledger existed (idempotent). Drift means a balance moved outside `settlementService`/`payout` — find the write, then post an audited `adjustment` (not yet tooled).
 
+## Recording a journey
+`scripts/record-journey.js` drives the dev server with Playwright against installed Chrome (`npm i -D playwright-core` once, not in package.json): fresh test account → sign-up → Home → create a self-managed plan → one checklist item, at phone (390×844) and desktop sizes. Output `.webm` → `ffmpeg … -c:v libx264` → `docs/media/journey-{mobile,desktop}.mp4`. Test accounts are `test.<label>.<ts>@example.com` / `DemoPass!2026` and are left in place (no hard deletes).
+
 ## Grant admin
 Before pushing backend changes that touch routes: `npm run check:admin-guards` (alongside `check:no-hard-delete`).
 `cd gc-payments && npm run admin:grant -- you@example.com` (or a uid). Revoke with `npm run admin:revoke -- …`. The user must have signed in once (a `users/{uid}` doc must exist). Frontend reads the same `role` via `useAuth().isAdmin`.

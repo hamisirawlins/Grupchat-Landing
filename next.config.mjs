@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Keep the dev-mode badge out of screen recordings and reviews.
+  devIndicators: false,
   async redirects() {
     return [
       // Old post-login entry point. Temporary, until the rebuilt experience

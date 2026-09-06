@@ -28,9 +28,11 @@ function postAuthDestination() {
   return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/home";
 }
 
-// Exchange the Firebase ID token for a backend session.
+// Exchange the Firebase ID token for a backend session. Force a refresh so the
+// token carries the display name set a moment ago — otherwise the backend
+// creates the profile from the pre-update token and falls back to the email.
 async function completeSignIn(user) {
-  const idToken = await user.getIdToken();
+  const idToken = await user.getIdToken(true);
   const response = await fetch("/api/auth/signin", {
     method: "POST",
     headers: {
