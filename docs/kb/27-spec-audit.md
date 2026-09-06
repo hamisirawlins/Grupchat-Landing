@@ -27,6 +27,7 @@ planId | null, meta { … sanitized }, source ("server" | "public" | "client"), 
 | server | `payment.initiated` `payment.settled` `payment.failed` `payout.initiated` `payout.settled` `payout.failed` `payout.review_required` `payout.resolved` | premiumController, settlementService, reconciliationService |
 | server | `catalogue.created` `catalogue.updated` | catalogueController |
 | server | `milestone.deleted` `image.deleted` `resource.removed` | soft deletes via `services/softDelete.js` (D-019) |
+| server | `admin.access_denied` | adminMiddleware — a signed-in non-admin hit an admin route |
 | public | `invite.previewed` | invitesPublicController |
 | client | `ui.plan_viewed` `ui.invite_previewed` `ui.checkout_opened` | web app via `auditAPI.emit` — **whitelist enforced server-side**; anything else is 400 |
 

@@ -186,7 +186,7 @@ export default function Home() {
       }
     >
       <PullToRefresh onRefresh={() => Promise.all([reload(), isAdmin ? reloadAdmin() : null])}>
-      <motion.div className="mx-auto max-w-3xl px-6 pb-24 pt-16 sm:pt-24" variants={STAGGER} initial="hidden" animate="show">
+      <motion.div className="mx-auto max-w-3xl px-6 pb-32 pt-12 sm:pb-24 sm:pt-24" variants={STAGGER} initial="hidden" animate="show">
         <motion.p variants={item} className="text-sm font-medium text-gray-500">
           Home
         </motion.p>

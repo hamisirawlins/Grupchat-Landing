@@ -23,6 +23,7 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 - [x] A9 `components/ui/EmptyState.js`, `Tag.js`, `Avatar.js`, `ProgressBar.js`, `Stepper.js`
 - [x] A10 `components/ui/StickyAction.js` — sticky bottom primary action under 640px, safe-area padding
 - [x] A11 `lib/format.js`
+- [x] A15 Sticky translucent header + bottom tab bar on phones (Home · Plans · Discover · Alerts); sticky actions sit above it
 - [x] A14 Pull-to-refresh on touch devices (`PullToRefresh`, `PageFrame onRefresh`, `overscroll-behavior: contain`) wired into Home, Plans, Plan details, Discover (+item), Notifications, Admin (console, audit, catalogue list/edit)
 - [x] A13 `components/app/PageFrame.js` (`PageFrame`, `Reveal`, `Section`), `lib/useAsync.js`, `lib/data/shape.js` — `money(amount, currency)`, `date(ts)`, `relative(ts)`, `initials(name)`; Firestore `Timestamp`/`_seconds` tolerant
 - [ ] A12 Design review pass against 25 §Accessibility on every new screen (running item)
@@ -96,6 +97,8 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 - [ ] Z1 All screens pass 25 §Accessibility · [ ] Z2 ≤375px and ≥1280px walkthrough · [ ] Z3 `MVP_USER_JOURNEYS.md` acceptance criteria ticked · [ ] Z4 KB rows `updated` within the release week
 
 ## Log (newest first)
+- 2026-09-06 · Mobile navigation: sticky header and iOS-style bottom tab bar (A15).
+- 2026-09-06 · Admin guard audited: all admin routes server-guarded; `ledger/plans/:id` admin path fixed; denials audited; `check:admin-guards` gate added.
 - 2026-09-06 · Payout failures now park for admin review; refund releases the full hold; `/admin/payouts`; hold wording removed from the UI.
 - 2026-09-06 · Withdrawals with hold-until-confirmation, 2% fee, member/custom recipients (D-026).
 - 2026-09-06 · Ledger (D-025) and list pagination shipped.

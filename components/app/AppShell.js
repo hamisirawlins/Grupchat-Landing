@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { STAGGER, useRevealVariants } from "@/lib/motion";
+import { TabBar } from "@/components/app/TabBar";
 
 /** Redirects signed-out visitors; `ready` is true once there is a user. */
 export function useRequireAuth() {
@@ -36,14 +37,18 @@ export default function AppShell({ trailing, children }) {
 
   return (
     <main className="min-h-screen bg-white text-black">
-      <header className="mx-auto flex max-w-3xl items-center justify-between px-6 py-6">
-        <Link href="/home" className="flex items-center gap-2">
-          <Image src="/logo.png" alt="" width={24} height={24} className="h-6 w-6" />
-          <span className="text-sm font-semibold">GrupChat</span>
-        </Link>
-        {trailing}
+      {/* Sticky, translucent — context never scrolls away. */}
+      <header className="sticky top-0 z-30 border-b border-black/[0.06] bg-white/85 backdrop-blur">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
+          <Link href="/home" className="flex items-center gap-2">
+            <Image src="/logo.png" alt="" width={24} height={24} className="h-6 w-6" />
+            <span className="text-sm font-semibold">GrupChat</span>
+          </Link>
+          {trailing}
+        </div>
       </header>
       {children}
+      <TabBar />
     </main>
   );
 }

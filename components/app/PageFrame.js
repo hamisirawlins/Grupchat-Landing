@@ -14,7 +14,7 @@ export function PageFrame({ eyebrow, title, meta, trailing, wide = false, onRefr
   const item = useRevealVariants();
   const body = (
         <motion.div
-          className={`mx-auto ${wide ? "max-w-5xl" : "max-w-3xl"} px-6 pb-28 pt-10 sm:pb-24 sm:pt-16`}
+          className={`mx-auto ${wide ? "max-w-5xl" : "max-w-3xl"} px-6 pb-32 pt-8 sm:pb-24 sm:pt-16`}
           variants={STAGGER}
           initial="hidden"
           animate="show"

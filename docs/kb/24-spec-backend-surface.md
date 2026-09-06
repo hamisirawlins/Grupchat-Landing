@@ -23,6 +23,9 @@ Express 4, ESM, port **4000**, firebase-admin 13, socket.io (to be retired). Ent
 | Public | `GET /v2/invites/:code/preview` — signed-out invite projection (26) | `controllers/v2/invitesPublicController.js` |
 | Health | `GET /` | `index.js` |
 
+## Admin guard
+Admin = `users/{uid}.role === "admin"`, defined once in `services/adminAccess.js` and enforced server-side by `middleware/adminMiddleware.js` on every admin route (catalogue writes, audit list, ledger list/verify, payouts review/resolve, admin plans). Refused attempts are audited as `admin.access_denied`. `role` is not writable through any client-facing update. Gate: `npm run check:admin-guards` fails if a protected route loses its middleware. The frontend's `isAdmin` only decides what to *show*; the server decides what is *allowed*.
+
 ## Deletes
 All `DELETE` routes are soft (D-019): milestones and images set `deletedAt`; resources are marked `removedAt` in place; invitations `status: revoked`. `getPlan` strips removed resources; list endpoints filter `deletedAt`. Guard: `npm run check:no-hard-delete`.
 

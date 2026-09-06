@@ -61,6 +61,7 @@ Failed, timed-out or rejected B2C transfers — and any still unconfirmed after 
 `cd gc-payments && npm run ledger:verify` — every plan's ledger balance vs `currentBalance`; exits 1 on drift. `npm run ledger:backfill [--dry]` — posts entries for transactions settled before the ledger existed (idempotent). Drift means a balance moved outside `settlementService`/`payout` — find the write, then post an audited `adjustment` (not yet tooled).
 
 ## Grant admin
+Before pushing backend changes that touch routes: `npm run check:admin-guards` (alongside `check:no-hard-delete`).
 `cd gc-payments && npm run admin:grant -- you@example.com` (or a uid). Revoke with `npm run admin:revoke -- …`. The user must have signed in once (a `users/{uid}` doc must exist). Frontend reads the same `role` via `useAuth().isAdmin`.
 
 ## Seed data
