@@ -70,6 +70,10 @@ Hairlines, not shadows. Shadow only on layers that float over content (sheets, m
 | `Ring`, `Bars`, `Sparkline`, `StatCard`, `useCountUp` | `components/home/Charts.js` |
 | **To build** (checklist A) | `components/ui/`: `ListGroup`/`Row` (Settings-style), `Sheet` (bottom on mobile, centred ≥640), `Segmented`, `EmptyState`, `Tag`, `Avatar`, `ProgressBar`, `Stepper`; move form primitives from `AuthShell` to `components/ui/Form.js` |
 
+## Navigation
+- **Header** (`AppShell`): sticky, translucent (`bg-white/85 backdrop-blur`), hairline below; logo left, one contextual link right.
+- **Tab bar** (`components/app/TabBar.js`), phones only (<640px): fixed bottom, four tabs — Home · Plans · Discover · Alerts — 22px glyph + 11px label, active `purple-600` with a heavier stroke, safe-area padded. Desktop navigates from the header and content. Sticky actions rest above the tab bar (`bottom-[calc(4rem+env(safe-area-inset-bottom))]`); pages reserve `pb-32` on phones.
+
 ## Page patterns
 - **Refresh**: on touch devices every data screen supports pull-to-refresh (`components/ui/PullToRefresh.js` via `PageFrame onRefresh`): rubber-band resistance, arrow rotates to armed at 72px, spinner while loaders re-run, content settles back on the standard ease. Refresh never replays the entrance animation. Desktop shows nothing.
 - **Home**: greeting · 3 action cards · at-a-glance stats.
