@@ -429,7 +429,7 @@ function WithdrawSheet({ open, onClose, plan, available, members, onSettled }) {
                 </ListGroup>
               )}
               <FieldGroup>
-                <Field id="wd-phone-m" label="M-Pesa number (only if we don't have it)" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required={false} autoComplete="off" />
+                <Field id="wd-phone-m" label="M-Pesa number" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required={false} autoComplete="off" />
               </FieldGroup>
             </>
           ) : (

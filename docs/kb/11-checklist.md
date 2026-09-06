@@ -96,6 +96,7 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 - [ ] Z1 All screens pass 25 §Accessibility · [ ] Z2 ≤375px and ≥1280px walkthrough · [ ] Z3 `MVP_USER_JOURNEYS.md` acceptance criteria ticked · [ ] Z4 KB rows `updated` within the release week
 
 ## Log (newest first)
+- 2026-09-06 · Admin guard audited: all admin routes server-guarded; `ledger/plans/:id` admin path fixed; denials audited; `check:admin-guards` gate added.
 - 2026-09-06 · Payout failures now park for admin review; refund releases the full hold; `/admin/payouts`; hold wording removed from the UI.
 - 2026-09-06 · Withdrawals with hold-until-confirmation, 2% fee, member/custom recipients (D-026).
 - 2026-09-06 · Ledger (D-025) and list pagination shipped.
