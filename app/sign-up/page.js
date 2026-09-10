@@ -6,9 +6,11 @@ import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
+  sendEmailVerification,
   updateProfile,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { usersAPI } from "@/lib/api";
 import {
   AuthShell,
   AuthItem,
@@ -28,9 +30,11 @@ function postAuthDestination() {
   return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/home";
 }
 
-// Exchange the Firebase ID token for a backend session.
+// Exchange the Firebase ID token for a backend session. Force a refresh so the
+// token carries the display name set a moment ago — otherwise the backend
+// creates the profile from the pre-update token and falls back to the email.
 async function completeSignIn(user) {
-  const idToken = await user.getIdToken();
+  const idToken = await user.getIdToken(true);
   const response = await fetch("/api/auth/signin", {
     method: "POST",
     headers: {
@@ -77,6 +81,11 @@ export default function SignUp() {
       const data = await completeSignIn(user);
 
       if (data.success) {
+        // The profile may have been created from the pre-updateProfile token (auth state
+        // fires before the name lands); make the name explicit before moving on.
+        if (fullName) await usersAPI.updateMe({ displayName: fullName }).catch(() => {});
+        // Verification is soft: it only gates withdrawals (KB 28). Never block sign-up on it.
+        await sendEmailVerification(user, { url: `${window.location.origin}/verify-email?redirect=/home` }).catch(() => {});
         window.location.href = postAuthDestination();
       } else {
         setError("Sign up failed");
