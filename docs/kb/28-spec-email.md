@@ -44,11 +44,12 @@ Explicitly **not** in MVP: welcome email, invite accepted, plan locked / reminde
 M0 ½h (DNS, yours) · M1 ½ day · M2–M4 ~½ day each incl. the shared layout · M5 1h.
 
 ## Decisions (2026-09-10)
-Sender `GrupChat <hello@grupchat.net>` (reply-to `info@grupchat.net`) · verification gates **withdrawals only** · M5 admin alert **in** · M3 receipt to **payer and owner**.
+Sender `GrupChat <hello@mailing.grupchat.net>` (Resend-verified subdomain `mailing.grupchat.net`; reply-to `info@grupchat.net`) · verification gates **withdrawals only** · M5 admin alert **in** · M3 receipt to **payer and owner**.
 
 ## Implementation
 - Backend: `services/emailService.js` → `renderEmail` (shared layout), `sendOnce` (write-once `emails/{type}:{entityId}`, audits `email.sent` / `email.failed`, never throws), `emailsForUids`, `adminEmails`. Emits: `settleSuccess` → receipt; `settlePayoutSuccess` → payout; `holdPayoutForReview` (callbacks and the 30-min job) → admin alert. `firebaseAuthMiddleware` exposes `emailVerified`; `payout` returns 403 `email-unverified` without it.
-- Frontend: sign-up calls `sendEmailVerification` (continue URL `/verify-email`); `/verify-email` reloads the user and confirms or resends (one send per page view — no client timers, D-023; Firebase rate-limits beyond that); Home shows `VerifyEmailBanner` for unverified password accounts (session-dismissible); the Withdraw sheet shows the verify prompt instead of the form.
+- M1 delivery: `POST /v2/users/me/verification-email` generates the link with the Admin SDK (`generateEmailVerificationLink`, continue URL from the client — Firebase rejects unauthorized domains) and sends it via `sendOnce` (type `verify`, one per user per minute). Response `data.sent | recentlySent | alreadyVerified | fallback`; `fallback` means Resend refused and the client uses Firebase's own sender (`lib/verification.js`). Firebase's stock mailer is therefore only a fallback, never the primary path.
+- Frontend: sign-up, the Home banner and `/verify-email` all call `requestVerificationEmail`; `/verify-email` also refreshes the ID token once verified so the withdrawal gate opens immediately; `/verify-email` reloads the user and confirms or resends (one send per page view — no client timers, D-023; Firebase rate-limits beyond that); Home shows `VerifyEmailBanner` for unverified password accounts (session-dismissible); the Withdraw sheet shows the verify prompt instead of the form.
 - Ops: `npm run email:domain` (Resend domain + DNS record status), `npm run email:test <address>` (send the layout to yourself).
 - M2: `inviteByUsername` now stores an `inviteCode` (same 16-hex shape as link invites) and emails the invitee when their account is known; the button opens `/invite/{code}`, where only the intended invitee can accept.
 - Links are built from `FRONTEND_URL` (falls back to `https://www.grupchat.net`); `EMAIL_FROM` / `EMAIL_REPLY_TO` override the sender.

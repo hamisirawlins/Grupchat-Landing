@@ -6,11 +6,11 @@ import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
-  sendEmailVerification,
   updateProfile,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { usersAPI } from "@/lib/api";
+import { requestVerificationEmail } from "@/lib/verification";
 import {
   AuthShell,
   AuthItem,
@@ -85,7 +85,7 @@ export default function SignUp() {
         // fires before the name lands); make the name explicit before moving on.
         if (fullName) await usersAPI.updateMe({ displayName: fullName }).catch(() => {});
         // Verification is soft: it only gates withdrawals (KB 28). Never block sign-up on it.
-        await sendEmailVerification(user, { url: `${window.location.origin}/verify-email?redirect=/home` }).catch(() => {});
+        await requestVerificationEmail(user, "/home").catch(() => {});
         window.location.href = postAuthDestination();
       } else {
         setError("Sign up failed");
