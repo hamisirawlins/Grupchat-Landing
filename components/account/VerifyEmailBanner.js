@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { sendEmailVerification } from "firebase/auth";
 import { toast } from "sonner";
 import { MailCheck, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { requestVerificationEmail, verificationToast } from "@/lib/verification";
 
 const DISMISS_KEY = "gc.verifyBanner.dismissed";
 
@@ -26,8 +26,8 @@ export function VerifyEmailBanner() {
 
   const resend = async () => {
     try {
-      await sendEmailVerification(user, { url: `${window.location.origin}/verify-email?redirect=/home` });
-      toast.success("Verification link sent");
+      const t = verificationToast(await requestVerificationEmail(user, "/home"));
+      toast[t.kind](t.text);
       setSent(true);
     } catch (e) {
       toast.error(e.code === "auth/too-many-requests" ? "Too many requests — try again in a few minutes." : "Couldn't send the link. Try again.");

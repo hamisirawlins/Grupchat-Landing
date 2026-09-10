@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { sendEmailVerification } from "firebase/auth";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { requestVerificationEmail, verificationToast } from "@/lib/verification";
 import { ButtonLink, OutlineButton, SuccessMark } from "@/components/ui/Form";
 import { STAGGER, useRevealVariants } from "@/lib/motion";
 
@@ -25,13 +25,16 @@ export default function VerifyEmail() {
   useEffect(() => {
     if (loading) return;
     if (!user) { setState("signed-out"); return; }
-    user.reload().then(() => setState(user.emailVerified ? "verified" : "unverified")).catch(() => setState(user.emailVerified ? "verified" : "unverified"));
+    user.reload()
+      .then(async () => { if (user.emailVerified) await user.getIdToken(true).catch(() => {}); })
+      .catch(() => {})
+      .finally(() => setState(user.emailVerified ? "verified" : "unverified"));
   }, [user, loading]);
 
   const resend = async () => {
     try {
-      await sendEmailVerification(user, { url: `${window.location.origin}/verify-email?redirect=${encodeURIComponent(next)}` });
-      toast.success("Verification link sent");
+      const t = verificationToast(await requestVerificationEmail(user, next));
+      toast[t.kind](t.text);
       setSent(true);
     } catch (e) {
       toast.error(e.code === "auth/too-many-requests" ? "Too many requests — try again in a few minutes." : "Couldn't send the link. Try again.");
