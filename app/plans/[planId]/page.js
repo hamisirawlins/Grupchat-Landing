@@ -641,7 +641,7 @@ function PaySheet({ open, onClose, plan, pooled, item, onSettled }) {
           </FieldGroup>
           <FormError>{error}</FormError>
           <PrimaryButton loading={busy}>{method === "mpesa" ? "Send M-Pesa prompt" : "Continue to card payment"}</PrimaryButton>
-          <p className="text-xs text-gray-400">{method === "mpesa" ? "Self-managed plans take M-Pesa. You'll get a prompt on your phone to approve." : "Curated plans take card payments. You'll be taken to a secure checkout and brought back here."}</p>
+          <p className="text-xs text-gray-400">{method === "mpesa" ? "Self-managed plans take M-Pesa. You'll get a prompt on your phone to approve." : "Curated plans take card payments. You'll be taken to a secure checkout and brought back here."}{pooled ? " Contributing is free: the whole amount goes to the plan. The 2% fee applies only when money is withdrawn." : ""}</p>
         </form>
       )}
     </Sheet>

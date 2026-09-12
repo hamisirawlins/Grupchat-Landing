@@ -1,7 +1,7 @@
 ---
 title: Payments — initiation, callbacks, reconciliation, realtime
 status: active
-updated: 2026-09-12
+updated: 2026-09-13
 read_when: you touch anything that moves money or shows its status; you are debugging a stuck or duplicated payment
 ---
 
@@ -39,7 +39,7 @@ Preconditions enforced server-side: plan exists and `status == active`; for `con
 ## Settlement — one path (D-021)
 `gc-payments/services/settlementService.js` is the **only** code that books money. Three triggers call it:
 provider callbacks (`paystackWebhook`, `mpesaStkCallback`), the reconciliation job, and `GET /v2/transactions/:id/verify`.
-- `settleSuccess(txDoc, { amount, currency, providerFields })` — inside `runTransaction` (which also **stages the ledger entries**, D-025): re-reads the tx and returns if it is no longer `pending` (race-safe); sets `success`, `processedAt`, provider ids; `contribution` → `plans.currentBalance += amount − platformFee`; `premium-join` → member `paymentStatus: paid`; plan `lastActivityAt`. Then audit `payment.settled` and in-app notifications (`services/paymentNotifications.js`).
+- `settleSuccess(txDoc, { amount, currency, providerFields })` — inside `runTransaction` (which also **stages the ledger entries**, D-025): re-reads the tx and returns if it is no longer `pending` (race-safe); sets `success`, `processedAt`, provider ids; `contribution` → `plans.currentBalance += amount − platformFee` (the fee is `0` since D-029, so the full amount lands); `premium-join` → member `paymentStatus: paid`; plan `lastActivityAt`. Then audit `payment.settled` and in-app notifications (`services/paymentNotifications.js`).
 - `settleFailure(txDoc, { reason, resultCode })` — `failed` + `description`; audit `payment.failed`.
 - `reconcileTransaction(txDoc)` — asks the provider (Paystack `verify/:reference`; Daraja STK query, pending while `errorCode 500.001.1001`) and calls one of the above. Returns `success | failed | pending | unknown`.
 Callbacks now only verify the signature, find the pending tx by provider reference, and hand it over.
@@ -65,7 +65,7 @@ The provider is configured with `WITHDRAWAL_CALLBACK_URL` = `…/core/withdrawal
 
 ## Amount semantics
 - Firestore stores **major units** (KES). Paystack sends **minor units**; the webhook divides by 100.
-- `platformFee` is computed at initiation from `plans.platformFeeRate ?? 0.01`; premium plans carry an explicit `0`. The plan is credited **net**.
+- **Paying in is free (D-029).** Contributions and curated joins store `platformFee: 0` and the plan is credited the full amount. `plans.platformFeeRate` is no longer read; the platform's cut is the 2% on withdrawals. Transactions settled before 2026-09-13 keep the fee they were charged.
 - `payout` **holds** the gross at request and debits on confirmation (D-026); an admin approval is what sends it (D-028). Failure parks it for review; only an admin refund or decline (`settlePayoutFailure`) releases the hold. Fee is 2% of gross; the recipient receives the net.
 
 ## Timeouts and reconciliation (P4.1 — shipped 2026-09-06)

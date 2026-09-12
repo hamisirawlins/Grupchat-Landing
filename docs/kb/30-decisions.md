@@ -1,7 +1,7 @@
 ---
 title: Decision log
 status: active
-updated: 2026-09-12
+updated: 2026-09-13
 read_when: you want to know why something is the way it is, or you are about to make a choice that others will need to understand later
 ---
 
@@ -150,3 +150,8 @@ Format: `D-nnn · date · title` → **Decision** · **Why** · **Consequences**
 **Decision.** A withdrawal request stops at `approvalState: "pending"`. The gross is held exactly as in D-026, but **nothing reaches Daraja until an admin approves it** on `/admin/payouts`: approval flips the state inside a Firestore transaction and only then calls B2C, and a decline (reason required) releases the whole hold and emails the owner. The post-send exception path is unchanged — a transfer M-Pesa never confirms is still parked and resolved by `…/resolve`. Separately, every inbound provider callback, and every outbound B2C request with the provider's synchronous answer, is written verbatim to `providerCallbacks` and readable by admins under each payout.
 **Why.** Money left on the owner's say-so alone. Approval is where a human catches a wrong number or an amount that doesn't belong, and it is what makes a version-one deploy safe while the provider side is still being set up. Reviewing a payout means reading what Daraja actually said; a status field is not enough.
 **Consequences.** The Withdraw sheet no longer waits for a transfer — it confirms the request and says the amount is set aside. `/admin/payouts` becomes three queues (approval · needs review · with M-Pesa) with the provider log under each one. Reconciliation skips awaiting-approval payouts and ages the rest from `sentToProviderAt`. `providerCallbacks` holds recipient phone numbers, so it is admin-only and never client-readable. A request left unapproved holds the owner's funds indefinitely — nothing ages it out yet. `npm run check:payout-flow` exercises request → decline → approve → result against a mock Daraja on a throwaway plan; `EMAIL_DISABLED=1` keeps such runs from alerting real admins.
+
+### D-029 · 2026-09-13 · Paying in is free; the platform's only cut is the 2% on withdrawals
+**Decision.** Contributions carry no platform fee. `contribute` and `contributePaystack` store `platformFee: 0`, so a plan is credited the full amount paid in, and `plans.platformFeeRate` is no longer read (new plans store `0`). The 2% withdrawal fee (D-026) is unchanged and remains the only charge.
+**Why.** A 1% deposit fee was both invisible and lumpy: `Math.round` meant contributions under 50 paid nothing and a 50 shilling deposit paid one, so the pool credited 49 with nothing in the UI to explain it. Charging on the way out is legible, charged once per amount, and does not tax the behaviour we want.
+**Consequences.** Plan totals now equal the sum of what members paid in. The pay sheet says contributing is free and names the 2% withdrawal fee. Transactions settled before this date keep the fee they were charged — their ledger entries stand, so a plan's balance can sit below the sum of its contributions by the fees already taken (one shilling on plan `Az0i0jkz…`). `platformFeeRate` stays on the document as a hook for a future per-plan rate; anything that reads it again must not resurrect a deposit fee by accident.
