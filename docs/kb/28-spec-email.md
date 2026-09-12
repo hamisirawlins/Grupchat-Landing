@@ -1,7 +1,7 @@
 ---
 title: Email — verification and transactional notifications (MVP)
 status: active
-updated: 2026-09-10
+updated: 2026-09-12
 read_when: you are implementing or reviewing anything that sends an email, or the sign-up verification flow
 ---
 
@@ -25,6 +25,8 @@ Verify `grupchat.net` on Resend (DKIM/SPF DNS records) and send as **`GrupChat <
 | M3 | Payment received | `payment.settled` (contribution or curated payment) | payer **and plan owner** | amount, plan, M-Pesa receipt / card ref, link to the plan |
 | M4 | Withdrawal sent | `payout.settled` | plan owner | gross, fee, net, recipient, receipt |
 | M5 | *(ops)* Payout needs review | `payout.review_required` | all admins | plan, amount, reason, link to `/admin/payouts` |
+| M6 | *(ops)* Withdrawal to approve | `payout.requested` — every withdrawal (D-028) | all admins | plan, requested, recipient gets, recipient, reference, link to `/admin/payouts` |
+| M7 | Withdrawal not approved | `payout.declined` | plan owner | amount back in the plan, recipient, the admin's reason |
 
 Explicitly **not** in MVP: welcome email, invite accepted, plan locked / reminders (in-app exists), contribution notices to the owner (in-app exists), digests.
 
@@ -32,7 +34,7 @@ Explicitly **not** in MVP: welcome email, invite accepted, plan locked / reminde
 1. Sign-up → after `updateProfile` and the backend session, `sendEmailVerification(user, { url: <origin>/verify-email?redirect=/home })`; continue to Home as today (soft — nothing is blocked on it).
 2. Home shows a quiet banner while `!user.emailVerified`: *"Verify your email to withdraw funds · Resend link"*. Dismissible per session.
 3. `/verify-email`: reloads the user; shows *Verified* + continue, or *Resend* with a 60s cooldown. Google sign-ins arrive verified.
-4. **Hard gate — withdrawals only.** `firebaseAuthMiddleware` exposes `emailVerified: decodedToken.email_verified`; `POST /v2/plans/:id/payout` returns 403 *"Verify your email to withdraw"* if false. Contributions stay open (conversion).
+4. **Hard gate — withdrawals only.** `firebaseAuthMiddleware` exposes `emailVerified` (the token helper normalises Firebase's `email_verified`; reading the raw name gave `undefined` and refused everyone); `POST /v2/plans/:id/payout` returns 403 *"Verify your email to withdraw"* if false. Contributions stay open (conversion).
 
 ## Sending rules
 - Send **after** the write commits; never block a settlement or a response on email. Failures are audited, not surfaced to users.
@@ -54,3 +56,5 @@ Sender `GrupChat <hello@mailing.grupchat.net>` (Resend-verified subdomain `maili
 - M2: `inviteByUsername` now stores an `inviteCode` (same 16-hex shape as link invites) and emails the invitee when their account is known; the button opens `/invite/{code}`, where only the intended invitee can accept.
 - Links are built from `FRONTEND_URL` (falls back to `https://www.grupchat.net`); `EMAIL_FROM` / `EMAIL_REPLY_TO` override the sender.
 - The Resend key is send-only, so `email:domain` probes by sending to Resend's sink address `delivered@resend.dev` and reports Resend's verdict.
+- M6/M7 (D-028): `payoutApprovalAlert` emails the admins on every request; a decline emails the owner from `settlePayoutFailure`. Both go through `sendOnce`, so one per payout.
+- `EMAIL_DISABLED=1` makes `sendOnce` skip sending entirely — set it on local and test instances, or exercising a withdrawal will alert the real admins.

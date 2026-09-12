@@ -1,7 +1,7 @@
 ---
 title: Audit trail and admin view
 status: active
-updated: 2026-09-05
+updated: 2026-09-12
 read_when: you add an action that should be traceable, or you touch /admin/audit
 ---
 
@@ -24,7 +24,7 @@ planId | null, meta { … sanitized }, source ("server" | "public" | "client"), 
 | server | `plan.created` `plan.updated` `plan.locked` | planController, autoLockService |
 | server | `invite.issued` `invite.accepted` `invite.declined` `invite.revoked` | planExtController, invitationController |
 | server | `member.committed` | planExtController |
-| server | `payment.initiated` `payment.settled` `payment.failed` `payout.initiated` `payout.settled` `payout.failed` `payout.review_required` `payout.resolved` | premiumController, settlementService, reconciliationService |
+| server | `payment.initiated` `payment.settled` `payment.failed` `payout.requested` `payout.approved` `payout.declined` `payout.initiated` `payout.settled` `payout.failed` `payout.review_required` `payout.resolved` | premiumController, settlementService, reconciliationService |
 | server | `catalogue.created` `catalogue.updated` | catalogueController |
 | server | `milestone.deleted` `image.deleted` `resource.removed` | soft deletes via `services/softDelete.js` (D-019) |
 | server | `admin.access_denied` | adminMiddleware — a signed-in non-admin hit an admin route |

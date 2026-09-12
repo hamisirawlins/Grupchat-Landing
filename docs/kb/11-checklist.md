@@ -1,7 +1,7 @@
 ---
 title: Build checklist — trackable line items
 status: active
-updated: 2026-09-05
+updated: 2026-09-12
 read_when: you are doing or reporting implementation work; tick items here as they complete
 ---
 
@@ -91,6 +91,9 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 ## W · Withdrawals (D-026)
 - [x] W1 Payout with hold (`heldBalance`), 2% fee, member/custom recipient, B2C V2 result/timeout + V1 bridges, review flag, admin resolve · [x] W2 Plan details: Withdraw sheet (fee preview, recipient picker, awaits confirmation), hold shown in hero · [x] W3 `/admin/payouts`: parked payouts with Refund-to-pool / Mark-as-sent · [x] W4 Failures park for review (no auto-release); no user-facing hold wording
 
+## V · Withdrawal approval + provider log (D-028)
+- [x] V1 Request stops at `approvalState: "pending"`; the provider is called only on approval · [x] V2 `POST /v2/payouts/:txId/approve` (transactional flip, then B2C, `sentToProviderAt`) and `…/decline` (releases the hold, emails the owner) · [x] V3 `/admin/payouts`: three queues (approval · needs review · with M-Pesa), approve/decline sheet · [x] V4 `providerCallbacks` log for every inbound callback and every outbound B2C request; `GET /v2/callbacks`, `GET /v2/payouts/:txId/callbacks`, shown under each payout · [x] V5 Withdraw sheet says *requested*, not *sent*; activity shows "in review" · [x] V6 Reconciliation skips awaiting-approval payouts and ages from dispatch · [x] V7 `npm run check:payout-flow` (mock Daraja, 46 assertions) and `EMAIL_DISABLED=1`
+
 ## L · Ledger + pagination (D-025)
 - [x] L1 `ledgerEntries` posted atomically with settlement; payout debit at initiation · [x] L2 `GET /v2/ledger`, `/verify/:planId`, `/plans/:planId` · [x] L3 `/admin/ledger` (filters, totals, verify, Show more) · [x] L4 `ledger:backfill` / `ledger:verify` scripts · [x] L5 Cursor pagination: audit trail, console Latest activity; Show more on Plan Activity and Notifications
 
@@ -106,6 +109,7 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 - [ ] Z1 All screens pass 25 §Accessibility · [ ] Z2 ≤375px and ≥1280px walkthrough · [ ] Z3 `MVP_USER_JOURNEYS.md` acceptance criteria ticked · [ ] Z4 KB rows `updated` within the release week
 
 ## Log (newest first)
+- 2026-09-12 · Withdrawals now need admin approval before anything is sent (D-028); every provider callback and B2C request is logged to `providerCallbacks` and readable under each payout; `check:payout-flow` E2E added.
 - 2026-09-10 · Fix: `firebaseAuthMiddleware` read `email_verified` off the normalized token object (always undefined) — the withdrawal gate was refusing verified owners. Now reads `emailVerified`; proven end-to-end.
 - 2026-09-10 · Verification email moved into our pipeline (backend + Resend, Firebase fallback) after Gmail swallowed Firebase's default-sender mail; domain `mailing.grupchat.net` verified; end-to-end proven with a throwaway inbox.
 - 2026-09-10 · Email MVP approved and built (D-027): verification gate, receipts, payout + admin-alert emails, `email:domain` / `email:test`. M0 awaiting DNS (probe: not verified as of 17:10 UTC).

@@ -1,7 +1,7 @@
 ---
 title: Backend surface — what gc-payments keeps, deletes, and runs
 status: active
-updated: 2026-09-06
+updated: 2026-09-12
 read_when: you are changing routes, controllers or jobs in gc-payments, or deciding whether something belongs on the backend at all
 ---
 
@@ -15,7 +15,8 @@ Express 4, ESM, port **4000**, firebase-admin 13, socket.io (to be retired). Ent
 |---|---|---|
 | Payment initiation | `POST /v2/plans/:planId/contribute`, `…/contribute/paystack`, `…/join-premium/paystack`, `…/join-premium/mpesa`, `…/payout` | `controllers/v2/premiumController.js` |
 | Provider callbacks | `POST /v2/paystack/webhook`, `POST /v2/mpesa/stk-callback`, `POST /v2/payments/*` (review) | `premiumController`, `v2/paymentsController.js` |
-| Payouts | `POST /v2/plans/:id/payout` (owner), `POST /v2/payouts/:txId/resolve` (admin) | `premiumController` (D-026) |
+| Payouts | `POST /v2/plans/:id/payout` (owner, requests only), `GET /v2/payouts/review`, `POST /v2/payouts/:txId/approve` · `…/decline` · `…/resolve` (admin) | `premiumController` (D-026, D-028) |
+| Callback log | `GET /v2/callbacks`, `GET /v2/payouts/:txId/callbacks` (admin) | `services/callbackLogService.js` (D-028) |
 | Reconciliation (P4, shipped) | `GET /v2/transactions/:id/verify`; 5-min job | `services/reconciliationService.js`, `settlementService.js` |
 | Uploads | `POST /v2/uploads/image` | `routes/v2/uploads.js` |
 | Admin | `npm run admin:grant -- <uid|email>` / `admin:revoke` (sets `users/{uid}.role`); `planCatalogue` writes (`POST /v2/catalogue`, `PUT /v2/catalogue/:id` incl. `status`) driven by `/admin/catalogue`; `GET /v2/audit/events` | `scripts/admin-grant.js`, `controllers/v2/auditController.js` |
@@ -25,7 +26,7 @@ Express 4, ESM, port **4000**, firebase-admin 13, socket.io (to be retired). Ent
 | Health | `GET /` | `index.js` |
 
 ## Admin guard
-Admin = `users/{uid}.role === "admin"`, defined once in `services/adminAccess.js` and enforced server-side by `middleware/adminMiddleware.js` on every admin route (catalogue writes, audit list, ledger list/verify, payouts review/resolve, admin plans). Refused attempts are audited as `admin.access_denied`. `role` is not writable through any client-facing update. Gate: `npm run check:admin-guards` fails if a protected route loses its middleware. The frontend's `isAdmin` only decides what to *show*; the server decides what is *allowed*.
+Admin = `users/{uid}.role === "admin"`, defined once in `services/adminAccess.js` and enforced server-side by `middleware/adminMiddleware.js` on every admin route (catalogue writes, audit list, ledger list/verify, payouts review/approve/decline/resolve, callback log, admin plans). Refused attempts are audited as `admin.access_denied`. `role` is not writable through any client-facing update. Gate: `npm run check:admin-guards` fails if a protected route loses its middleware. The frontend's `isAdmin` only decides what to *show*; the server decides what is *allowed*.
 
 ## Deletes
 All `DELETE` routes are soft (D-019): milestones and images set `deletedAt`; resources are marked `removedAt` in place; invitations `status: revoked`. `getPlan` strips removed resources; list endpoints filter `deletedAt`. Guard: `npm run check:no-hard-delete`.

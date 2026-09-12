@@ -1,7 +1,7 @@
 ---
 title: Runbooks
 status: active
-updated: 2026-09-06
+updated: 2026-09-12
 read_when: you need to run, deploy, seed, rotate, or debug something — not to understand it
 ---
 
@@ -53,6 +53,15 @@ Test before deploy: `npx firebase emulators:exec --only firestore "node firebase
 
 ## Deleting things
 There is no hard delete. `softDeleteDoc(ref, { actorUid, action, entity, planId, reason })` or `stageSoftDelete(batch, ref, uid)`; filter reads with `omitDeleted(snap)` / `activeItems(arr)`. Before pushing backend changes: `npm run check:no-hard-delete`.
+
+## Approving a withdrawal (D-028)
+Every withdrawal waits for an admin — nothing is sent when the owner requests it. `/admin/payouts` has three groups:
+**Awaiting your approval** (held, not sent): *Approve and send* calls M-Pesa there and then; *Decline* needs a reason, returns the full amount to the plan and emails the owner.
+**With M-Pesa** (approved, waiting on the result) and **Needs review** (sent, never confirmed) are worked as below.
+Under every payout, *What M-Pesa sent us* lists the provider log: the outbound B2C request with Daraja's synchronous answer, then each callback, expandable to the raw payload. The same rows are at `GET /v2/callbacks?limit=50` (admin) — start there when a transfer looks stuck.
+If M-Pesa refuses a transfer at approval time, the payout drops straight into **Needs review** with the rejection recorded; the hold stays put.
+
+**Exercise the whole path without touching Safaricom:** `cd gc-payments && npm run check:payout-flow`. It starts a mock Daraja and a second API on :4110, runs request → decline → approve → result → replay against a throwaway plan (soft-deleted afterwards), and prints 46 assertions. It sets `EMAIL_DISABLED=1` — do the same on any local instance, or requesting a withdrawal will email the real admins.
 
 ## A payout needs review (`needsReview`)
 Failed, timed-out or rejected B2C transfers — and any still unconfirmed after 30 min — are parked (audit `payout.review_required`); the hold stays. Work them from `/admin/payouts`: **Refund to pool** releases the full amount (owner can retry); **Mark as sent** needs the portal receipt. Check the M-Pesa org portal for the B2C transfer `WITHDRAW_<txId>`: confirmed → `POST /v2/payouts/<txId>/resolve { "outcome": "success", "receipt": "<TransactionReceipt>" }`; absent/failed → `{ "outcome": "failed", "reason": "…" }`. Both are audited as `payout.resolved` and settle exactly like the callback would.
