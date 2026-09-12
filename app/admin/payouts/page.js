@@ -38,6 +38,7 @@ export default function AdminPayouts() {
   const [receipt, setReceipt] = useState("");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(null);
+  const [confirming, setConfirming] = useState(false); // sending money takes two deliberate taps (D-030)
   const [formError, setFormError] = useState("");
 
   // What the provider said about this one, loaded when the sheet opens.
@@ -50,7 +51,7 @@ export default function AdminPayouts() {
     return () => { alive = false; };
   }, [selected]);
 
-  const open = (t) => { setSelected(t); setReceipt(""); setNote(""); setFormError(""); };
+  const open = (t) => { setSelected(t); setReceipt(""); setNote(""); setFormError(""); setConfirming(false); };
 
   const act = async (kind) => {
     if (!selected) return;
@@ -63,7 +64,7 @@ export default function AdminPayouts() {
       const net = money(selected.netAmount ?? selected.amount, selected.currency);
       const who = selected.recipientName || selected.mpesaPhone;
       if (kind === "approve") {
-        const res = unwrap(await premiumAPI.approvePayout(selected.id, note.trim() ? { note: note.trim() } : {}));
+        const res = unwrap(await premiumAPI.approvePayout(selected.id, { amount: Number(selected.netAmount ?? selected.amount), ...(note.trim() ? { note: note.trim() } : {}) }));
         if (res?.sent) toast.success(`${net} on its way to ${who}`);
         else toast.message(res?.message || "M-Pesa didn't accept it — it's parked for review");
       } else if (kind === "decline") {
@@ -153,10 +154,21 @@ export default function AdminPayouts() {
                   <Field id="pv-note" label="Note (required to decline)" value={note} onChange={(e) => setNote(e.target.value)} required={false} autoComplete="off" />
                 </FieldGroup>
                 <FormError>{formError}</FormError>
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <PrimaryButton type="button" onClick={() => act("approve")} loading={busy === "approve"} disabled={busy === "decline"}>Approve and send {money(selected.netAmount ?? selected.amount, selected.currency)}</PrimaryButton>
-                  <OutlineButton onClick={() => act("decline")} loading={busy === "decline"} disabled={busy === "approve"}>Decline</OutlineButton>
-                </div>
+                {confirming ? (
+                  <div className="space-y-3 rounded-2xl bg-purple-50 p-4">
+                    <p className="text-[15px] font-medium">Send {money(selected.netAmount ?? selected.amount, selected.currency)} to {selected.recipientName || selected.mpesaPhone} now?</p>
+                    <p className="text-[13px] text-gray-600">M-Pesa transfers cannot be recalled.</p>
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      <OutlineButton onClick={() => setConfirming(false)} disabled={busy === "approve"}>Not yet</OutlineButton>
+                      <PrimaryButton type="button" onClick={() => act("approve")} loading={busy === "approve"}>Yes, send it</PrimaryButton>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <PrimaryButton type="button" onClick={() => setConfirming(true)} disabled={!!busy}>Approve {money(selected.netAmount ?? selected.amount, selected.currency)}</PrimaryButton>
+                    <OutlineButton onClick={() => act("decline")} loading={busy === "decline"}>Decline</OutlineButton>
+                  </div>
+                )}
               </>
             ) : (
               <>

@@ -50,7 +50,7 @@ A withdrawal is a **request** until an admin approves it. Money is held at reque
 | Stage | `status` / `approvalState` | Who acts | Endpoint |
 |---|---|---|---|
 | Requested | `pending` / `pending` | owner | `POST /v2/plans/:planId/payout` — holds the gross, audits `payout.requested`, alerts admins by email |
-| Approved | `pending` / `approved` | admin | `POST /v2/payouts/:txId/approve` — flips the state **inside a Firestore transaction** (two admins can only dispatch once), then calls B2C and stamps `sentToProviderAt`, `darajaConversationId`; audits `payout.approved` + `payout.initiated` |
+| Approved | `pending` / `approved` | admin | `POST /v2/payouts/:txId/approve` with `{ amount }` matching `netAmount` (D-030; a call that doesn't name the amount is refused and sends nothing) — flips the state **inside a Firestore transaction** (two admins can only dispatch once), then calls B2C and stamps `sentToProviderAt`, `darajaConversationId`; audits `payout.approved` + `payout.initiated` |
 | Declined | `failed` / `declined` | admin | `POST /v2/payouts/:txId/decline` (`{ reason }`) — releases the whole hold via `settlePayoutFailure`, audits `payout.declined`, emails the owner |
 | Sent, unconfirmed | `pending`, `needsReview: true` | M-Pesa / the 30-min job | unchanged (D-026): `POST /v2/payouts/:txId/resolve` marks it sent or refunds |
 
