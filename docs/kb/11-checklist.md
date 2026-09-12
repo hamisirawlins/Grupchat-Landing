@@ -1,7 +1,7 @@
 ---
 title: Build checklist — trackable line items
 status: active
-updated: 2026-09-12
+updated: 2026-09-13
 read_when: you are doing or reporting implementation work; tick items here as they complete
 ---
 
@@ -109,6 +109,7 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 - [ ] Z1 All screens pass 25 §Accessibility · [ ] Z2 ≤375px and ≥1280px walkthrough · [ ] Z3 `MVP_USER_JOURNEYS.md` acceptance criteria ticked · [ ] Z4 KB rows `updated` within the release week
 
 ## Log (newest first)
+- 2026-09-13 · Deposits are free (D-029): contributions no longer take a 1% cut, plans are credited in full, and the pay sheet says so. The 2% withdrawal fee is unchanged.
 - 2026-09-12 · Withdrawals now need admin approval before anything is sent (D-028); every provider callback and B2C request is logged to `providerCallbacks` and readable under each payout; `check:payout-flow` E2E added.
 - 2026-09-10 · Fix: `firebaseAuthMiddleware` read `email_verified` off the normalized token object (always undefined) — the withdrawal gate was refusing verified owners. Now reads `emailVerified`; proven end-to-end.
 - 2026-09-10 · Verification email moved into our pipeline (backend + Resend, Firebase fallback) after Gmail swallowed Firebase's default-sender mail; domain `mailing.grupchat.net` verified; end-to-end proven with a throwaway inbox.

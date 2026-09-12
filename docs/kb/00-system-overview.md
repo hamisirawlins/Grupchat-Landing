@@ -1,7 +1,7 @@
 ---
 title: System overview
 status: active
-updated: 2026-09-05
+updated: 2026-09-13
 read_when: you need the shape of the whole system, who writes what, or the gap between today and the target
 ---
 
@@ -53,6 +53,6 @@ provider plans** paid via Paystack. Both end at Plan Details; Home is always rea
 ## Glossary
 - **Plan** — a self-managed (`planType: free`) or curated (`planType: premium`) outing. Curated plans reference a `planCatalogue` item.
 - **Pool mode** — for free plans: `coordinate` (no money) · `pool` · `both`. Premium plans have `poolMode: null` and pay per member.
-- **Contribution** — a `transactions` doc of `type: contribution`; nets into `plans.currentBalance` after `platformFee`.
+- **Contribution** — a `transactions` doc of `type: contribution`; adds to `plans.currentBalance` in full, since paying in carries no fee (D-029).
 - **Premium join** — a `transactions` doc of `type: premium-join`; on success sets the member's `paymentStatus: paid`.
 - **Lock** — premium plans flip to `status: locked` at `lockDate` (auto-lock job), after which joins close.

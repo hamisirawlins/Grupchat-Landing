@@ -1,7 +1,7 @@
 ---
 title: Data model — Firestore collections as written by the code
 status: active
-updated: 2026-09-12
+updated: 2026-09-13
 read_when: you are reading or writing any Firestore document from either repo, or writing a rule or index for one
 supersedes: ../V2_FIRESTORE_MODELS.md (partially — this file reflects what gc-payments actually writes today)
 ---
@@ -58,9 +58,9 @@ targetDate       Timestamp | null
 lockDate         Timestamp | null                  (premium: derived from targetDate)
 targetAmount     number | null
 currency         "KES" | …
-currentBalance   number  ⚙   ← net of platformFee; incremented by callbacks; debited when a payout is confirmed
+currentBalance   number  ⚙   ← incremented in full by callbacks (deposits are free, D-029); debited when a payout is confirmed
 heldBalance      number  ⚙   ← payouts awaiting M-Pesa confirmation (D-026); available = currentBalance − heldBalance
-platformFeeRate  number  ⚙
+platformFeeRate  number  ⚙   ← 0 on new plans and not read anywhere (D-029); kept for a future per-plan rate
 membersCount     number      (denormalised; incremented on join)
 resources        [{ id, title, url, type, removedAt?, removedBy? }]   (arrayUnion; removal = mark, never arrayRemove)
 visibility       "private" | …
