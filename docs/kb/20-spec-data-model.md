@@ -1,7 +1,7 @@
 ---
 title: Data model — Firestore collections as written by the code
 status: active
-updated: 2026-09-06
+updated: 2026-09-12
 read_when: you are reading or writing any Firestore document from either repo, or writing a rule or index for one
 supersedes: ../V2_FIRESTORE_MODELS.md (partially — this file reflects what gc-payments actually writes today)
 ---
@@ -24,6 +24,7 @@ Fields marked ⚙ are **backend-owned**: clients may read, never write. Timestam
 | `milestones/{id}` | plan member | plan member (own tick for `everyone` items) | — | `scope` group\|everyone; `completions` map (D-024) |
 | `planCatalogue/{id}` | admin claim | admin claim | — | curated inventory |
 | `transactions/{id}` | **no** | **no** | ⚙ everything | read: own `userId`, or member of `planId` |
+| `providerCallbacks/{id}` | no | no | ⚙ everything | no client access at all (D-028) |
 | `notifications/{id}` | no | own: `read` | backend creates | |
 | `notificationPreferences/{uid}` | own | own | — | |
 | `feedback/{id}` | own | — | — | |
@@ -130,8 +131,23 @@ darajaCheckoutRequestId, darajaReceiptNumber,
 darajaConversationId, darajaOriginatorConversationId          string | null
 processedAt       Timestamp | null
 # payouts (D-026): netAmount, holdAmount, recipientType "member"|"custom", recipientUserId, recipientName, needsReview
+# payout approval (D-028): approvalState "pending"|"approved"|"declined", approvedBy/approvedAt/approvalNote,
+#                          declinedBy/declinedAt/declineReason, sentToProviderAt, providerResponseCode/Desc
 ```
 Provider references are the idempotency keys: `paystackReference`, `darajaCheckoutRequestId`.
+
+### `providerCallbacks/{id}`  ⚙ server-only (D-028)
+```
+id, source        "mpesa.b2c.request" | "mpesa.b2c.result" | "mpesa.b2c.timeout"
+                  | "mpesa.stk" | "mpesa.withdrawal_callback" | "mpesa.queue_timeout" | "paystack.webhook"
+path, ip          the route the provider actually called
+receivedAt        Timestamp
+txId, planId      matched transaction (null when we cannot match it)
+matched           bool          outcome  what we did: settled/held/success/failed/unmatched/invalid/error/accepted/rejected
+resultCode, resultDesc, conversationId, originatorConversationId, transactionReceipt
+rawJson           the payload verbatim, truncated at 20KB      rawBytes  number
+```
+Admin-read only (`GET /v2/callbacks`, `GET /v2/payouts/:txId/callbacks`). Holds recipient phone numbers — never client-readable.
 
 ### `ledgerEntries/{txId:n}`  ⚙ (D-025)
 ```

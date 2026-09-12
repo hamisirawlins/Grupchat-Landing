@@ -1,7 +1,7 @@
 ---
 title: Payments — initiation, callbacks, reconciliation, realtime
 status: active
-updated: 2026-09-06
+updated: 2026-09-12
 read_when: you touch anything that moves money or shows its status; you are debugging a stuck or duplicated payment
 ---
 
@@ -18,7 +18,7 @@ then observes the outcome in Firestore. Provider callbacks land on the backend.
 | `POST /v2/plans/:planId/contribute/paystack` | Paystack contribution | `{ amount, currency? }` | `transactions` (`paystack`, `contribution`, `pending`) → returns `authorizationUrl`, `txId`, `reference` |
 | `POST /v2/plans/:planId/join-premium/paystack` | Pay listed price to join a curated plan | `{ currency }` | `planMembers` (unpaid) + `transactions` (`premium-join`) |
 | `POST /v2/plans/:planId/join-premium/mpesa` | Same via STK | `{ phone }` | as above |
-| `POST /v2/plans/:planId/payout` | Owner withdraws pooled funds (2% fee) | `{ amount, recipient: { type: "member", userId, phone? } \| { type: "custom", name?, phone } }` | `transactions` (`payout`, `pending`); **holds** gross on `plans.heldBalance`; B2C sends `amount − fee`. Pool debited + ledger posted only on `/v2/mpesa/b2c-result` (D-026) |
+| `POST /v2/plans/:planId/payout` | Owner **requests** a withdrawal (2% fee) | `{ amount, recipient: { type: "member", userId, phone? } \| { type: "custom", name?, phone } }` | `transactions` (`payout`, `pending`, `approvalState: "pending"`); **holds** gross on `plans.heldBalance`. Nothing goes to Daraja until an admin approves (D-028). Pool debited + ledger posted only on `/v2/mpesa/b2c-result` (D-026) |
 
 Preconditions enforced server-side: plan exists and `status == active`; for `contribute*` the plan has `poolMode in [pool, both]` (else `"Plan does not have pooling enabled"`); **rails follow plan type (D-017)** — `contribute` (M-Pesa) requires `planType == free`, `contributePaystack` requires `planType == premium`; for legacy premium joins the catalogue item is active and the plan isn't locked.
 
@@ -44,13 +44,32 @@ provider callbacks (`paystackWebhook`, `mpesaStkCallback`), the reconciliation j
 - `reconcileTransaction(txDoc)` — asks the provider (Paystack `verify/:reference`; Daraja STK query, pending while `errorCode 500.001.1001`) and calls one of the above. Returns `success | failed | pending | unknown`.
 Callbacks now only verify the signature, find the pending tx by provider reference, and hand it over.
 
+## Withdrawal approval (D-028)
+A withdrawal is a **request** until an admin approves it. Money is held at request time and released only by an approval that succeeds, or by a decline.
+
+| Stage | `status` / `approvalState` | Who acts | Endpoint |
+|---|---|---|---|
+| Requested | `pending` / `pending` | owner | `POST /v2/plans/:planId/payout` — holds the gross, audits `payout.requested`, alerts admins by email |
+| Approved | `pending` / `approved` | admin | `POST /v2/payouts/:txId/approve` — flips the state **inside a Firestore transaction** (two admins can only dispatch once), then calls B2C and stamps `sentToProviderAt`, `darajaConversationId`; audits `payout.approved` + `payout.initiated` |
+| Declined | `failed` / `declined` | admin | `POST /v2/payouts/:txId/decline` (`{ reason }`) — releases the whole hold via `settlePayoutFailure`, audits `payout.declined`, emails the owner |
+| Sent, unconfirmed | `pending`, `needsReview: true` | M-Pesa / the 30-min job | unchanged (D-026): `POST /v2/payouts/:txId/resolve` marks it sent or refunds |
+
+Rules: only `approvalState == "pending"` may be approved or declined — anything else has already been to M-Pesa, including payouts created before D-028 (no `approvalState` field), which must go through `…/resolve`. `…/resolve` refuses a request that is still awaiting approval. The reconciliation job skips awaiting-approval payouts entirely and ages the rest from `sentToProviderAt`, not `createdAt`.
+
+`GET /v2/payouts/review` (admin) returns every payout still `pending`, each tagged `stage: "approval" | "sent" | "review"` — the three groups on `/admin/payouts`.
+
+## Provider callback log (D-028)
+Every inbound provider callback, plus the outbound B2C request and the provider's synchronous answer, is written verbatim to `providerCallbacks` by `services/callbackLogService.js` — `source`, `path`, `receivedAt`, `txId`, `resultCode`, `resultDesc`, `outcome` (what we did), and `rawJson` (truncated at 20KB). Logging never throws and never blocks an acknowledgement. Reads are admin-only: `GET /v2/callbacks?source=&limit=` and `GET /v2/payouts/:txId/callbacks`, surfaced under each payout on `/admin/payouts`. The rows carry recipient phone numbers, so no client ever reads this collection.
+
+The provider is configured with `WITHDRAWAL_CALLBACK_URL` = `…/core/withdrawal_callback`; B2C requests also name `…/v2/mpesa/b2c-result` in the payload. Both paths land in the same settlement and both are logged under the path that was actually called.
+
 ## Amount semantics
 - Firestore stores **major units** (KES). Paystack sends **minor units**; the webhook divides by 100.
 - `platformFee` is computed at initiation from `plans.platformFeeRate ?? 0.01`; premium plans carry an explicit `0`. The plan is credited **net**.
-- `payout` **holds** the gross at initiation and debits on confirmation (D-026). Failure parks it for review; only an admin refund (`settlePayoutFailure`) releases the hold. Fee is 2% of gross; the recipient receives the net.
+- `payout` **holds** the gross at request and debits on confirmation (D-026); an admin approval is what sends it (D-028). Failure parks it for review; only an admin refund or decline (`settlePayoutFailure`) releases the hold. Fee is 2% of gross; the recipient receives the net.
 
 ## Timeouts and reconciliation (P4.1 — shipped 2026-09-06)
-`services/reconciliationService.js`: starts 30s after boot, then every 2 min. Loads `transactions where status == pending` (single-field, no index), keeps those ≥3 min old (callbacks own the first 3 minutes), reconciles up to 50 per run, and marks anything still unconfirmed after **48h** as `failed` ("No provider confirmation within 48 hours"). Survives restarts by construction — the old in-process `setTimeout` is gone.
+`services/reconciliationService.js`: starts 30s after boot, then every 2 min. Loads `transactions where status == pending` (single-field, no index), keeps those ≥3 min old (callbacks own the first 3 minutes), reconciles up to 50 per run, skips payouts awaiting approval (D-028), and marks anything still unconfirmed after **48h** as `failed` ("No provider confirmation within 48 hours"). Survives restarts by construction — the old in-process `setTimeout` is gone.
 
 ## Verify endpoint (P4.4 — shipped 2026-09-06)
 `GET /v2/transactions/:txId/verify[?wait=25]` (auth; payer or plan member). With `wait`, the server holds the request on a listener until the transaction settles, then asks the provider once if it hasn't → `{ id, status, outcome, … }`. Clients **await** this (D-023): the pay sheet after an STK push, the pending-payment watcher on Plan details, and the post-redirect check — no client timers.

@@ -1,7 +1,7 @@
 ---
 title: Decision log
 status: active
-updated: 2026-09-05
+updated: 2026-09-12
 read_when: you want to know why something is the way it is, or you are about to make a choice that others will need to understand later
 ---
 
@@ -145,3 +145,8 @@ Format: `D-nnn · date · title` → **Decision** · **Why** · **Consequences**
 **Decision.** Sender `GrupChat <hello@mailing.grupchat.net>` via Resend (verified subdomain `mailing.grupchat.net`; reply-to `info@grupchat.net`). The email-verification link is generated server-side and sent through the same pipeline, with Firebase's own mailer as fallback. Email verification is sent at sign-up and gates **withdrawals only** — contributions never wait on it. Transactional set: invitation (known invitee), payment receipt (payer + owner), withdrawal confirmation (owner), payout-needs-review alert (admins). One shared minimal layout; every send is idempotent per event and audited; failures never block a settlement.
 **Why.** MVP: only the emails that carry money or access. Gating contributions would cost payments to protect the payer from nothing; gating withdrawals protects the pool.
 **Consequences.** Until the domain verifies, sends fail and are audited as `email.failed` (Resend's sandbox sender delivers only to the account owner). No marketing, digests or welcome mail.
+
+### D-028 · 2026-09-12 · Admin approval comes before the transfer; every provider callback is kept
+**Decision.** A withdrawal request stops at `approvalState: "pending"`. The gross is held exactly as in D-026, but **nothing reaches Daraja until an admin approves it** on `/admin/payouts`: approval flips the state inside a Firestore transaction and only then calls B2C, and a decline (reason required) releases the whole hold and emails the owner. The post-send exception path is unchanged — a transfer M-Pesa never confirms is still parked and resolved by `…/resolve`. Separately, every inbound provider callback, and every outbound B2C request with the provider's synchronous answer, is written verbatim to `providerCallbacks` and readable by admins under each payout.
+**Why.** Money left on the owner's say-so alone. Approval is where a human catches a wrong number or an amount that doesn't belong, and it is what makes a version-one deploy safe while the provider side is still being set up. Reviewing a payout means reading what Daraja actually said; a status field is not enough.
+**Consequences.** The Withdraw sheet no longer waits for a transfer — it confirms the request and says the amount is set aside. `/admin/payouts` becomes three queues (approval · needs review · with M-Pesa) with the provider log under each one. Reconciliation skips awaiting-approval payouts and ages the rest from `sentToProviderAt`. `providerCallbacks` holds recipient phone numbers, so it is admin-only and never client-readable. A request left unapproved holds the owner's funds indefinitely — nothing ages it out yet. `npm run check:payout-flow` exercises request → decline → approve → result against a mock Daraja on a throwaway plan; `EMAIL_DISABLED=1` keeps such runs from alerting real admins.

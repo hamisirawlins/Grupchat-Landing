@@ -18,7 +18,7 @@ the detail lives in the linked file. Never paste document content here.
 | 11 | [11-checklist.md](11-checklist.md) | Trackable line items A–Z; tick continuously | active |
 | 20 | [20-spec-data-model.md](20-spec-data-model.md) | Firestore collections as the code writes them; ownership matrix; indexes | active |
 | 21 | [21-spec-security-rules.md](21-spec-security-rules.md) | Rules for client-direct access to the V2 schema | draft |
-| 22 | [22-spec-payments.md](22-spec-payments.md) | Initiation → callback → reconciliation; idempotency; realtime | active |
+| 22 | [22-spec-payments.md](22-spec-payments.md) | Initiation → approval → callback → reconciliation; idempotency; provider log | active |
 | 23 | [23-spec-frontend-data-layer.md](23-spec-frontend-data-layer.md) | `lib/db` design, hooks, data-source flag, what stays on REST | draft |
 | 24 | [24-spec-backend-surface.md](24-spec-backend-surface.md) | What gc-payments keeps, deletes, and runs as jobs | active |
 | 25 | [25-spec-design-system.md](25-spec-design-system.md) | Apple-centric design rules: type, colour, geometry, motion, patterns | active |
