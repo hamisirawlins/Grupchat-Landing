@@ -435,7 +435,7 @@ function WithdrawSheet({ open, onClose, plan, available, members, onSettled }) {
             </FieldGroup>
           )}
           <FormError>{error}</FormError>
-          <PrimaryButton loading={busy}>Request {money(net, currency)}</PrimaryButton>
+          <PrimaryButton loading={busy}>Withdraw {money(net, currency)}</PrimaryButton>
         </form>
       )}
     </Sheet>
