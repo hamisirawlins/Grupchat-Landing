@@ -277,3 +277,38 @@ dead backend falls back to wording true of every invite rather than failing the 
 name and the member count are deliberately left out — the count changes and the card gets cached
 by whatever scraped it.
 
+### D-040 · 2026-09-24 · Network baseline, measured — and what actually costs the time
+**Measured from Nairobi against `api.grupchat.net`, 2026-09-24:**
+
+| | |
+|---|---|
+| TCP connect | ~70 ms |
+| TLS | ~150 ms |
+| **TTFB, trivial `/` route** | **~650–780 ms** |
+| CORS preflight (`OPTIONS /v2/plans`) | **858 ms**, and no `Access-Control-Max-Age` was returned |
+| `Content-Encoding` on JSON | **absent** |
+| Railway edge | `x-railway-edge: jnb1` (Johannesburg) |
+
+**The finding that matters.** Connect is 70 ms but TTFB is ~650 ms on a route that only
+serialises four fields. TLS terminates at Railway's Johannesburg edge; the container answering
+is not near it. Roughly 500–600 ms per request is geography, and **no change in this repo or in
+`gc-payments` touches it** — moving the Railway service to a region near `jnb1` would.
+
+**Fixed today (D-041).** Preflight caching and compression. Everything else in the review —
+a client cache over `useAsync`, the `/home` N+1 in `lib/data/home.js:34` (up to 12 requests to
+draw one dashboard), the plan-detail waterfall at `app/plans/[planId]/page.js:64–77`, and the
+per-request Firebase token await — is listed and not yet done.
+
+### D-041 · 2026-09-24 · Preflight cached, responses compressed, four dead dependencies dropped
+**Decision.** `gc-payments/index.js` sets `maxAge: 7200` on `cors()` and adds `compression()`
+above the routes. `Grupchat-Landing` drops `mapbox-gl`, `chart.js`, `react-chartjs-2` and
+`socket.io-client`.
+**Why.** Every authenticated call was paying for a preflight the browser cached for ~5 s.
+Responses were uncompressed: a 400-row plan list measures 52,590 B raw against 2,318 B gzipped,
+96% smaller. The four packages had **zero references anywhere in source** — the charts in
+`components/home/Charts.js` are hand-rolled with framer-motion — so they never reached the
+client bundle but were installed on every build.
+**Consequences.** No response body or status code changes. `maxAge: 7200` is Chrome's ceiling;
+Firefox clamps its own 24 h. If a chart library is ever wanted, add it back deliberately rather
+than assuming it is still there.
+
