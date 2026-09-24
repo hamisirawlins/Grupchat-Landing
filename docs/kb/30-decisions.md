@@ -202,7 +202,8 @@ issue; Next's own docs put JSON-LD in the body. The previous `preview.png` was 2
 tags declared 1200×630, so every share card was being resampled from a file that did not match its
 own metadata.
 **Consequences.** Re-shoot `preview.png` whenever the hero changes: viewport 1280×900, clip
-`{x:0, y:92, w:1280, h:672}` at DPR 2, scale to 1200×630 with lanczos. Signed-in routes (`/home`,
+`{x:0, y:78, w:1280, h:672}` at DPR 2, scale to 1200×630 with lanczos. That offset clears the nav
+pill above and the next section's floating discs below; check both edges after any layout change. Signed-in routes (`/home`,
 `/plans`, `/notifications`, `/admin`, `/manage-data`, …) are disallowed in `robots.txt`.
 
 ### D-034 · 2026-09-24 · Every absolute URL names `www`, because the apex redirects
@@ -214,4 +215,16 @@ follow redirects when fetching an image, so the card renders with no picture. `c
 `og:url` pointing at a URL that immediately redirects also splits the signal for no gain.
 **Consequences.** Anything that emits an absolute URL uses `SITE`. If the apex is ever made the
 canonical host, this is the one constant to change.
+
+### D-035 · 2026-09-24 · The hero states the benefit, not the pricing
+**Decision.** The hero subline is "Less apps, notifications and follow ups to make those group
+plans reality!". The fact row keeps only **Free · to contribute**; the 2% withdrawal fee and the
+"M-Pesa and card" rails were removed from it. The floating discs in the "A rich history of"
+section are restored to their original weight — the blur and 16% opacity from D-031 are reverted.
+**Why.** Owner's direction, 2026-09-24. The hero's job is the reason to care; a fee schedule and a
+list of rails are answers to questions a visitor has not asked yet.
+**Consequences.** The pay sheet and the plan detail screen remain the places the 2% is stated, per
+D-029. Note the illustrative plan card in the hero still carries "Contributing is free. 2% applies
+only when the pool is withdrawn" in its footnote — left deliberately, since it is part of the
+product mock rather than a headline claim; remove it if the hero should carry no pricing at all.
 

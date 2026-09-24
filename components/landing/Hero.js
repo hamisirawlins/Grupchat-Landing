@@ -18,13 +18,10 @@ import PlanCardMock from "./PlanCardMock";
  * invented traction.
  */
 
-/* Facts, not claims. Each is a recorded decision: D-027 (contributions carry no fee),
-   D-026 (2% on withdrawal, M-Pesa B2C). */
-const FACTS = [
-  { k: "Free", v: "to contribute" },
-  { k: "2%", v: "only on withdrawal" },
-  { k: "M-Pesa", v: "and card" },
-];
+/* One fact, not a claim: contributions carry no platform fee (D-029). The withdrawal fee and
+   the payment rails were here too and were taken out on 2026-09-24 — the hero is not the place
+   to price the product. */
+const FACTS = [{ k: "Free", v: "to contribute" }];
 
 export default function Hero() {
   const reduce = useReducedMotion();
@@ -77,8 +74,7 @@ export default function Hero() {
               transition={{ duration: 0.6, ease: EASE, delay: 0.42 }}
               className="mt-6 max-w-xl text-base leading-relaxed text-gray-600 sm:text-lg"
             >
-              The group chat decides. GrupChat makes it happen — one plan with a date, a shared
-              pool, and everyone paid in before the day arrives.
+              Less apps, notifications and follow ups to make those group plans reality!
             </motion.p>
 
             <motion.div
