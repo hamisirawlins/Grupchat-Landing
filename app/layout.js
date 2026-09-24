@@ -13,37 +13,116 @@ const figtree = Figtree({
   display: "swap",
 });
 
+const SITE = "https://grupchat.net";
+const TITLE = "GrupChat — Powering Plans Beyond The Chat";
+const DESCRIPTION =
+  "The group chat decides; GrupChat makes it happen. One plan with a date, a shared pool and everyone paid in before the day arrives. Contributing is free — 2% applies only on withdrawal. M-Pesa and card.";
+
 export const metadata = {
-  title: "GrupChat - Powering Plans Beyond The Chat",
-  description: "Transform your group plans into memories. Browse or create and coordinate custom plans, join with friends, and enjoy! Curate memories with ease.",
-  metadataBase: new URL('https://grupchat.net'),
+  metadataBase: new URL(SITE),
+  title: {
+    default: TITLE,
+    template: "%s · GrupChat",
+  },
+  description: DESCRIPTION,
+  applicationName: "GrupChat",
+  keywords: [
+    "group plans", "group savings", "split the bill", "group trip planning",
+    "M-Pesa group payments", "chama", "contribute to a plan", "shared pool",
+    "event planning Kenya", "GrupChat",
+  ],
+  authors: [{ name: "GrupChat" }],
+  creator: "GrupChat",
+  publisher: "GrupChat",
+  category: "productivity",
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  formatDetection: { telephone: false, address: false, email: false },
   openGraph: {
-    title: "GrupChat - Powering Plans Beyond The Chat",
-    description: "Transform your group plans into memories. Browse or create and coordinate custom plans, join with friends, and enjoy! Curate memories with ease.",
-    url: 'https://grupchat.net',
-    siteName: 'GrupChat',
+    title: TITLE,
+    description: DESCRIPTION,
+    url: SITE,
+    siteName: "GrupChat",
     images: [
       {
-        url: '/preview.png',
+        url: "/preview.png",
         width: 1200,
         height: 630,
-        alt: 'GrupChat - Powering Plans Beyond The Chat',
+        alt: "GrupChat — a plan collecting contributions from a group, with a shared pool and progress toward its target",
       },
     ],
-    locale: 'en_US',
-    type: 'website',
+    locale: "en_KE",
+    type: "website",
   },
   twitter: {
-    card: 'summary_large_image',
-    title: "GrupChat - Powering Plans Beyond The Chat",
-    description: "Transform your group plans into memories. Browse or create and coordinate custom plans, join with friends, and enjoy! Curate memories with ease.",
-    images: ['/preview.png'],
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/preview.png"],
   },
   icons: {
-    icon: '/logo.png',
-    shortcut: '/logo.png',
-    apple: '/logo.png',
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
   },
+};
+
+export const viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#ffffff" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
+/** Structured data: what the page is, who makes it, and what it costs.
+ *  Written as JSON-LD because that is the form Google documents and parses most reliably. */
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE}/#organization`,
+      name: "GrupChat",
+      url: SITE,
+      logo: `${SITE}/logo.png`,
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE}/#website`,
+      url: SITE,
+      name: "GrupChat",
+      description: DESCRIPTION,
+      publisher: { "@id": `${SITE}/#organization` },
+      inLanguage: "en-KE",
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: "GrupChat",
+      applicationCategory: "LifestyleApplication",
+      operatingSystem: "Android, Web",
+      url: SITE,
+      description: DESCRIPTION,
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "KES",
+        description: "Free to join and to contribute. A 2% fee applies only when a pool is withdrawn.",
+      },
+    },
+  ],
 };
 
 export default function RootLayout({ children }) {
@@ -52,6 +131,12 @@ export default function RootLayout({ children }) {
       <body
         className={`${figtree.variable} antialiased`}
       >
+        {/* JSON-LD goes in the body, which is where Next's own docs put it —
+            a hand-written <head> in the App Router fights the metadata export. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+        />
         <AuthProvider>
           <PageTransition>{children}</PageTransition>
         </AuthProvider>

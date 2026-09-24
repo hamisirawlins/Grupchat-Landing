@@ -9,6 +9,7 @@ import { PageFrame, Reveal, Section } from "@/components/app/PageFrame";
 import { ListGroup, Row } from "@/components/ui/ListGroup";
 import { Sheet } from "@/components/ui/Sheet";
 import { Avatar, EmptyState, Skeleton, StickyAction, Tag } from "@/components/ui/Bits";
+import { CountUp } from "@/components/bits";
 import { Segmented } from "@/components/ui/Segmented";
 import { ShowMore } from "@/components/ui/ShowMore";
 import { Ring } from "@/components/home/Charts";
@@ -173,14 +174,19 @@ export default function PlanDetails() {
           <>
             <Ring value={progress} size={88} stroke={8} />
             <div>
-              <p className="text-2xl font-semibold tracking-tight tabular-nums">{money(plan.currentBalance, currency)}</p>
+              <p className="text-2xl font-semibold tracking-tight tabular-nums">
+                <CountUp to={Number(plan.currentBalance) || 0} format={(n) => money(Math.round(n), currency)} />
+              </p>
               <p className="text-sm text-gray-500">of {money(plan.targetAmount, currency)} · {Math.round(progress * 100)}%</p>
             </div>
           </>
         ) : pooled ? (
           // Pooling without a target: show what's in, and let the owner set one rather than drawing an empty ring.
           <div>
-            <p className="text-2xl font-semibold tracking-tight tabular-nums">{money(plan.currentBalance, currency)} <span className="text-base font-normal text-gray-500">pooled</span></p>
+            <p className="text-2xl font-semibold tracking-tight tabular-nums">
+              <CountUp to={Number(plan.currentBalance) || 0} format={(n) => money(Math.round(n), currency)} />{" "}
+              <span className="text-base font-normal text-gray-500">pooled</span>
+            </p>
             <p className="text-sm text-gray-500">
               No target set.{" "}
               {isOwner && (

@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import RotatingText from "@/components/RotatingText";
+import Hero from "@/components/landing/Hero";
 
 export default function Home() {
   const [showComingSoonPopup, setShowComingSoonPopup] = useState(false);
@@ -204,145 +204,79 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 pb-12 sm:pb-16">
-        <motion.div
-          className="max-w-4xl mx-auto text-center"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.h1
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-black leading-tight mb-6 sm:mb-8"
-            variants={itemVariants}
-          >
-            Powering Plans
-            <br />
-            <span className="text-[#b5975a]">
-              Beyond The Chat
-            </span>
-          </motion.h1>
-
-          <motion.p
-            className="text-base sm:text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed"
-            variants={itemVariants}
-          >
-            Transform your group chats into actual memories.
-          </motion.p>
-
-          <motion.div
-            className="flex justify-center mb-6"
-            variants={itemVariants}
-          >
-            <Link
-              href="/sign-up"
-              className="inline-flex items-center gap-2 bg-black text-white px-6 sm:px-8 py-2 sm:py-2 rounded-full text-sm sm:text-base font-semibold hover:bg-gray-800 transition-colors"
-            >
-              Get Started
-              <svg
-                className="w-4 h-4 sm:w-5 sm:h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </Link>
-          </motion.div>
-
-          <motion.div
-            variants={itemVariants}
-            className="text-base sm:text-lg md:text-xl text-gray-600"
-          >
-            <RotatingText
-              baseText="Plans for:"
-              words={[
-                "museum visits",
-                "group dinners",
-                "friend groups",
-                "communities",
-              ]}
-            />
-          </motion.div>
-        </motion.div>
-      </section>
+      <Hero />
 
       {/* Stats Section */}
       <section className="relative px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40 min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
-            className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-purple-500 rounded-full"
+            className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-purple-500 rounded-full opacity-[0.16] blur-2xl"
             animate={{ x: [0, 50, 0], y: [0, -30, 0], scale: [1, 1.1, 1] }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
             style={{ top: "5%", left: "8%" }}
           />
           <motion.div
-            className="absolute w-14 h-14 sm:w-18 sm:h-18 bg-blue-500 rounded-full"
+            className="absolute w-14 h-14 sm:w-18 sm:h-18 bg-blue-500 rounded-full opacity-[0.16] blur-2xl"
             animate={{ x: [0, -40, 0], y: [0, 50, 0], scale: [1, 1.2, 1] }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
             style={{ top: "15%", right: "12%" }}
           />
           <motion.div
-            className="absolute w-18 h-18 sm:w-22 sm:h-22 bg-pink-500 rounded-full"
+            className="absolute w-18 h-18 sm:w-22 sm:h-22 bg-pink-500 rounded-full opacity-[0.16] blur-2xl"
             animate={{ x: [0, 60, 0], y: [0, 40, 0], scale: [1, 1.15, 1] }}
             transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
             style={{ bottom: "20%", left: "15%" }}
           />
           <motion.div
-            className="absolute w-12 h-12 sm:w-16 sm:h-16 bg-indigo-500 rounded-full"
+            className="absolute w-12 h-12 sm:w-16 sm:h-16 bg-indigo-500 rounded-full opacity-[0.16] blur-2xl"
             animate={{ x: [0, -50, 0], y: [0, -40, 0], scale: [1, 1.3, 1] }}
             transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
             style={{ bottom: "30%", right: "8%" }}
           />
           <motion.div
-            className="absolute w-20 h-20 sm:w-24 sm:h-24 bg-cyan-500 rounded-full"
+            className="absolute w-20 h-20 sm:w-24 sm:h-24 bg-cyan-500 rounded-full opacity-[0.16] blur-2xl"
             animate={{ x: [0, 30, 0], y: [0, -60, 0], scale: [1, 1.1, 1] }}
             transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
             style={{ top: "45%", left: "5%" }}
           />
           <motion.div
-            className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-orange-500 rounded-full"
+            className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-orange-500 rounded-full opacity-[0.16] blur-2xl"
             animate={{ x: [0, -35, 0], y: [0, 45, 0], scale: [1, 1.25, 1] }}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
             style={{ top: "60%", right: "18%" }}
           />
           <motion.div
-            className="absolute w-14 h-14 sm:w-18 sm:h-18 bg-green-500 rounded-full"
+            className="absolute w-14 h-14 sm:w-18 sm:h-18 bg-green-500 rounded-full opacity-[0.16] blur-2xl"
             animate={{ x: [0, 55, 0], y: [0, -25, 0], scale: [1, 1.2, 1] }}
             transition={{ duration: 13, repeat: Infinity, ease: "easeInOut" }}
             style={{ top: "25%", left: "25%" }}
           />
           <motion.div
-            className="absolute w-18 h-18 sm:w-22 sm:h-22 bg-yellow-500 rounded-full"
+            className="absolute w-18 h-18 sm:w-22 sm:h-22 bg-yellow-500 rounded-full opacity-[0.16] blur-2xl"
             animate={{ x: [0, -45, 0], y: [0, 35, 0], scale: [1, 1.15, 1] }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
             style={{ bottom: "15%", left: "30%" }}
           />
           <motion.div
-            className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-red-500 rounded-full"
+            className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-red-500 rounded-full opacity-[0.16] blur-2xl"
             animate={{ x: [0, 40, 0], y: [0, -50, 0], scale: [1, 1.3, 1] }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
             style={{ top: "70%", left: "20%" }}
           />
           <motion.div
-            className="absolute w-12 h-12 sm:w-16 sm:h-16 bg-teal-500 rounded-full"
+            className="absolute w-12 h-12 sm:w-16 sm:h-16 bg-teal-500 rounded-full opacity-[0.16] blur-2xl"
             animate={{ x: [0, -30, 0], y: [0, 55, 0], scale: [1, 1.25, 1] }}
             transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
             style={{ bottom: "10%", right: "25%" }}
           />
           <motion.div
-            className="absolute w-20 h-20 sm:w-24 sm:h-24 bg-violet-500 rounded-full"
+            className="absolute w-20 h-20 sm:w-24 sm:h-24 bg-violet-500 rounded-full opacity-[0.16] blur-2xl"
             animate={{ x: [0, 45, 0], y: [0, 30, 0], scale: [1, 1.1, 1] }}
             transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
             style={{ top: "35%", right: "5%" }}
           />
           <motion.div
-            className="absolute w-14 h-14 sm:w-18 sm:h-18 bg-emerald-500 rounded-full"
+            className="absolute w-14 h-14 sm:w-18 sm:h-18 bg-emerald-500 rounded-full opacity-[0.16] blur-2xl"
             animate={{ x: [0, -55, 0], y: [0, -35, 0], scale: [1, 1.2, 1] }}
             transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
             style={{ bottom: "40%", left: "10%" }}

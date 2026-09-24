@@ -6,6 +6,7 @@ import { Calendar, MapPin } from "lucide-react";
 import { PageFrame, Reveal } from "@/components/app/PageFrame";
 import { Segmented } from "@/components/ui/Segmented";
 import { Skeleton } from "@/components/ui/Bits";
+import { SpotlightCard } from "@/components/bits";
 import { PartnersEmpty } from "@/components/discover/PartnersEmpty";
 import { FormError } from "@/components/ui/Form";
 import { catalogueAPI } from "@/lib/api";
@@ -40,10 +41,10 @@ export default function Discover() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {data.map((item) => (
+              <SpotlightCard key={item.id} className="rounded-2xl" radius={280}>
               <Link
-                key={item.id}
                 href={`/discover/${item.id}`}
-                className="group overflow-hidden rounded-2xl border border-black/[0.08] transition-all duration-300 hover:-translate-y-0.5 hover:border-purple-600 active:scale-[0.98]"
+                className="group block overflow-hidden rounded-2xl border border-black/[0.08] transition-all duration-300 hover:-translate-y-0.5 hover:border-purple-600 active:scale-[0.98]"
               >
                 <div className="aspect-[4/3] bg-gray-100">
                   {item.coverUrl ? (
@@ -62,6 +63,7 @@ export default function Discover() {
                   </div>
                 </div>
               </Link>
+              </SpotlightCard>
             ))}
           </div>
         )}

@@ -1,7 +1,7 @@
 ---
 title: Decision log
 status: active
-updated: 2026-09-13
+updated: 2026-09-24
 read_when: you want to know why something is the way it is, or you are about to make a choice that others will need to understand later
 ---
 
@@ -160,3 +160,48 @@ Format: `D-nnn · date · title` → **Decision** · **Why** · **Consequences**
 **Decision.** `POST /v2/payouts/:txId/approve` requires `{ amount }` equal to the payout's `netAmount`; without it, or with the wrong figure, it returns 400 and nothing is sent. The console asks twice: the first tap opens a confirmation naming the amount and the recipient, and the confirm button sits where Decline was, so a repeat tap in the same spot cancels instead of sending.
 **Why.** The first live test of D-028 ended with money gone and the admin sure they had not approved it. The audit showed the gate working exactly as designed, which is the problem: one tap stood between an admin and an irreversible M-Pesa transfer, so an approval could happen without the person feeling they had approved anything.
 **Consequences.** The transaction and the audit record `confirmedAmount`, so what an admin agreed to send sits beside what was sent. Any client that approves must state the amount, so a replayed or misdirected call cannot move money. `check:payout-flow` asserts that a bare approval and a wrong-amount approval both send nothing.
+
+### D-031 · 2026-09-24 · The landing hero is rebuilt on the app's design language, and the freeze is lifted
+**Decision.** `app/page.js`'s hero is replaced by `components/landing/Hero.js`: an asymmetric
+two-column layout, an oversized headline whose accent is **`purple-600`**, a blueprint dot field,
+and an illustrative plan card (`components/landing/PlanCardMock.js`) standing in for a product
+screenshot. The "landing page is frozen" rule in `CLAUDE.md` is removed — the owner asked for the
+change directly on 2026-09-24.
+**Why.** The landing was still on the gold `#b5975a` that D-008 superseded, so the marketing page
+and the product did not look related. The 2026 pattern for this kind of page is to answer "what is
+this" with the thing itself rather than another sentence, which is what the plan card does.
+**Consequences.** `components/RotatingText.js` is no longer used by the landing (it and its gold
+pill remain in the tree for other callers). The hero states three product facts and no traction
+numbers: "free to contribute" and "2% only on withdrawal" are D-029, the rails are D-026. Any
+future claim added here needs a decision behind it in the same way. The stats section's floating
+discs were blurred and dropped to 16% opacity so they read as wash rather than as artefacts.
+
+### D-032 · 2026-09-24 · React Bits micro-interactions live in `components/bits/`, separate from `components/ui/Bits.js`
+**Decision.** A new `components/bits/` directory holds nine micro-interaction components in the
+[React Bits](https://reactbits.dev) idiom — `SplitText`, `CountUp`, `ShinyText`, `SpotlightCard`,
+`ClickSpark`, `Magnet`, `AnimatedContent`, `DotGrid`, `Marquee` — written against this project's
+`framer-motion` and `lib/motion.js` rather than copied. `components/ui/Bits.js` is unchanged and
+keeps its own meaning: house primitives (Tag, Avatar, ProgressBar, Stepper, EmptyState, Skeleton,
+StickyAction, TextLink).
+**Why.** Two things were about to be called "Bits". The split is by job: `ui/Bits.js` is structure,
+`bits/` is motion. React Bits is copy-in rather than a package, so these are ours to maintain.
+**Consequences.** Every component honours `prefers-reduced-motion` — a reveal becomes a fade, a
+counter lands on its value, the dot field holds still and the spark does not fire. Applied so far:
+the hero, the pooled-balance figure on `app/plans/[planId]/page.js` (`CountUp`), and the
+`app/discover` cards (`SpotlightCard`). They decorate and never carry meaning: every number is
+legible before its animation finishes and nothing is hidden behind a hover.
+
+### D-033 · 2026-09-24 · SEO: one metadata source, JSON-LD in the body, and the OG image is a real screengrab
+**Decision.** `app/layout.js` carries a title template, canonical, robots (with `max-image-preview:
+large`), keywords, `en_KE` locale and a `viewport` export. A JSON-LD `@graph` (Organization,
+WebSite, SoftwareApplication) is rendered **in the body**, not in a hand-written `<head>`. New
+`app/sitemap.js` and `app/robots.js` list only pages a signed-out visitor can open. `public/preview.png`
+is regenerated as a 1200×630 screengrab of the live hero.
+**Why.** A hand-written `<head>` in the App Router fights the `metadata` export and raised a dev-overlay
+issue; Next's own docs put JSON-LD in the body. The previous `preview.png` was 2868×1538 while the
+tags declared 1200×630, so every share card was being resampled from a file that did not match its
+own metadata.
+**Consequences.** Re-shoot `preview.png` whenever the hero changes: viewport 1280×900, clip
+`{x:0, y:92, w:1280, h:672}` at DPR 2, scale to 1200×630 with lanczos. Signed-in routes (`/home`,
+`/plans`, `/notifications`, `/admin`, `/manage-data`, …) are disallowed in `robots.txt`.
+
