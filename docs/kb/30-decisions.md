@@ -224,9 +224,9 @@ section are restored to their original weight — the blur and 16% opacity from 
 **Why.** Owner's direction, 2026-09-24. The hero's job is the reason to care; a fee schedule and a
 list of rails are answers to questions a visitor has not asked yet.
 **Consequences.** The pay sheet and the plan detail screen remain the places the 2% is stated, per
-D-029. Note the illustrative plan card in the hero still carries "Contributing is free. 2% applies
-only when the pool is withdrawn" in its footnote — left deliberately, since it is part of the
-product mock rather than a headline claim; remove it if the hero should carry no pricing at all.
+D-029. The plan card's footnote was reworded on the same day to "Pooling is free, withdrawal
+charges apply" — the hero now names no rate at all, so the landing cannot go stale if D-029's 2%
+ever changes.
 
 ### D-036 · 2026-09-24 · The share-card description is one line, and the eyebrow reads "Plans to memories"
 **Decision.** `DESCRIPTION` in `app/layout.js` is "Plan, manage, track and pool for group plans and

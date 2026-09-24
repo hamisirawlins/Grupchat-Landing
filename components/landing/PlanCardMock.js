@@ -76,7 +76,7 @@ export default function PlanCardMock() {
       </div>
 
       <p className="mt-4 border-t border-black/[0.06] pt-3 text-[12px] text-gray-400">
-        Contributing is free. 2% applies only when the pool is withdrawn.
+        Pooling is free, withdrawal charges apply
       </p>
     </div>
   );
