@@ -205,3 +205,13 @@ own metadata.
 `{x:0, y:92, w:1280, h:672}` at DPR 2, scale to 1200×630 with lanczos. Signed-in routes (`/home`,
 `/plans`, `/notifications`, `/admin`, `/manage-data`, …) are disallowed in `robots.txt`.
 
+### D-034 · 2026-09-24 · Every absolute URL names `www`, because the apex redirects
+**Decision.** `SITE` in `app/layout.js`, `app/robots.js` and `app/sitemap.js` is
+`https://www.grupchat.net`, not the apex.
+**Why.** `https://grupchat.net/*` answers 307 to `https://www.grupchat.net/*`. With the apex in
+`metadataBase`, `og:image` resolved to a redirecting URL — and several link-preview scrapers do not
+follow redirects when fetching an image, so the card renders with no picture. `canonical` and
+`og:url` pointing at a URL that immediately redirects also splits the signal for no gain.
+**Consequences.** Anything that emits an absolute URL uses `SITE`. If the apex is ever made the
+canonical host, this is the one constant to change.
+

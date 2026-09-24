@@ -1,4 +1,7 @@
-const SITE = "https://grupchat.net";
+// The apex 307s to www, so every absolute URL we emit — canonical, og:url and
+// especially og:image — must name www. A share-card scraper that does not follow
+// redirects on an image simply shows no card.
+const SITE = "https://www.grupchat.net";
 
 /** Only the pages a stranger can open. Anything behind auth is deliberately absent. */
 export default function sitemap() {

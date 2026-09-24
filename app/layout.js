@@ -13,7 +13,10 @@ const figtree = Figtree({
   display: "swap",
 });
 
-const SITE = "https://grupchat.net";
+// The apex 307s to www, so every absolute URL we emit — canonical, og:url and
+// especially og:image — must name www. A share-card scraper that does not follow
+// redirects on an image simply shows no card.
+const SITE = "https://www.grupchat.net";
 const TITLE = "GrupChat — Powering Plans Beyond The Chat";
 const DESCRIPTION =
   "The group chat decides; GrupChat makes it happen. One plan with a date, a shared pool and everyone paid in before the day arrives. Contributing is free — 2% applies only on withdrawal. M-Pesa and card.";
