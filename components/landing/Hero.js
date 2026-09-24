@@ -54,7 +54,7 @@ export default function Hero() {
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-purple-600" />
               </span>
               <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-600">
-                Live on Android and web
+                Plans to memories
               </span>
             </motion.div>
 

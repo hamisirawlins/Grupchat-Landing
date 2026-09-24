@@ -19,7 +19,7 @@ const figtree = Figtree({
 const SITE = "https://www.grupchat.net";
 const TITLE = "GrupChat — Powering Plans Beyond The Chat";
 const DESCRIPTION =
-  "The group chat decides; GrupChat makes it happen. One plan with a date, a shared pool and everyone paid in before the day arrives. Contributing is free — 2% applies only on withdrawal. M-Pesa and card.";
+  "Plan, manage, track and pool for group plans and ideas with ease.";
 
 export const metadata = {
   metadataBase: new URL(SITE),

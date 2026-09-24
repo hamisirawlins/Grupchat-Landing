@@ -228,3 +228,14 @@ D-029. Note the illustrative plan card in the hero still carries "Contributing i
 only when the pool is withdrawn" in its footnote — left deliberately, since it is part of the
 product mock rather than a headline claim; remove it if the hero should carry no pricing at all.
 
+### D-036 · 2026-09-24 · The share-card description is one line, and the eyebrow reads "Plans to memories"
+**Decision.** `DESCRIPTION` in `app/layout.js` is "Plan, manage, track and pool for group plans and
+ideas with ease." — one sentence, carried by `description`, `og:description` and `twitter:description`.
+The hero eyebrow reads **Plans to memories** in place of "Live on Android and web".
+**Why.** Owner's direction, 2026-09-24: the previous description recited the product and the fee
+schedule, which is more than a link preview will show and more than a reader will finish. The
+eyebrow was a platform note where a promise belongs.
+**Consequences.** The description is the one string three tags read; change it in one place. Since
+it no longer names the rails or the platforms, anything that needs to say "Android and web" says it
+in the page body, not in the metadata.
+
