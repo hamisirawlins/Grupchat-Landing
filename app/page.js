@@ -42,17 +42,11 @@ export default function Home() {
     }
   }, [user, authLoading, router]);
 
-  // Show loading state while checking authentication
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // No early return while auth resolves. This page is the marketing page, and returning a
+  // spinner instead of it meant the server-rendered HTML was a spinner: crawlers, link
+  // previews and anything that does not run JS saw no copy at all. The redirect above still
+  // sends a signed-in visitor to /home the moment auth resolves; until then they see the
+  // page they asked for rather than a loader.
 
   const containerVariants = {
     hidden: { opacity: 0 },

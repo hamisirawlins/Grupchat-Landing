@@ -14,6 +14,8 @@ export default function robots() {
           "/home", "/plans", "/notifications", "/admin",
           "/manage-data", "/delete-account", "/verify-email",
           "/reset-password", "/forgot-password", "/api/",
+          // an invite code in an index is a code that has leaked
+          "/invite/",
         ],
       },
     ],

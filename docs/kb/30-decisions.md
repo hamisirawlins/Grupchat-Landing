@@ -239,3 +239,41 @@ eyebrow was a platform note where a promise belongs.
 it no longer names the rails or the platforms, anything that needs to say "Android and web" says it
 in the page body, not in the metadata.
 
+### D-037 · 2026-09-24 · The landing page renders its own copy; no early return for auth
+**Decision.** `app/page.js` no longer returns a spinner while `authLoading` is true. The marketing
+page always renders; the existing effect still sends a signed-in visitor to `/home` once auth
+resolves.
+**Why.** The early return meant the server-rendered HTML *was* the spinner — 52 characters of
+visible text. Crawlers that do not execute JS, and anything reading the raw document, saw no
+headline, no copy and no calls to action. After the change the same request returns 2,458
+characters including the whole hero.
+**Consequences.** A signed-in visitor may see the landing for the moment before the redirect
+fires, instead of a loader. That is the trade: a flash for them, a page for everyone else. Any
+future "gate the page on auth" idea must not reintroduce an early return above the content.
+
+### D-038 · 2026-09-24 · Page metadata comes from `lib/seo.js`, and the copy names no figures
+**Decision.** `lib/seo.js` exports `pageMeta({ title, description, path, noIndex, image })` and
+`privateMeta(title)`. Every route gets its own metadata through a `layout.js` beside it — client
+components cannot export `metadata`, so the layout is the seam. Public routes are indexed; every
+signed-in surface (`/home`, `/plans`, `/notifications`, `/admin`, `/manage-data`, `/delete-account`,
+`/verify-email`, `/reset-password`, `/forgot-password`) is `noindex, nofollow`.
+**Why.** Before this, **no route had its own metadata** — all 27 pages inherited the landing's title
+and description, so every result and every share card said the same thing.
+**Consequences.** House rule, written at the top of `lib/seo.js`: **say the job, never the terms.**
+No rates, no counts, no platform lists. "Pooling is free, withdrawal charges apply" survives a
+change to the fee; "2% on withdrawal" does not. A description naming a number is one somebody has
+to remember to come back and fix. A new route without a `layout.js` silently inherits the root
+metadata — adding one is part of adding a page.
+
+### D-039 · 2026-09-24 · An invite previews richly and is never indexed
+**Decision.** `app/invite/[code]/layout.js` reads the public projection
+(`GET /v2/invites/:code/preview`, D-014) in `generateMetadata` and titles the card "Join {plan}".
+Both the resolved and the fallback path set `noIndex`, and `robots.txt` disallows `/invite/`.
+**Why.** An invite link is pasted into a group chat, so its preview is the first thing most people
+ever see of GrupChat — it was showing the generic landing card. But an invite code sitting in a
+search index is a code that has leaked, so the page must preview well and index never.
+**Consequences.** The fetch carries a 2.5s timeout, a 300s revalidate and a try/catch; a slow or
+dead backend falls back to wording true of every invite rather than failing the card. The host's
+name and the member count are deliberately left out — the count changes and the card gets cached
+by whatever scraped it.
+
