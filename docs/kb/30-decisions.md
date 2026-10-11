@@ -330,6 +330,25 @@ needs a policy update. An AI provider serves members only if its terms bar train
 data and limit how long it keeps it. Export and account deletion must cover AI drafts and recap
 cards when the AI ships.
 
+### D-043 · 2026-10-11 · Experience providers apply once, are checked per market, and publish directly
+**Decision.** Businesses that run experiences get an account-level application
+(`providers/{uid}`, one business per account) judged against **their market's checklist**,
+kept as versioned documents (`providerMarkets/{code}` live and draft,
+`providerChecklistVersions/{code}-v{n}` frozen). An admin decides each check (pass, needs fix,
+fail); approval needs every required check to pass and creates the provider's Paystack
+subaccount. Approved providers publish listings (`experiences`) without a second review;
+admins can pause any listing. Countries we haven't opened collect applications as `waiting`.
+The bank account number lives apart in `providerSecrets/{uid}`; documents are private files
+behind ten-minute signed links. Shapes and states: 29.
+**Why.** What a provider must prove differs by country and changes as we learn, so the
+checklist is data an admin edits with an advisor, not code. Versioning keeps a decision
+explainable against the list it was made under. Reviewing every listing would make the admin
+queue the bottleneck; the business is what we vouch for, and pausing covers the exceptions.
+**Consequences.** Opening a country is an admin task (40 §Open a provider market), not a
+deploy. Kenya's first checklist ships as a draft until an advisor has read it. A new version
+can ask for approved providers to be re-checked without taking them offline. Provider terms
+(`/providers/terms`) are a draft for the owner to approve before launch.
+
 ### D-045 · 2026-10-11 · The "Plans to memories" scheme ships as tokens, springs and a kit
 **Decision.** The design canvas's scheme becomes Tailwind tokens in `app/globals.css`
 (`@theme`: action, memory, ink, sheet, status tints, dark surfaces, radii, `ease-gc`), the

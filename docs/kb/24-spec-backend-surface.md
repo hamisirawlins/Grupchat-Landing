@@ -1,7 +1,7 @@
 ---
 title: Backend surface — what gc-payments keeps, deletes, and runs
 status: active
-updated: 2026-09-12
+updated: 2026-10-11
 read_when: you are changing routes, controllers or jobs in gc-payments, or deciding whether something belongs on the backend at all
 ---
 
@@ -22,11 +22,14 @@ Express 4, ESM, port **4000**, firebase-admin 13, socket.io (to be retired). Ent
 | Admin | `npm run admin:grant -- <uid|email>` / `admin:revoke` (sets `users/{uid}.role`); `planCatalogue` writes (`POST /v2/catalogue`, `PUT /v2/catalogue/:id` incl. `status`) driven by `/admin/catalogue`; `GET /v2/audit/events` | `scripts/admin-grant.js`, `controllers/v2/auditController.js` |
 | Email | `POST /v2/users/me/verification-email` (link via Admin SDK, sent through Resend; KB 28 M1); receipts, payout and review-alert sends from settlement; invite email from `inviteByUsername` | `controllers/v2/userController.js`, `services/emailService.js` |
 | Ledger | `GET /v2/ledger` (admin, cursor `before`), `GET /v2/ledger/verify/:planId` (admin), `GET /v2/ledger/plans/:planId` (members) | `controllers/v2/ledgerController.js`, `services/ledgerService.js` |
+| Providers (D-043, 29) | `GET /v2/providers/markets` (public); `GET|PUT /v2/providers/me`, `POST|GET|DELETE /v2/providers/me/documents/:checkId[/:fileId]`, `GET /v2/providers/banks`, `PUT /v2/providers/me/payout`, `POST /v2/providers/me/submit` | `controllers/v2/providerController.js` |
+| Listings (D-043, 29) | `GET|POST /v2/providers/me/experiences`, `GET|PUT /v2/providers/me/experiences/:id`, `…/photos` (POST, DELETE `/:photoId`, PUT `/order`), `…/publish`, `…/pause`, `…/archive`; public `GET /v2/experiences`, `GET /v2/experiences/:id` | `controllers/v2/experienceController.js` |
+| Provider review (admin) | `GET /v2/admin/providers[/:uid]`, `…/:uid/documents/:checkId/:fileId`, `POST …/:uid/checks/:checkId`, `…/:uid/decision`, `…/:uid/payout/retry`; `GET|POST /v2/admin/markets`, `GET /v2/admin/markets/:code`, `PUT …/:code/draft`, `POST …/:code/draft/discard`, `POST …/:code/publish`; `POST /v2/admin/experiences/:id/pause` | `controllers/v2/providerAdminController.js` |
 | Public | `GET /v2/invites/:code/preview` — signed-out invite projection (26) | `controllers/v2/invitesPublicController.js` |
 | Health | `GET /` | `index.js` |
 
 ## Admin guard
-Admin = `users/{uid}.role === "admin"`, defined once in `services/adminAccess.js` and enforced server-side by `middleware/adminMiddleware.js` on every admin route (catalogue writes, audit list, ledger list/verify, payouts review/approve/decline/resolve, callback log, admin plans). Refused attempts are audited as `admin.access_denied`. `role` is not writable through any client-facing update. Gate: `npm run check:admin-guards` fails if a protected route loses its middleware. The frontend's `isAdmin` only decides what to *show*; the server decides what is *allowed*.
+Admin = `users/{uid}.role === "admin"`, defined once in `services/adminAccess.js` and enforced server-side by `middleware/adminMiddleware.js` on every admin route (catalogue writes, audit list, ledger list/verify, payouts review/approve/decline/resolve, callback log, admin plans, everything under `/v2/admin/providers`, `/v2/admin/markets`, `/v2/admin/experiences`). Refused attempts are audited as `admin.access_denied`. `role` is not writable through any client-facing update. Gate: `npm run check:admin-guards` fails if a protected route loses its middleware. The frontend's `isAdmin` only decides what to *show*; the server decides what is *allowed*.
 
 ## Deletes
 All `DELETE` routes are soft (D-019): milestones and images set `deletedAt`; resources are marked `removedAt` in place; invitations `status: revoked`. `getPlan` strips removed resources; list endpoints filter `deletedAt`. Guard: `npm run check:no-hard-delete`.

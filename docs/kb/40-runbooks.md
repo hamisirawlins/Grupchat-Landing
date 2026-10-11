@@ -1,7 +1,7 @@
 ---
 title: Runbooks
 status: active
-updated: 2026-09-12
+updated: 2026-10-11
 read_when: you need to run, deploy, seed, rotate, or debug something — not to understand it
 ---
 
@@ -98,9 +98,20 @@ node --input-type=module -e 'import { firebaseService } from "./services/firebas
 ## A payment settled but the page didn't update / callback hit `/core/deposit_callback`
 Symptom in Railway logs: `POST /core/deposit_callback 500` + `Supabase query error: fetch failed` right after a V2 `contribute`. Cause: STK push carried the V1 `DEPOSIT_CALLBACK_URL`. Fixed 2026-09-06 (D-022): V2 pushes use `/v2/mpesa/stk-callback`; the V1 route bridges; reconciliation settles stragglers within ~3–5 min. To retire the bridge hop, re-register the Safaricom app's callback URLs to `/v2/mpesa/stk-callback` (and C2B URLs to `/v2/payments/paybill-*`). Verify a transaction by hand: `GET /v2/transactions/:id/verify` (auth) or `npm run` a one-off `reconcileTransaction` from `services/settlementService.js`.
 
+## Open a provider market (D-043)
+1. `cd gc-payments && npm run providers:seed` — creates Kenya with its first checklist as a **draft** (idempotent).
+2. `/admin/checklists` → Kenya → read every check (and its help text) with the advisor, edit, then **Publish**. Applications waiting for Kenya move back to draft and are emailed.
+3. Another country: **Add market** (code, name, currency, phone prefix, UTC offset), build its draft, publish when ready. Until then its applicants wait.
+
+## Review a provider
+`/admin/providers` → open the application → open each document (links last ten minutes) → Pass / Needs fix (note) / Fail per check → Approve, Request changes or Decline. Approve creates the Paystack subaccount; if that fails the page says why and offers **Retry payout setup** (usually a wrong bank code or account number — ask the provider to fix it under Payouts).
+
+## Run the provider journeys offline
+`cd gc-payments && npm run check:providers-flow` — boots the API on an in-memory Firestore and Storage with a mock Paystack (`scripts/lib/fakeFirebase.js`, `mockPaystack.js`, `offlineApi.js`); no credentials or network. For screens, the same pieces plus the Auth emulator (`firebase emulators:start --only auth`) and `NEXT_PUBLIC_USE_EMULATOR=1` in the web app's `.env.local` let you sign in as seeded accounts.
+
 ## Webhooks locally
 `ngrok http 4000`, set the Paystack webhook URL to `https://<ngrok>/v2/paystack/webhook` (test mode), and `DEPOSIT_CALLBACK_URL` etc. for Daraja sandbox.
 
 ## Environment variables
 - **Web app** (`.env`, `.env.local`): `NEXT_PUBLIC_FIREBASE_*` (7 keys), `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_MAPBOX_TOKEN`, `NEXT_PUBLIC_KEVERD_TOKEN`, `NEXT_PUBLIC_EMAIL_*` (used by `lib/emailService.js` for bug-report/data routes). New: `NEXT_PUBLIC_DATA_SOURCE`, `NEXT_PUBLIC_USE_EMULATOR`.
-- **Backend**: see 22 §Environment. New: `FIREBASE_SERVICE_ACCOUNT_B64`.
+- **Backend**: see 22 §Environment. New: `FIREBASE_SERVICE_ACCOUNT_B64`, `PROVIDER_CHARGES_RATE` (optional, default `0.1`). Provider documents and photos use the existing `FIREBASE_STORAGE_BUCKET`.

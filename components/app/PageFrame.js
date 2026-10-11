@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import AppShell, { BackToHome } from "@/components/app/AppShell";
 import { STAGGER, useRevealVariants } from "@/lib/motion";
 import { PullToRefresh } from "@/components/ui/PullToRefresh";
+import { useInPortal } from "@/components/kit/PortalShell";
 
 const RevealCtx = createContext(null);
 
@@ -12,9 +13,11 @@ const RevealCtx = createContext(null);
  *  Pass `onRefresh` to enable pull-to-refresh on touch devices. */
 export function PageFrame({ eyebrow, title, meta, trailing, wide = false, onRefresh, children }) {
   const item = useRevealVariants();
+  // Inside a portal (the admin console) the shell owns the header and the gutters.
+  const inPortal = useInPortal();
   const body = (
         <motion.div
-          className={`mx-auto ${wide ? "max-w-5xl" : "max-w-3xl"} px-6 pb-32 pt-8 sm:pb-24 sm:pt-16`}
+          className={inPortal ? "w-full" : `mx-auto ${wide ? "max-w-5xl" : "max-w-3xl"} px-6 pb-32 pt-8 sm:pb-24 sm:pt-16`}
           variants={STAGGER}
           initial="hidden"
           animate="show"
@@ -31,6 +34,13 @@ export function PageFrame({ eyebrow, title, meta, trailing, wide = false, onRefr
           {children}
         </motion.div>
   );
+  if (inPortal) {
+    return (
+      <RevealCtx.Provider value={item}>
+        {onRefresh ? <PullToRefresh onRefresh={onRefresh}>{body}</PullToRefresh> : body}
+      </RevealCtx.Provider>
+    );
+  }
   return (
     <AppShell trailing={trailing === undefined ? <BackToHome /> : trailing}>
       <RevealCtx.Provider value={item}>

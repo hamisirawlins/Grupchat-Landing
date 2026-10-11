@@ -1,7 +1,7 @@
 ---
 title: Data model — Firestore collections as written by the code
 status: active
-updated: 2026-09-13
+updated: 2026-10-11
 read_when: you are reading or writing any Firestore document from either repo, or writing a rule or index for one
 supersedes: ../V2_FIRESTORE_MODELS.md (partially — this file reflects what gc-payments actually writes today)
 ---
@@ -16,7 +16,7 @@ Fields marked ⚙ are **backend-owned**: clients may read, never write. Timestam
 
 | Collection | Client may create | Client may update | Backend writes | Notes |
 |---|---|---|---|---|
-| `users/{uid}` | own doc | own doc | — | `usernames` guards uniqueness |
+| `users/{uid}` | own doc | own doc | ⚙ `providerStatus` | `usernames` guards uniqueness |
 | `usernames/{username}` | create-only, own uid | — | — | doc id = username |
 | `plans/{planId}` | yes (owner) | owner: metadata fields | ⚙ `currentBalance`, `lastActivityAt`, `status: locked`, `platformFeeRate` | |
 | `planMembers/{id}` | self (via invite accept / commit) | own `commitmentStatus` | ⚙ `paymentStatus`, `amountPaid`, `currency` | |
@@ -34,6 +34,9 @@ Fields marked ⚙ are **backend-owned**: clients may read, never write. Timestam
 | `mpesa_logs`, `processedEvents` | no | no | ⚙ | audit / idempotency |
 | `emails/{type}:{entityId}` | no | no | ⚙ | write-once send guard (KB 28) |
 | `ledgerEntries/{txId:n}` | **no** | **no** | ⚙ | money journal (D-025); read: admin, or plan members via `/v2/ledger/plans/:id` |
+| `providers/{uid}`, `providerSecrets/{uid}` | no | no | ⚙ everything | experience providers (D-043); shapes in 29 |
+| `providerMarkets/{code}`, `providerChecklistVersions/{id}` | no | no | ⚙ (admin routes) | market checklists, frozen versions (29) |
+| `experiences/{id}` | no | no | ⚙ (provider routes) | listings; public read through `/v2/experiences` (29) |
 
 Community collections (`communityGroups`, `communityGroupMembers`, `communityGoals`,
 `communityInvites`, `goalCompletionEvents`) exist in the backend; **Community is deprecated
