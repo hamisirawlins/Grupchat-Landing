@@ -38,6 +38,8 @@ reviewer changes them. Editable states: `draft`, `waiting`, `changes-requested`.
 
 ## Review
 
+Kenya 1.0 asks for business registration and a payout account (plus the terms); D-046.
+
 Per check, an admin sets `pass`, `fix` (with a note the provider sees) or `fail`.
 **Approve** needs every required check to pass and none to fail; it creates the Paystack
 subaccount (`setUpPayout`, never throws — a failure is stored in `payout.setupError` and

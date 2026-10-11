@@ -100,7 +100,7 @@ Symptom in Railway logs: `POST /core/deposit_callback 500` + `Supabase query err
 
 ## Open a provider market (D-043)
 1. `cd gc-payments && npm run providers:seed` — creates Kenya with its first checklist as a **draft** (idempotent).
-2. `/admin/checklists` → Kenya → read every check (and its help text) with the advisor, edit, then **Publish**. Applications waiting for Kenya move back to draft and are emailed.
+2. `/admin/checklists` → Kenya → keep **Business registration**, **Payout account** and **Provider terms**, remove the rest (D-046), then **Publish**. Applications waiting for Kenya move back to draft and are emailed.
 3. Another country: **Add market** (code, name, currency, phone prefix, UTC offset), build its draft, publish when ready. Until then its applicants wait.
 
 ## Review a provider

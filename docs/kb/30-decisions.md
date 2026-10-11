@@ -383,3 +383,28 @@ built before the scheme, `components/bits` is motion, `components/kit` is the sc
 restyle of an older screen moves it onto the kit rather than editing `components/ui`. Gold is
 never text on white. A dark theme can reuse the `-dark` tokens without new names.
 
+### D-046 · 2026-10-11 · Kenya asks for business registration and the payout account; the terms carry the rest
+**Decision.** Kenya's first published checklist asks for two things: the **business
+registration** certificate and a **payout account** in the business's name, plus acceptance of
+the provider terms (the checklist's one `terms` check). The other checks in the seed (owner's
+ID, KRA PIN, activity licence, liability insurance, water safety, food handling) stay in
+`KENYA_CHECKS` as a menu to add back from `/admin/checklists`, but are removed from the draft
+before publishing. In their place the provider terms gain **Responsibility**: the provider runs
+the experience; safety, licences and insurance are theirs (we recommend liability insurance);
+incidents are reported within 24 hours; the provider indemnifies GrupChat except where GrupChat
+caused the loss; GrupChat's liability to a provider is capped at the provider charges kept in
+the previous 12 months. The Terms of Service gain §6 Experiences and Tickets for guests (the
+agreement is with the provider, the provider's cancellation policy applies, GrupChat checks
+registration and payout only, and is not responsible for what a provider does except where the
+law says otherwise), and §8 lists providers' acts among what GrupChat is not liable for.
+Listings say **Registered business** instead of "Checked by GrupChat". Confirmed by the owner.
+**Why.** The owner wants providers live quickly; most documents on the long list are things a
+reviewer can't verify well from a scan anyway. What we do check (who gets paid, and that the
+business exists) is what protects the money; the terms put responsibility for the experience
+where the control is. The badge must not claim more than we check.
+**Consequences.** Review is two documents and a name match. A guest's protection for the
+experience itself rests on the provider's terms and the law, not on our checks, and copy says
+so. Adding a check back is a new checklist version, optionally re-checking approved providers.
+The liability wording should be read by the advisor; the cap and indemnity are the clauses most
+likely to need local tailoring (consumer protection limits what can be excluded for guests).
+

@@ -78,7 +78,7 @@ export default function TermsOfService() {
               </span>
             </h1>
             <p className="text-base sm:text-lg text-gray-500">
-              Last updated: May 16th 2025
+              Last updated: October 11th 2026
             </p>
           </motion.div>
 
@@ -105,6 +105,7 @@ export default function TermsOfService() {
                     <li>Facilitating M-Pesa transactions</li>
                     <li>Tracking contributions and progress toward goals</li>
                     <li>Providing transparency in group activities</li>
+                    <li>Booking tickets for experiences run by independent providers</li>
                   </ul>
                 </section>
 
@@ -161,14 +162,35 @@ export default function TermsOfService() {
                 </section>
 
                 <section>
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">6. Privacy and Data Protection</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">6. Experiences and Tickets</h2>
+                  <p className="leading-relaxed mb-4">
+                    When you book tickets for an experience on GrupChat, you understand and agree that:
+                  </p>
+                  <ul className="list-disc ml-6 space-y-3">
+                    <li>
+                      <span className="font-semibold text-gray-900">Independent Providers:</span> Experiences are run by independent providers. Your agreement for the experience is with the provider, and GrupChat sells the ticket on their behalf.
+                    </li>
+                    <li>
+                      <span className="font-semibold text-gray-900">Cancellations and Refunds:</span> The provider sets the cancellation policy shown on the listing. Refunds are paid back through our payment provider.
+                    </li>
+                    <li>
+                      <span className="font-semibold text-gray-900">Safety:</span> GrupChat checks each provider's business registration and payout account, but does not inspect experiences. Follow the provider's safety instructions.
+                    </li>
+                    <li>
+                      <span className="font-semibold text-gray-900">Responsibility:</span> GrupChat is not responsible for what a provider does or fails to do, except where the law says otherwise.
+                    </li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">7. Privacy and Data Protection</h2>
                   <p className="leading-relaxed">
                     Your privacy is important to us. Please review our <Link href="/privacy-policy" className="text-purple-600 underline hover:text-purple-700">Privacy Policy</Link> to understand how we collect, use, and protect your personal information. By using our service, you consent to the collection and use of your information as described in our Privacy Policy.
                   </p>
                 </section>
 
                 <section>
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">7. Limitation of Liability</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">8. Limitation of Liability</h2>
                   <p className="leading-relaxed mb-4">
                     GrupChat is provided "as is" without warranties of any kind. To the fullest extent permitted by law, we disclaim all warranties, express or implied. We are not liable for:
                   </p>
@@ -177,32 +199,33 @@ export default function TermsOfService() {
                     <li>Loss of profits, data, or business opportunities</li>
                     <li>Damages resulting from third-party services (including M-Pesa)</li>
                     <li>User disputes or disagreements within groups</li>
+                    <li>What an experience provider does or fails to do (see section 6)</li>
                   </ul>
                 </section>
 
                 <section>
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">8. Account Termination</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">9. Account Termination</h2>
                   <p className="leading-relaxed">
                     We reserve the right to suspend or terminate your account at any time for violation of these terms, suspicious activity, or for any other reason we deem necessary. Upon termination, you will lose access to your account and any pending transactions will be handled according to our standard procedures.
                   </p>
                 </section>
 
                 <section>
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">9. Changes to Terms</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">10. Changes to Terms</h2>
                   <p className="leading-relaxed">
                     We may update these Terms of Service from time to time to reflect changes in our service or legal requirements. We will notify users of significant changes through the app or via email. Continued use of the app after changes constitutes acceptance of the updated terms.
                   </p>
                 </section>
 
                 <section>
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">10. Governing Law</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">11. Governing Law</h2>
                   <p className="leading-relaxed">
                     These Terms of Service are governed by and construed in accordance with the laws of Kenya. Any disputes arising from these terms or your use of GrupChat will be subject to the jurisdiction of Kenyan courts.
                   </p>
                 </section>
 
                 <section>
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">11. Contact Information</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-4">12. Contact Information</h2>
                   <p className="leading-relaxed">
                     If you have any questions about these Terms of Service, please contact us at <a href="mailto:info@grupchat.net" className="text-purple-600 underline hover:text-purple-700">info@grupchat.net</a>. We will respond to your inquiries as promptly as possible.
                   </p>

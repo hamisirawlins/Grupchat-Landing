@@ -110,7 +110,7 @@ function Body({ e, item, reload }) {
         <h1 className="text-[32px] font-black leading-[36px] tracking-[-0.03em] sm:text-[44px] sm:leading-[48px]">{e.title}</h1>
         <p className="inline-flex flex-wrap items-center gap-1.5 text-[15px] text-ink-2">
           With <span className="font-bold text-ink">{e.provider?.name}</span>
-          {e.provider?.verified && <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-success"><BadgeCheck className="h-4 w-4" aria-hidden="true" />Checked by GrupChat</span>}
+          {e.provider?.verified && <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-success"><BadgeCheck className="h-4 w-4" aria-hidden="true" />Registered business</span>}
         </p>
         <ul className="mt-2 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:gap-x-6">
           {facts.map(({ icon: Icon, text }) => (
