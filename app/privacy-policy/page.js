@@ -78,7 +78,7 @@ export default function PrivacyPolicy() {
               </span>
             </h1>
             <p className="text-base sm:text-lg text-gray-500">
-              Last updated: January 11th 2026
+              Last updated: October 11th 2026
             </p>
           </motion.div>
 
@@ -118,13 +118,13 @@ export default function PrivacyPolicy() {
                     </li>
                     <li>
                       <span className="font-semibold text-black">
-                        Goal and Progress Data:
+                        Plan Data:
                       </span>{" "}
-                      We collect information about the goals, challenges, and
-                      activities you create or participate in, including goal
-                      details, progress updates, milestones, photos, status
-                      updates, and any manually logged contributions or
-                      financial tracking information you choose to share.
+                      We collect information about the plans and group
+                      activities you create or join, including itineraries,
+                      dates, checklists, updates, photos, and any manually
+                      logged contributions or financial tracking information
+                      you choose to share.
                     </li>
                     <li>
                       <span className="font-semibold text-black">
@@ -141,7 +141,7 @@ export default function PrivacyPolicy() {
                       <span className="font-semibold text-black">
                         Social and Activity Data:
                       </span>{" "}
-                      We collect information about your interactions with goals,
+                      We collect information about your interactions with plans,
                       including comments, updates, photos you upload, and your
                       participation in group activities. This helps create your
                       memory gallery and activity feed.
@@ -153,6 +153,21 @@ export default function PrivacyPolicy() {
                       We may collect information about how you use the app, such
                       as the features you access, the pages you visit, and any
                       errors that occur.
+                    </li>
+                    <li>
+                      <span className="font-semibold text-black">
+                        Device and Security Signals:
+                      </span>{" "}
+                      A risk score from our fraud-prevention provider, based on
+                      your device and connection, to stop fake accounts and
+                      payment fraud.
+                    </li>
+                    <li>
+                      <span className="font-semibold text-black">
+                        Approximate Location:
+                      </span>{" "}
+                      Your country, read from your IP address, so we can show
+                      prices in your currency.
                     </li>
                     <li>
                       <span className="font-semibold text-black">Cookies:</span>{" "}
@@ -173,11 +188,11 @@ export default function PrivacyPolicy() {
                       <span className="font-semibold text-black">
                         Provisioning and Improving the App:
                       </span>{" "}
-                      We use your personal and goal data to enable the core
-                      functions of the app, such as creating and tracking goals,
-                      sharing progress updates, building memory galleries,
-                      managing group activities, and processing optional payment
-                      transactions when you choose to use payment features.
+                      We use your personal and plan data to enable the core
+                      functions of the app, such as creating and running plans,
+                      sharing updates, building memory galleries, managing group
+                      activities, and processing optional payment transactions
+                      when you choose to use payment features.
                     </li>
                     <li>
                       <span className="font-semibold text-black">
@@ -205,12 +220,87 @@ export default function PrivacyPolicy() {
                     </li>
                     <li>
                       <span className="font-semibold text-black">
+                        AI Features:
+                      </span>{" "}
+                      To draft plans, reminders, answers and recap cards, as
+                      described in AI Features.
+                    </li>
+                    <li>
+                      <span className="font-semibold text-black">
                         Compliance and Security:
                       </span>{" "}
                       We may use your information to comply with legal
                       requirements, protect against fraud, and ensure the
                       security of the app, your data, and any transactions you
                       choose to make.
+                    </li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h2 className="text-2xl font-semibold text-black mb-4">
+                    AI Features
+                  </h2>
+                  <p className="mb-4 text-gray-600">
+                    GrupChat uses AI to help organisers plan: it drafts plans,
+                    writes reminders, answers questions inside a plan and makes
+                    recap cards. The AI suggests; people decide. It never books,
+                    pays or sends a message on its own, and anything about
+                    money, safety or your account is decided by a person.
+                  </p>
+                  <ul className="list-disc ml-6 space-y-3 text-gray-600">
+                    <li>
+                      <span className="font-semibold text-black">
+                        What the AI Sees:
+                      </span>{" "}
+                      Only what a feature needs: the request you type and,
+                      inside a plan, that plan's itinerary, checklist, amounts,
+                      dates and members' display names. It never sees phone
+                      numbers, email addresses or payment details, and never
+                      another plan.
+                    </li>
+                    <li>
+                      <span className="font-semibold text-black">
+                        Who Processes It:
+                      </span>{" "}
+                      AI providers we have contracts with. They process the data
+                      only to return a result. We use a provider only if its
+                      terms bar it from training its models on your data and
+                      limit how long it keeps it: our current provider deletes
+                      it within 30 days, or keeps it up to two years if its
+                      safety systems flag a request. You can ask us which
+                      providers we use.
+                    </li>
+                    <li>
+                      <span className="font-semibold text-black">
+                        What We Keep:
+                      </span>{" "}
+                      AI drafts, answers and recap cards are stored with their
+                      plan and deleted with it. We keep a record of each AI
+                      request (the feature, the time, its size and cost, and the
+                      outcome) for up to 12 months, to enforce daily limits,
+                      prevent abuse and keep our accounts.
+                    </li>
+                    <li>
+                      <span className="font-semibold text-black">Safety:</span>{" "}
+                      We screen AI requests and drafts for illegal, harmful or
+                      fraudulent use, and keep a record of refusals. If the AI
+                      declines a request, you can ask a person to review it.
+                    </li>
+                    <li>
+                      <span className="font-semibold text-black">
+                        Labels and Choices:
+                      </span>{" "}
+                      Messages the AI drafts are marked “Drafted with GrupChat
+                      AI”. Your name or photo appears on a recap card only if
+                      you opt in. You can ask us at{" "}
+                      <a
+                        href="mailto:info@grupchat.net"
+                        className="text-purple-600 underline hover:text-purple-700 transition-colors"
+                      >
+                        info@grupchat.net
+                      </a>{" "}
+                      not to use your data in AI features.
                     </li>
                   </ul>
                 </section>
@@ -229,21 +319,37 @@ export default function PrivacyPolicy() {
                       <span className="font-semibold text-black">
                         Service Providers:
                       </span>{" "}
-                      We may share your information with third-party service
-                      providers, such as payment processors (when you use
-                      payment features), cloud storage providers, and analytics
-                      services, who assist us in operating the app and
-                      providing services to you.
+                      We share information with providers who help us run
+                      GrupChat: cloud hosting and storage, analytics, payment
+                      processing, fraud prevention, email delivery and AI. Each
+                      provider works under a contract that limits it to
+                      providing its service to us. You can ask us for the
+                      current list at{" "}
+                      <a
+                        href="mailto:info@grupchat.net"
+                        className="text-purple-600 underline hover:text-purple-700 transition-colors"
+                      >
+                        info@grupchat.net
+                      </a>
+                      .
                     </li>
                     <li>
                       <span className="font-semibold text-black">
                         Group Members:
                       </span>{" "}
-                      When you participate in a goal or activity, your progress
-                      updates, photos, milestones, and contributions (including
-                      manually tracked financial contributions) are visible to
-                      other members of that group, as intended by the social
-                      nature of the app.
+                      When you join a plan, your updates, photos and
+                      contributions (including manually tracked financial
+                      contributions) are visible to the other members of that
+                      plan, as intended by the social nature of the app.
+                    </li>
+                    <li>
+                      <span className="font-semibold text-black">
+                        Experience Providers:
+                      </span>{" "}
+                      When you buy a ticket on Discover, the experience provider
+                      receives your name and ticket details so they can admit
+                      you. Their own privacy policy covers what they do with
+                      them.
                     </li>
                     <li>
                       <span className="font-semibold text-black">
@@ -262,6 +368,18 @@ export default function PrivacyPolicy() {
                       successor entity.
                     </li>
                   </ul>
+                </section>
+
+                <section>
+                  <h2 className="text-2xl font-semibold text-black mb-4">
+                    International Transfers
+                  </h2>
+                  <p className="leading-relaxed text-gray-600">
+                    Some of our providers process data outside Kenya, including
+                    in the United States. We transfer personal data outside
+                    Kenya only as Kenya's Data Protection Act, 2019 allows, with
+                    safeguards such as contracts with each provider.
+                  </p>
                 </section>
 
                 <section>
@@ -317,6 +435,19 @@ export default function PrivacyPolicy() {
                       You can request a copy of your personal information in a
                       structured, commonly used, and machine-readable format.
                     </li>
+                    <li>
+                      <span className="font-semibold text-black">
+                        Human Review:
+                      </span>{" "}
+                      If our AI declines a request or our checks flag your
+                      account, you can ask a person to look again.
+                    </li>
+                    <li>
+                      <span className="font-semibold text-black">
+                        Objection:
+                      </span>{" "}
+                      You can ask us not to use your data in AI features.
+                    </li>
                   </ul>
                   <p className="mt-4 text-gray-600">
                     To exercise these rights, please visit our{" "}
@@ -362,6 +493,11 @@ export default function PrivacyPolicy() {
                     </li>
                   </ul>
                   <p className="mt-4 text-gray-600">
+                    AI request records are kept for up to 12 months, or deleted
+                    with the rest of your data if you delete your account. AI
+                    drafts, answers and recap cards are deleted with their plan.
+                  </p>
+                  <p className="mt-4 text-gray-600">
                     You can learn more about our data retention practices on our{" "}
                     <Link
                       href="/manage-data"
@@ -370,6 +506,17 @@ export default function PrivacyPolicy() {
                       data management page
                     </Link>
                     .
+                  </p>
+                </section>
+
+                <section>
+                  <h2 className="text-2xl font-semibold text-black mb-4">
+                    Children
+                  </h2>
+                  <p className="leading-relaxed text-gray-600">
+                    GrupChat accounts are for people aged 18 and over. A plan
+                    may include children, but we don't collect their personal
+                    information, and the AI is never given any.
                   </p>
                 </section>
 

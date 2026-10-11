@@ -1,7 +1,7 @@
 ---
 title: Decision log
 status: active
-updated: 2026-09-24
+updated: 2026-10-11
 read_when: you want to know why something is the way it is, or you are about to make a choice that others will need to understand later
 ---
 
@@ -312,3 +312,20 @@ client bundle but were installed on every build.
 Firefox clamps its own 24 h. If a chart library is ever wanted, add it back deliberately rather
 than assuming it is still there.
 
+### D-042 · 2026-10-11 · The privacy policy covers the AI, and describes providers by kind
+**Decision.** `app/privacy-policy/page.js` gains an AI Features section (what the AI sees, who
+processes it, what is kept, safety, labels and choices) and two new sections, International
+Transfers and Children (accounts are 18 and over). Information We Collect adds device and
+security signals and approximate location; Sharing adds experience providers on Discover; Your
+Rights adds human review and objection. Service providers are described by kind (hosting and
+storage, analytics, payments, fraud prevention, email, AI), never by name. AI request records
+are kept 12 months, or deleted with the account. "Goals and challenges" become plans.
+**Why.** The AI planner sends plan details to an AI provider, and the January policy said nothing
+about AI. It also never mentioned the device risk score that loads on every page, or data
+processed outside Kenya. Names would publish the stack, and the AI layer is built to swap
+providers by configuration.
+**Consequences.** Swapping a provider for another of the same kind changes the private list kept
+for anyone who asks, not the policy; a new kind of provider, or a new use of members' data,
+needs a policy update. An AI provider serves members only if its terms bar training on their
+data and limit how long it keeps it. Export and account deletion must cover AI drafts and recap
+cards when the AI ships.
