@@ -9,15 +9,19 @@ import { providersAPI } from "@/lib/api";
 import { unwrap } from "@/lib/data/shape";
 import { STAGGER, useRevealVariants } from "@/lib/motion";
 import { useAsync } from "@/lib/useAsync";
+import { fmtMoney } from "@/lib/providers";
 
 /** The provider's home: how they're doing, and their listings. */
 export default function Overview() {
   const { provider, me } = useProvider() || {};
   const item = useRevealVariants();
-  const { data, loading } = useAsync(async () => unwrap(await providersAPI.experiences()), [], {});
+  const { data, loading } = useAsync(async () => {
+    const [mine, bookings] = await Promise.all([providersAPI.experiences(), providersAPI.bookings().catch(() => null)]);
+    return { ...unwrap(mine), summary: unwrap(bookings)?.summary || null };
+  }, [], {});
   const list = data?.experiences || [];
   const live = list.filter((e) => e.status === "live").length;
-  const sold = list.reduce((n, e) => n + (e.stats?.ticketsSold || 0), 0);
+  const s = data?.summary;
   const payoutReady = provider?.payout?.ready;
 
   return (
@@ -30,12 +34,13 @@ export default function Overview() {
           <span className="font-bold text-ink">Ticket sales start once your payout account is set up.</span> We're doing that now and will email you.
         </motion.p>
       )}
-      <motion.div variants={item} className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {loading && !data ? [0, 1, 2].map((i) => <Skeleton key={i} className="h-[104px] rounded-tile" />) : (
+      <motion.div variants={item} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {loading && !data ? [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[104px] rounded-tile" />) : (
           <>
             <StatTile label="Live experiences" value={live} />
-            <StatTile label="Tickets sold" value={sold} />
-            <StatTile className="col-span-2 sm:col-span-1" label="Payout account" value={payoutReady ? "Ready" : "Being set up"} sub={provider?.payout ? `${provider.payout.bankName} ••• ${provider.payout.accountLast4}` : null} />
+            <StatTile label="Guests coming" value={s?.upcomingGuests ?? 0} />
+            <StatTile label={s ? `Paid to you in ${s.month}` : "Paid to you"} value={fmtMoney(s?.paidThisMonth ?? 0, s?.currency || provider?.currency)} sub="After provider charges" />
+            <StatTile label="Payout account" value={payoutReady ? "Ready" : "Being set up"} sub={provider?.payout ? `${provider.payout.bankName} ••• ${provider.payout.accountLast4}` : null} />
           </>
         )}
       </motion.div>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Compass, FolderOpen, Plus, ShieldCheck, Store } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { NextTicket } from "@/components/tickets/NextTicket";
 import AppShell from "@/components/app/AppShell";
 import { Bars, Ring, StatCard, useCountUp } from "@/components/home/Charts";
 import { Skeleton, TextLink } from "@/components/ui/Bits";
@@ -243,6 +244,8 @@ export default function Home() {
             <ProviderCard status={profile.providerStatus} variants={item} />
           </div>
         )}
+
+        <NextTicket variants={item} />
 
         {loading || !summary ? (
           <motion.section variants={item} className="mt-16">

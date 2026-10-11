@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Compass, LayoutGrid, Plus, Wallet } from "lucide-react";
+import { Compass, LayoutGrid, Plus, Ticket, Wallet } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, PortalShell } from "@/components/kit";
 import { providersAPI } from "@/lib/api";
@@ -21,6 +21,7 @@ export const useProvider = () => useContext(Ctx);
 export const PROVIDER_NAV = [
   { href: "/provider", label: "Overview", icon: LayoutGrid, match: (p) => p === "/provider" },
   { href: "/provider/experiences", label: "Experiences", icon: Compass },
+  { href: "/provider/bookings", label: "Bookings", icon: Ticket },
   { href: "/provider/payouts", label: "Payouts", icon: Wallet },
 ];
 

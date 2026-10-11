@@ -23,7 +23,7 @@ Fields marked ⚙ are **backend-owned**: clients may read, never write. Timestam
 | `invitations/{id}` | plan owner/member | invitee: `status`, `inviteeUserId`; inviter: `revoked` | — | |
 | `milestones/{id}` | plan member | plan member (own tick for `everyone` items) | — | `scope` group\|everyone; `completions` map (D-024) |
 | `planCatalogue/{id}` | admin claim | admin claim | — | curated inventory |
-| `transactions/{id}` | **no** | **no** | ⚙ everything | read: own `userId`, or member of `planId` |
+| `transactions/{id}` | **no** | **no** | ⚙ everything | read: own `userId`, or member of `planId`; `ticket-sale` has `planId: null` (22) |
 | `providerCallbacks/{id}` | no | no | ⚙ everything | no client access at all (D-028) |
 | `notifications/{id}` | no | own: `read` | backend creates | |
 | `notificationPreferences/{uid}` | own | own | — | |
@@ -37,6 +37,7 @@ Fields marked ⚙ are **backend-owned**: clients may read, never write. Timestam
 | `providers/{uid}`, `providerSecrets/{uid}` | no | no | ⚙ everything | experience providers (D-043); shapes in 29 |
 | `providerMarkets/{code}`, `providerChecklistVersions/{id}` | no | no | ⚙ (admin routes) | market checklists, frozen versions (29) |
 | `experiences/{id}` | no | no | ⚙ (provider routes) | listings; public read through `/v2/experiences` (29) |
+| `ticketOrders/{id}`, `experienceSessions/{id}`, `ticketCodes/{code}` | no | no | ⚙ everything | tickets (D-044); buyer reads via `/v2/tickets`, provider via `/v2/providers/me/bookings` (29) |
 
 Community collections (`communityGroups`, `communityGroupMembers`, `communityGoals`,
 `communityInvites`, `goalCompletionEvents`) exist in the backend; **Community is deprecated

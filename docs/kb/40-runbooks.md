@@ -106,8 +106,15 @@ Symptom in Railway logs: `POST /core/deposit_callback 500` + `Supabase query err
 ## Review a provider
 `/admin/providers` → open the application → open each document (links last ten minutes) → Pass / Needs fix (note) / Fail per check → Approve, Request changes or Decline. Approve creates the Paystack subaccount; if that fails the page says why and offers **Retry payout setup** (usually a wrong bank code or account number — ask the provider to fix it under Payouts).
 
+## A ticket was paid late (`latePayment`)
+The buyer paid after their places went back on sale, so nothing was booked. Admins get an email
+with the reference. Check the places left on that session (`experienceSessions/{experienceId}_{key}`):
+if there is room, issue the ticket by hand (a support task; there is no screen for it yet),
+otherwise refund the payment in the Paystack dashboard. Either way, clear `needsReview` on the transaction with a
+note.
+
 ## Run the provider journeys offline
-`cd gc-payments && npm run check:providers-flow` — boots the API on an in-memory Firestore and Storage with a mock Paystack (`scripts/lib/fakeFirebase.js`, `mockPaystack.js`, `offlineApi.js`); no credentials or network. For screens, the same pieces plus the Auth emulator (`firebase emulators:start --only auth`) and `NEXT_PUBLIC_USE_EMULATOR=1` in the web app's `.env.local` let you sign in as seeded accounts.
+`cd gc-payments && npm run check:providers-flow` (and `check:tickets-flow` for checkout, split, settlement and check-in) — boots the API on an in-memory Firestore and Storage with a mock Paystack (`scripts/lib/fakeFirebase.js`, `mockPaystack.js`, `offlineApi.js`); no credentials or network. For screens, the same pieces plus the Auth emulator (`firebase emulators:start --only auth`) and `NEXT_PUBLIC_USE_EMULATOR=1` in the web app's `.env.local` let you sign in as seeded accounts.
 
 ## Webhooks locally
 `ngrok http 4000`, set the Paystack webhook URL to `https://<ngrok>/v2/paystack/webhook` (test mode), and `DEPOSIT_CALLBACK_URL` etc. for Daraja sandbox.

@@ -349,6 +349,25 @@ deploy. Kenya's first checklist ships as a draft until an advisor has read it. A
 can ask for approved providers to be re-checked without taking them offline. Provider terms
 (`/providers/terms`) are a draft for the owner to approve before launch.
 
+### D-044 · 2026-10-11 · Tickets split to the provider at checkout; GrupChat keeps its charges and pays the fee
+**Decision.** Groups buy tickets for provider listings from Discover. Each checkout is one
+order for one session (1–10 places, one code) and a `ticket-sale` transaction. Paystack splits
+the payment at source: the provider's subaccount gets the price less **provider charges**
+(`PROVIDER_CHARGES_RATE`, 10% by default, passed as `transaction_charge`), and GrupChat bears
+Paystack's fee out of those charges (`bearer: "account"`). Places are held for an hour while
+the buyer is on Paystack's page; a payment confirmed after that is flagged for a person, never
+booked silently. Providers check guests in from `/provider/bookings`; the ticket's QR opens it
+with the code filled in. Shapes and flow: 29; money: 22.
+**Why.** A split at source means GrupChat never holds ticket money, so there is no payout queue
+to run for providers and nothing to reconcile by hand when they ask where their money is.
+Bearing the fee keeps the provider's number simple: the price less one line. A hold stops two
+groups paying for the last places; an hour covers a slow card or a bank redirect. A QR that
+opens a page needs no scanner in the app.
+**Consequences.** Ticket sales depend on the provider's subaccount; a listing whose provider
+has none shows "Tickets open soon". Refunds happen in Paystack by hand until a flow is agreed,
+and the owner is confirming the split's set-up with Paystack's account manager before the
+first live sale. Copy says "provider charges", never the rate, on public pages.
+
 ### D-045 · 2026-10-11 · The "Plans to memories" scheme ships as tokens, springs and a kit
 **Decision.** The design canvas's scheme becomes Tailwind tokens in `app/globals.css`
 (`@theme`: action, memory, ink, sheet, status tints, dark surfaces, radii, `ease-gc`), the

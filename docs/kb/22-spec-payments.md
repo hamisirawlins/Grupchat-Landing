@@ -1,7 +1,7 @@
 ---
 title: Payments — initiation, callbacks, reconciliation, realtime
 status: active
-updated: 2026-09-13
+updated: 2026-10-11
 read_when: you touch anything that moves money or shows its status; you are debugging a stuck or duplicated payment
 ---
 
@@ -43,6 +43,22 @@ provider callbacks (`paystackWebhook`, `mpesaStkCallback`), the reconciliation j
 - `settleFailure(txDoc, { reason, resultCode })` — `failed` + `description`; audit `payment.failed`.
 - `reconcileTransaction(txDoc)` — asks the provider (Paystack `verify/:reference`; Daraja STK query, pending while `errorCode 500.001.1001`) and calls one of the above. Returns `success | failed | pending | unknown`.
 Callbacks now only verify the signature, find the pending tx by provider reference, and hand it over.
+
+## Ticket sales (D-044)
+`POST /v2/experiences/:id/checkout` (`{ sessionKey, quantity }`) creates a `transactions` doc
+with `type: "ticket-sale"`, `planId: null`, `amount`, `platformFee` (the provider charges),
+`providerShare`, `ticketOrderId`, `paystackSubaccount`, and initialises Paystack with the
+provider's `subaccount`, our charges as `transaction_charge`, and `bearer: "account"`:
+**Paystack splits the sale at source**, the provider's share settles to their bank, and
+GrupChat never holds ticket money. GrupChat pays Paystack's fee out of its charges.
+`settleSuccess` / `settleFailure` hand ticket sales to `services/ticketService.js`
+(`settleTicketSuccess`, `releaseTicketHold`), so the one settlement path still decides.
+Ledger: `ticket-charges` credit to `platform:revenue`, `ticket-share` credit to
+`provider:<uid>` (memo: settled by the split). Reconciliation leaves an abandoned ticket sale
+pending until its one-hour hold ends, then fails it and releases the places. A success that
+arrives after that is **not booked**: the transaction gets `needsReview` + `latePayment` and
+admins are emailed to issue the ticket by hand or refund it from Paystack (40).
+Rate: `PROVIDER_CHARGES_RATE` (default `0.1`), captured per listing at publish.
 
 ## Withdrawal approval (D-028)
 A withdrawal is a **request** until an admin approves it. Money is held at request time and released only by an approval that succeeds, or by a decline.

@@ -1,8 +1,8 @@
 ---
-title: Experience providers — applications, market checklists, listings
+title: Experience providers — applications, market checklists, listings, tickets
 status: active
 updated: 2026-10-11
-read_when: you are touching the provider application, the admin review queue, market checklists, or a provider's listings
+read_when: you are touching the provider application, the admin review queue, market checklists, a provider's listings, or tickets for them
 ---
 
 # Experience providers (D-043)
@@ -68,6 +68,32 @@ Admins can pause any listing with a reason (`POST /v2/admin/experiences/:id/paus
 The provider's share per ticket is `price × (1 − chargesRate)`; `chargesRate` is
 `PROVIDER_CHARGES_RATE` (default `0.1`) captured when the listing is published.
 Copy shows it as **Provider charges**, never as a percentage on public pages.
+
+## Tickets (D-044)
+
+A checkout is **one order for one session**, 1–10 places, one code (`GC-7Q4K-2M`, no
+look-alike characters). Code: `controllers/v2/ticketController.js`, `services/ticketService.js`.
+Web: `/experiences/:id` (public listing and checkout), `/tickets`, `/tickets/:orderId`,
+`/provider/bookings`.
+
+| Doc | Holds | Notes |
+|---|---|---|
+| `ticketOrders/{id}` | `code`, `status` (pending · paid · failed), `experienceId`, `providerId`, `buyerUid`, `buyerName`, listing snapshot (`title`, `cover`, `town`, `meetingPoint`, `duration`, `cancellation`), `session{key,date,time,startsAt}`, `quantity`, `unitPrice`, `amount`, `charges`, `providerReceives`, `txId`, `paystackReference`, `holdExpiresAt`, `paidAt`, `checkedInAt` | The buyer reads it through `/v2/tickets`; the code is shown only once paid. |
+| `experienceSessions/{experienceId}_{YYYY-MM-DDTHHMM}` | `capacity`, `booked`, `held`, `startsAt` | Places left = capacity − booked − held. Created on first checkout. |
+| `ticketCodes/{code}` | `orderId` | Uniqueness guard and lookup for check-in. |
+
+**Flow.** `POST /v2/experiences/:id/checkout` holds the places (transaction), writes the
+order and a pending `ticket-sale` transaction (22), and returns Paystack's checkout URL.
+Paystack returns the buyer to `/tickets/:orderId?payment=done`, which calls
+`GET /v2/transactions/:txId/verify` (the server asks Paystack), again with `?wait=20` only if
+it is still pending, and shows the ticket. Settlement books the places,
+issues the code, emails the buyer ("You're going") and the provider ("New booking").
+A failed or abandoned payment releases the places once the hour's hold ends.
+
+**At the door.** The ticket's QR opens `/provider/bookings?code=…` on the provider's phone,
+which finds the booking and offers **Check in** (undo allowed). Codes can also be typed.
+`GET /v2/providers/me/bookings` returns this month's totals and every upcoming session with
+bookings, each with its guest list.
 
 ## Endpoints
 Listed in 24 §Keep. All return `{ success, data }`; errors carry `message` and, where useful,
