@@ -95,7 +95,7 @@ function Tickets({ state, kind, setKind }) {
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex flex-col gap-1">
           <h2 className="text-xl font-extrabold tracking-[-0.01em]">Book tickets</h2>
-          <p className="text-sm text-ink-2">Trips, food and events run by providers we've checked.</p>
+          <p className="text-sm text-ink-2">Trips, food and events run by registered businesses.</p>
         </div>
         <Chips label="Kind of experience" multiple={false} value={kind || "all"} onChange={(v) => setKind(v === "all" ? "" : v)} options={[{ value: "all", label: "All" }, ...PROVIDER_CATEGORIES]} />
       </div>
