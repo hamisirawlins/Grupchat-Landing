@@ -25,6 +25,7 @@ the detail lives in the linked file. Never paste document content here.
 | 26 | [26-spec-invites.md](26-spec-invites.md) | Invite links incl. signed-out preview; accept/decline flow | active |
 | 27 | [27-spec-audit.md](27-spec-audit.md) | Audit events and the admin view | active |
 | 28 | [28-spec-email.md](28-spec-email.md) | Email verification + transactional notifications (MVP) | active |
+| 29 | [29-spec-providers.md](29-spec-providers.md) | Experience providers: application states, market checklists, review, listings, tickets and check-in | active |
 | 30 | [30-decisions.md](30-decisions.md) | Append-only decision log (ADR-lite) | active |
 | 40 | [40-runbooks.md](40-runbooks.md) | Local dev, emulators, deploying rules, rotating credentials, debugging payments | active |
 | 90 | [90-legacy-docs.md](90-legacy-docs.md) | Every pre-KB document in both repos and what supersedes it | active |
@@ -35,6 +36,7 @@ the detail lives in the linked file. Never paste document content here.
 - **Building or reviewing a screen** → 25
 - **Touching Firestore from the frontend** → 20 → 21 → 23
 - **Anything with money in it** → 22 (and 24 for what the backend owns)
+- **Experience providers, their listings, tickets or the review queue** → 29 (money: 22)
 - **Running things locally / deploying rules** → 40
 - **"Why is it like this?"** → 30
 - **Found an old `.md` and unsure if it's true** → 90

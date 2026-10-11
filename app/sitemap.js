@@ -9,10 +9,12 @@ export default function sitemap() {
   const pages = [
     { path: "", priority: 1.0, changeFrequency: "weekly" },
     { path: "/discover", priority: 0.9, changeFrequency: "daily" },
+    { path: "/providers", priority: 0.8, changeFrequency: "monthly" },
     { path: "/sign-up", priority: 0.8, changeFrequency: "monthly" },
     { path: "/sign-in", priority: 0.6, changeFrequency: "monthly" },
     { path: "/privacy-policy", priority: 0.3, changeFrequency: "yearly" },
     { path: "/terms-of-service", priority: 0.3, changeFrequency: "yearly" },
+    { path: "/providers/terms", priority: 0.3, changeFrequency: "yearly" },
     { path: "/report-bug", priority: 0.2, changeFrequency: "yearly" },
     { path: "/rate-app", priority: 0.2, changeFrequency: "yearly" },
   ];

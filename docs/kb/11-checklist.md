@@ -1,7 +1,7 @@
 ---
 title: Build checklist — trackable line items
 status: active
-updated: 2026-09-13
+updated: 2026-10-11
 read_when: you are doing or reporting implementation work; tick items here as they complete
 ---
 
@@ -100,6 +100,12 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 ## P · Payments hardening (workplan P4)
 - [x] P4.1 Reconciliation job · [x] P4.3 journeys doc `currentBalance` · [x] P4.4 verify endpoint + post-redirect verification on Plan details · [x] P4.5 socket emits retired · [ ] P4.2 idempotency guard doc + raw-body signature
 
+## R · Experience providers (D-043, 29)
+- [x] R1 Application: business, market-specific documents (private, signed links), payout account (number kept apart), terms, submit; `waiting` when the market isn't open · [x] R2 Admin review: queue by status and market, per-check pass / needs fix / fail with notes, approve (creates the Paystack subaccount, retry on failure), request changes, decline; emails on each decision · [x] R3 Market checklists: versioned drafts, publish (opens waiting applications, optional re-check of approved providers), Kenya seed · [x] R4 Portal: overview, listings editor with live preview and publish readiness, photos (public, ordered), weekly or one-off sessions, payouts · [x] R5 `npm run check:providers-flow` (offline, 81 assertions) · [ ] R6 Kenya checklist read by an advisor and published in production · [ ] R7 Provider terms approved (draft at `/providers/terms`)
+
+## T · Tickets (D-044, 29)
+- [x] T1 Checkout: places held per session, `ticket-sale` transaction, Paystack split to the provider's subaccount (`transaction_charge`, `bearer: account`) · [x] T2 Settlement through the one path: places booked, code issued, buyer and provider emailed, ledger posted; late payments flagged for review · [x] T3 Web: tickets in Discover, public listing page with dates, places left and checkout, return from Paystack, ticket with QR, calendar file and directions, `/tickets` · [x] T4 Provider bookings: totals, sessions with guest lists, check-in by QR or code · [x] T5 `npm run check:tickets-flow` (offline, 41 assertions) · [ ] T6 Split confirmed with Paystack (account manager) and a live test sale · [ ] T7 Refunds: handled in Paystack by hand until a flow is agreed
+
 ## I · Firebase-direct data layer — **last, before test release** (D-013)
 - [ ] I0 Rotate + purge Admin key (manual, security; can happen any time)
 - [x] I1 P0.3 Firebase config versioned (`firebase.json`, `.firebaserc`, deny-all rules, index file = the project's 20). Deploy via CLI not yet exercised.
@@ -109,6 +115,8 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 - [ ] Z1 All screens pass 25 §Accessibility · [ ] Z2 ≤375px and ≥1280px walkthrough · [ ] Z3 `MVP_USER_JOURNEYS.md` acceptance criteria ticked · [ ] Z4 KB rows `updated` within the release week
 
 ## Log (newest first)
+- 2026-10-11 · Tickets (D-044): groups book provider experiences from Discover; Paystack splits each sale to the provider at checkout; providers check guests in by QR.
+- 2026-10-11 · Experience providers (D-043): apply, admin review against versioned market checklists, a provider portal for listings; drawn in the "Plans to memories" scheme (D-045).
 - 2026-09-13 · Approving a payout now takes two taps and must name the amount (D-030) after a live test sent money on a single tap.
 - 2026-09-13 · Deposits are free (D-029): contributions no longer take a 1% cut, plans are credited in full, and the pay sheet says so. The 2% withdrawal fee is unchanged.
 - 2026-09-12 · Withdrawals now need admin approval before anything is sent (D-028); every provider callback and B2C request is logged to `providerCallbacks` and readable under each payout; `check:payout-flow` E2E added.

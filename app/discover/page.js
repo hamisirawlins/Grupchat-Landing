@@ -9,7 +9,12 @@ import { Skeleton } from "@/components/ui/Bits";
 import { SpotlightCard } from "@/components/bits";
 import { PartnersEmpty } from "@/components/discover/PartnersEmpty";
 import { FormError } from "@/components/ui/Form";
-import { catalogueAPI } from "@/lib/api";
+import { catalogueAPI, experiencesAPI } from "@/lib/api";
+import { Chips } from "@/components/kit";
+import { ListingCard } from "@/components/tickets/ListingCard";
+import { CATEGORIES as PROVIDER_CATEGORIES } from "@/lib/providers";
+import { STAGGER, useRevealVariants } from "@/lib/motion";
+import { motion } from "framer-motion";
 import { money, plural } from "@/lib/format";
 import { asList, unwrap } from "@/lib/data/shape";
 import { useAsync } from "@/lib/useAsync";
@@ -19,14 +24,22 @@ const label = (c) => (c ? c[0].toUpperCase() + c.slice(1) : "All");
 
 export default function Discover() {
   const [category, setCategory] = useState("");
+  const [kind, setKind] = useState("");
   const { data, loading, error, reload } = useAsync(async () => {
     const params = { status: "active" };
     if (category) params.category = category;
     return asList(unwrap(await catalogueAPI.list(params)), "items");
   }, [category]);
 
+  const tickets = useAsync(async () => asList(unwrap(await experiencesAPI.list({ category: kind })), "experiences"), [kind]);
+  const refresh = () => Promise.all([reload(), tickets.reload()]);
+
   return (
-    <PageFrame title="Discover" meta="Curated plans from providers. Pick one, invite your group, split it." wide onRefresh={reload}>
+    <PageFrame title="Discover" meta="Book tickets with local providers, or pick a curated plan for your group." wide onRefresh={refresh}>
+      <Tickets state={tickets} kind={kind} setKind={setKind} />
+      <Reveal className="mb-5">
+        <h2 className="text-xl font-extrabold tracking-[-0.01em]">Curated plans</h2>
+      </Reveal>
       <Reveal className="mb-8">
         <Segmented name="discover-cat" value={category} onChange={setCategory} options={CATEGORIES.map((c) => ({ value: c, label: label(c) }))} />
       </Reveal>
@@ -69,5 +82,33 @@ export default function Discover() {
         )}
       </Reveal>
     </PageFrame>
+  );
+}
+
+/** Provider listings with tickets (KB D-044). Hidden until there is at least one. */
+function Tickets({ state, kind, setKind }) {
+  const { data, loading, error } = state;
+  const card = useRevealVariants();
+  if (!kind && !loading && !error && (data ?? []).length === 0) return null;
+  return (
+    <Reveal className="mb-14">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl font-extrabold tracking-[-0.01em]">Book tickets</h2>
+          <p className="text-sm text-ink-2">Trips, food and events run by providers we've checked.</p>
+        </div>
+        <Chips label="Kind of experience" multiple={false} value={kind || "all"} onChange={(v) => setKind(v === "all" ? "" : v)} options={[{ value: "all", label: "All" }, ...PROVIDER_CATEGORIES]} />
+      </div>
+      {error && <FormError>{error.message || "Couldn't load experiences."}</FormError>}
+      {loading && !data ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-72 w-full rounded-2xl" />)}</div>
+      ) : (data ?? []).length === 0 ? (
+        <p className="rounded-2xl bg-soft px-5 py-4 text-[15px] text-ink-2">Nothing in this kind yet. <button type="button" onClick={() => setKind("")} className="font-bold text-action-strong">Show all</button></p>
+      ) : (
+        <motion.div key={kind} variants={STAGGER} initial="hidden" animate="show" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {data.map((e, i) => <ListingCard key={e.id} e={e} priority={i < 3} variants={card} />)}
+        </motion.div>
+      )}
+    </Reveal>
   );
 }
