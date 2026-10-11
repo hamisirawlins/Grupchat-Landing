@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Compass, FolderOpen, House } from "lucide-react";
+import { Bell, Compass, FolderOpen, House, Ticket } from "lucide-react";
 
 const TABS = [
   { href: "/home", label: "Home", icon: House, match: (p) => p === "/home" || p.startsWith("/admin") },
   { href: "/plans", label: "Plans", icon: FolderOpen, match: (p) => p.startsWith("/plans") },
-  { href: "/discover", label: "Discover", icon: Compass, match: (p) => p.startsWith("/discover") },
+  { href: "/discover", label: "Discover", icon: Compass, match: (p) => p.startsWith("/discover") || p.startsWith("/experiences") },
+  { href: "/tickets", label: "Tickets", icon: Ticket, match: (p) => p.startsWith("/tickets") },
   { href: "/notifications", label: "Alerts", icon: Bell, match: (p) => p.startsWith("/notifications") },
 ];
 
@@ -19,7 +20,7 @@ export function TabBar() {
       aria-label="Primary"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-black/[0.08] bg-white/90 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:hidden"
     >
-      <ul className="mx-auto grid h-16 max-w-3xl grid-cols-4">
+      <ul className="mx-auto grid h-16 max-w-3xl grid-cols-5">
         {TABS.map(({ href, label, icon: Icon, match }) => {
           const active = match(pathname);
           return (
