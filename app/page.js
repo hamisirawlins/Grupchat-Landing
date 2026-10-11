@@ -749,6 +749,7 @@ export default function Home() {
               <h3 className="text-white font-semibold mb-4">Legal</h3>
               <ul className="space-y-2">
                 {[
+                  { name: "List your experiences", href: "/providers" },
                   { name: "Privacy Policy", href: "/privacy-policy" },
                   { name: "Terms of Service", href: "/terms-of-service" },
                   { name: "Report A Bug", href: "/report-bug" },

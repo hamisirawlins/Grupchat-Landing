@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, Compass, FolderOpen, Plus, ShieldCheck } from "lucide-react";
+import { ArrowRight, Compass, FolderOpen, Plus, ShieldCheck, Store } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import AppShell from "@/components/app/AppShell";
 import { Bars, Ring, StatCard, useCountUp } from "@/components/home/Charts";
@@ -75,6 +75,36 @@ function AdminCard({ stats, variants }) {
         <span className="min-w-0 flex-1">
           <span className="block text-[17px] font-semibold tracking-tight">Admin console</span>
           <span className="mt-0.5 block truncate text-sm text-gray-500">{line}</span>
+        </span>
+        <ArrowRight className="h-4 w-4 shrink-0 text-purple-600 transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden="true" />
+      </Link>
+    </motion.div>
+  );
+}
+
+/** Providers find their way back in from Home (KB D-043); the status rides on the profile. */
+function ProviderCard({ status, variants }) {
+  const approved = status === "approved";
+  const line = {
+    draft: "Finish your application",
+    waiting: "We'll email you when we open in your country",
+    submitted: "In review",
+    "in-review": "In review",
+    "changes-requested": "Something needs a fix",
+    declined: "See our decision",
+  }[status];
+  return (
+    <motion.div variants={variants}>
+      <Link
+        href={approved ? "/provider" : "/providers/status"}
+        className="group flex items-center gap-5 rounded-2xl border border-black/[0.08] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-purple-600 active:scale-[0.98]"
+      >
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+          <Store className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[17px] font-semibold tracking-tight">{approved ? "Provider portal" : "Your provider application"}</span>
+          <span className="mt-0.5 block truncate text-sm text-gray-500">{approved ? "Your experiences and payouts" : line}</span>
         </span>
         <ArrowRight className="h-4 w-4 shrink-0 text-purple-600 transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden="true" />
       </Link>
@@ -205,6 +235,12 @@ export default function Home() {
         {isAdmin && (
           <div className="mt-4">
             <AdminCard stats={adminStats} variants={item} />
+          </div>
+        )}
+
+        {profile?.providerStatus && (
+          <div className="mt-4">
+            <ProviderCard status={profile.providerStatus} variants={item} />
           </div>
         )}
 

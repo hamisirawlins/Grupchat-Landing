@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { EASE } from "@/lib/motion";
 
@@ -42,10 +43,14 @@ export function PartnersEmpty() {
       <p className="mt-6 text-[17px] font-semibold tracking-tight">Curated experiences are on the way</p>
       <p className="mt-1 max-w-sm text-sm text-gray-500">We're working with partners to create them.</p>
       <p className="mt-6 text-sm text-gray-500">
-        Want to work with us?{" "}
-        <a href={`mailto:${CONTACT}?subject=Partnering%20on%20a%20curated%20experience`} className="font-medium text-purple-600 transition-colors duration-300 hover:text-purple-700">
-          {CONTACT}
-        </a>
+        Run trips, tours or food experiences?{" "}
+        <Link href="/providers" className="font-medium text-purple-600 transition-colors duration-300 hover:text-purple-700">
+          List them on GrupChat
+        </Link>
+      </p>
+      <p className="mt-2 text-xs text-gray-400">
+        Or write to{" "}
+        <a href={`mailto:${CONTACT}?subject=Partnering%20on%20a%20curated%20experience`} className="hover:text-gray-600">{CONTACT}</a>
       </p>
     </div>
   );

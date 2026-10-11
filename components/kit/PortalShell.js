@@ -1,5 +1,6 @@
 "use client";
 
+import { createContext, useContext } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -17,6 +18,10 @@ import { SPRING } from "@/lib/motion";
  *
  * `theme="dark"` paints the admin console's ground; content stays light.
  */
+/** True inside a portal: lets shared page frames drop their own header and gutters. */
+export const PortalContext = createContext(false);
+export const useInPortal = () => useContext(PortalContext);
+
 const THEMES = {
   light: {
     side: "bg-white border-r border-line",
@@ -101,12 +106,14 @@ function SideNav({ nav, pathname, t, reduce, id }) {
   );
 }
 
-export default function PortalShell({ theme = "light", brandHref, tag, cta, nav, footer, children, maxWidth = "max-w-[1120px]", id = "portal" }) {
+export default function PortalShell({ theme = "light", brandHref, tag, cta, nav, footer, children, maxWidth = "max-w-[1120px]", id = "portal", gate }) {
   const { ready } = useRequireAuth();
   const pathname = usePathname() || "";
   const reduce = useReducedMotion();
   const t = THEMES[theme] ?? THEMES.light;
   if (!ready) return <div className="min-h-screen bg-white" aria-busy="true" />;
+  // A page the viewer may not use (not an admin, not approved yet) renders without the shell.
+  if (gate) return gate;
   const CtaIcon = cta?.icon;
 
   return (
@@ -141,7 +148,9 @@ export default function PortalShell({ theme = "light", brandHref, tag, cta, nav,
         </header>
 
         <main className="min-w-0 flex-1">
-          <div className={twMerge("mx-auto flex w-full flex-col gap-7 px-5 pb-32 pt-6 sm:px-8 sm:pb-16 sm:pt-10 lg:px-12", maxWidth)}>{children}</div>
+          <div className={twMerge("mx-auto flex w-full flex-col gap-7 px-5 pb-32 pt-6 sm:px-8 sm:pb-16 sm:pt-10 lg:px-12", maxWidth)}>
+            <PortalContext.Provider value={true}>{children}</PortalContext.Provider>
+          </div>
         </main>
 
         {/* Phones: bottom tabs */}
