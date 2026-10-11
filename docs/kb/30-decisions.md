@@ -329,3 +329,19 @@ for anyone who asks, not the policy; a new kind of provider, or a new use of mem
 needs a policy update. An AI provider serves members only if its terms bar training on their
 data and limit how long it keeps it. Export and account deletion must cover AI drafts and recap
 cards when the AI ships.
+
+### D-045 · 2026-10-11 · The "Plans to memories" scheme ships as tokens, springs and a kit
+**Decision.** The design canvas's scheme becomes Tailwind tokens in `app/globals.css`
+(`@theme`: action, memory, ink, sheet, status tints, dark surfaces, radii, `ease-gc`), the
+films' four springs in `lib/motion.js` (`SPRING.soft`, `ui`, `heavy`, `playful`), and a third
+component set, `components/kit/`, for the surfaces built on it. `/scheme` shows every piece
+live and is kept out of indexes.
+**Why.** The provider portal, the provider application and the admin console are the first
+screens drawn in the scheme; tokens let them say `bg-action-tint` instead of repeating hex
+values, and one set of springs makes the app and the motion graphics move alike. A separate
+kit keeps the screens built under D-008 untouched until each is restyled on purpose.
+**Consequences.** Three component sets now (D-032 named two): `components/ui` serves screens
+built before the scheme, `components/bits` is motion, `components/kit` is the scheme. A
+restyle of an older screen moves it onto the kit rather than editing `components/ui`. Gold is
+never text on white. A dark theme can reuse the `-dark` tokens without new names.
+
