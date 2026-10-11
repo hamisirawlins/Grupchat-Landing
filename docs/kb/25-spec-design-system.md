@@ -1,7 +1,7 @@
 ---
-title: Design system — Apple-centric
+title: Design system — Apple-centric, and the "Plans to memories" scheme
 status: active
-updated: 2026-09-05
+updated: 2026-10-11
 read_when: you are building or reviewing any screen or component in the web app
 ---
 
@@ -68,6 +68,7 @@ Hairlines, not shadows. Shadow only on layers that float over content (sheets, m
 | `AppShell`, `BackToHome`, `ScaffoldPage`, `useRequireAuth` | `components/app/AppShell.js` |
 | `AuthShell`, `FieldGroup`, `Field`, `PasswordField`, `PrimaryButton`, `OutlineButton`, `ButtonLink`, `GoogleButton`, `Divider`, `FormError`, `SuccessMark`, `LegalLine` | `components/auth/AuthShell.js` |
 | `Ring`, `Bars`, `Sparkline`, `StatCard`, `useCountUp` | `components/home/Charts.js` |
+| Scheme kit (D-045) | `components/kit/` — see §Scheme |
 | **To build** (checklist A) | `components/ui/`: `ListGroup`/`Row` (Settings-style), `Sheet` (bottom on mobile, centred ≥640), `Segmented`, `EmptyState`, `Tag`, `Avatar`, `ProgressBar`, `Stepper`; move form primitives from `AuthShell` to `components/ui/Form.js` |
 
 ## Navigation
@@ -85,6 +86,44 @@ Hairlines, not shadows. Shadow only on layers that float over content (sheets, m
 
 ## Copy
 Sentence case. Verbs on buttons ("Create plan", not "Submit"). No provider jargon ("Check your phone for the M-Pesa prompt"). Errors say what to do next. Empty states: two lines max.
+
+## Scheme — "Plans to memories" (D-045)
+The design canvas's scheme, in code. **Purple acts, gold remembers**: purple for anything a
+person does (buttons, links, the active item), gold only for remembering (recaps, funded
+moments), never as text on white (2.8:1). New working surfaces use it: the provider portal,
+the provider application and the admin console. Screens built before it keep the rules above
+until they are restyled to the web boards.
+
+| Token (Tailwind utility) | Value | Use |
+|---|---|---|
+| `ink` · `ink-2` · `ink-3` | #171717 · #4B5563 · #6B7280 | text, supporting text, quiet labels |
+| `action` · `action-strong` · `action-tint` | #9333EA · #7E22CE · #F3E8FF | primary fill · text on tint and hover · selected fills |
+| `memory` · `memory-ink` · `memory-tint` | #B5975A · #7C6534 · #F4EDDF | gold fills · gold text · gold grounds |
+| `sheet` · `soft` · `line` · `line-strong` | #FAF7F2 · #F3F4F6 · 8% · 12% black | warm ground · quiet fills · hairlines |
+| `success` · `warning` · `critical` (+ `-tint`) | #15803D · #B45309 · #B91C1C | status text and its tinted pill |
+| `ground-dark` · `surface-dark` · `raised-dark` · `ink-dark` · `ink-2-dark` · `action-dark` · `action-tint-dark` · `memory-dark` | #0F0E13 · #18171E · #222129 · #F6F3EE · #A8A6B0 · #C084FC · #261538 · #CDB27A | dark surfaces (the admin sidebar today; a dark theme later) |
+| radius `tag` · `input` · `button` · `tile` · `card` · `sheet` | 6 · 12 · 16 · 20 · 24 · 28 | |
+| `ease-gc`, `shadow-float`, `shadow-lift` | `cubic-bezier(.32,.72,0,1)` | |
+
+Type on scheme surfaces: page titles 32–36px weight 900, tracking −0.03em; card titles 18px
+800; field labels 13px 600 above the field; kickers 12px 600 caps +0.14em. Inputs are 52px
+tall with an inset ring, 16px text. Primary buttons 52px (`lg`) or 44px (`md`).
+
+**Motion.** Springs shared with the films (`lib/motion.js` `SPRING`): `soft` 120·22 for
+arrivals, `ui` 260·28 for toggles, tabs and presses, `heavy` 90·20 for large surfaces,
+`playful` 260·14 for one moment of delight (an application sent, a ticket issued). Steps
+slide in the direction of travel (`useStepVariants`); list items grow in and fold away
+(`useListItemVariants`); the active nav highlight slides between items (framer `layoutId`).
+Reduced motion keeps fades only.
+
+**Kit.** `components/kit/` (index re-exports): `Button`/`ButtonLink`/`IconButton`,
+`TextField`/`TextArea`/`SelectField`/`FieldRow`, `Chips`, `RadioCards`, `Switch`,
+`ReviewToggle` (pass · needs fix · fail), `WeekdayPicker`, `StatusTag`, `PageTitle`, `Card`,
+`StatTile`, `MoneyLines`, `ProgressBar`, `Meter`, `VerticalStepper`/`CompactStepper`,
+`FilePickButton`, `ResponsiveTable` (a table from 768px, cards below), `EmptyState`,
+`DoneMark`, and `PortalShell`: a 248px sidebar from 960px, a 76px icon rail from 640px, a top
+bar and bottom tabs on phones, light for providers and dark for admins. `/scheme` renders all
+of it live (not linked, not indexed).
 
 ## Accessibility checklist (per screen)
 `<label>` on every input · `role="alert"` on errors · `aria-busy` on loading frames · focus-visible ring (`ring-4 ring-purple-600/10`) · icon-only buttons have `aria-label` · decorative SVG `aria-hidden`.

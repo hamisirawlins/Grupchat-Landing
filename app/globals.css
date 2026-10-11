@@ -18,6 +18,56 @@
   --font-sans: var(--font-figtree), ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
+/* The "Plans to memories" scheme (KB 25 §Scheme, D-045). Purple acts, gold remembers.
+   Each token is a Tailwind utility: bg-action, text-ink-2, bg-memory-tint, rounded-card,
+   ease-gc, shadow-float. Light first; the -dark tokens paint dark surfaces such as the
+   admin sidebar until a full dark theme ships. */
+@theme {
+  --color-ink: #171717;
+  --color-ink-2: #4b5563;
+  --color-ink-3: #6b7280;
+  --color-sheet: #faf7f2;
+  --color-soft: #f3f4f6;
+  --color-line: rgb(0 0 0 / 0.08);
+  --color-line-strong: rgb(0 0 0 / 0.12);
+
+  --color-action: #9333ea;
+  --color-action-strong: #7e22ce;
+  --color-action-tint: #f3e8ff;
+
+  --color-memory: #b5975a;
+  --color-memory-ink: #7c6534;
+  --color-memory-tint: #f4eddf;
+
+  --color-success: #15803d;
+  --color-success-tint: #f0fdf4;
+  --color-warning: #b45309;
+  --color-warning-tint: #fffbeb;
+  --color-critical: #b91c1c;
+  --color-critical-tint: #fef2f2;
+
+  --color-ground-dark: #0f0e13;
+  --color-surface-dark: #18171e;
+  --color-raised-dark: #222129;
+  --color-ink-dark: #f6f3ee;
+  --color-ink-2-dark: #a8a6b0;
+  --color-action-dark: #c084fc;
+  --color-action-tint-dark: #261538;
+  --color-memory-dark: #cdb27a;
+
+  --radius-tag: 6px;
+  --radius-input: 12px;
+  --radius-button: 16px;
+  --radius-tile: 20px;
+  --radius-card: 24px;
+  --radius-sheet: 28px;
+
+  --ease-gc: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --shadow-float: 0 30px 70px -30px rgb(24 16 48 / 0.45);
+  --shadow-lift: 0 1px 2px rgb(17 12 34 / 0.06), 0 8px 24px -12px rgb(17 12 34 / 0.18);
+}
+
 html {
   background: #ffffff;
   min-height: 100%;
@@ -47,6 +97,18 @@ h3 {
 
 ::selection {
   background: rgba(0, 0, 0, 0.08);
+}
+
+/* Numbers that change in place (money, counts) keep their width. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Keyboard focus is always visible; pointer focus stays quiet. */
+:where(a, button, [role="button"], [role="tab"], [role="radio"], [role="switch"], summary):focus-visible {
+  outline: 3px solid rgb(147 51 234 / 0.45);
+  outline-offset: 2px;
+  border-radius: 12px;
 }
 
 @media (prefers-reduced-motion: reduce) {

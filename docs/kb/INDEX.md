@@ -21,7 +21,7 @@ the detail lives in the linked file. Never paste document content here.
 | 22 | [22-spec-payments.md](22-spec-payments.md) | Initiation → approval → callback → reconciliation; idempotency; provider log | active |
 | 23 | [23-spec-frontend-data-layer.md](23-spec-frontend-data-layer.md) | `lib/db` design, hooks, data-source flag, what stays on REST | draft |
 | 24 | [24-spec-backend-surface.md](24-spec-backend-surface.md) | What gc-payments keeps, deletes, and runs as jobs | active |
-| 25 | [25-spec-design-system.md](25-spec-design-system.md) | Apple-centric design rules: type, colour, geometry, motion, patterns | active |
+| 25 | [25-spec-design-system.md](25-spec-design-system.md) | Apple-centric design rules, and the "Plans to memories" scheme: tokens, springs, the kit | active |
 | 26 | [26-spec-invites.md](26-spec-invites.md) | Invite links incl. signed-out preview; accept/decline flow | active |
 | 27 | [27-spec-audit.md](27-spec-audit.md) | Audit events and the admin view | active |
 | 28 | [28-spec-email.md](28-spec-email.md) | Email verification + transactional notifications (MVP) | active |
