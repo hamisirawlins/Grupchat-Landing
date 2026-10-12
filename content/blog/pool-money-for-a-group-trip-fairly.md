@@ -4,11 +4,11 @@ description: "Who pays what, when it's due, what happens if someone drops out, a
 pillar: money-together
 tags: [pooling money, group trips, contributions]
 author: GrupChat Editorial
-status: draft
-date:
+status: published
+date: 2026-10-12
 aiAssisted: true
-approvedBy:
-approvedAt:
+approvedBy: Hamisi Rawlins
+approvedAt: 2026-10-12
 cover: https://images.pexels.com/photos/36788990/pexels-photo-36788990.jpeg
 coverAlt: "Friends standing in a circle, each looking at their own phone, seen from below"
 coverCredit: "Media Lens King"
