@@ -408,3 +408,29 @@ so. Adding a check back is a new checklist version, optionally re-checking appro
 The liability wording should be read by the advisor; the cap and indemnity are the clauses most
 likely to need local tailoring (consumer protection limits what can be excluded for guests).
 
+### D-047 · 2026-10-12 · Search: words on the first paint, a public experiences hub, and a blog AI drafts and people approve
+**Decision.** Public pages paint their text on the first frame: entrances are CSS (`.gc-rise`,
+`.gc-word` in `app/globals.css`) or transform-only, never an opacity that waits for JavaScript,
+and decorative loops run as CSS (`.gc-drift`). `/experiences` is a server-rendered hub of live
+listings, and each `/experiences/[id]` is fetched on the server (`lib/publicApi.js`) so its words,
+photos and TouristTrip/Breadcrumb JSON-LD are in the first HTML. `/discover` (signed in) is
+noindex. The sitemap lists only pages a stranger can use, with real change dates, plus live
+listings and published articles. The home title leads with what GrupChat does. The blog lives
+at `/blog`: Markdown in `content/blog/`, four pillars (tech and AI and people; planning
+together; money together; experiences in Kenya), RSS, BlogPosting JSON-LD, and
+`/blog/how-we-write`. AI may draft; an article is published only with `approvedBy` and
+`approvedAt`, enforced by the build; drafts show on preview deployments only. Covers are real
+photos from Pexels, served from Pexels' CDN at the size each screen needs (`coverSrc`/`coverSrcSet`
+in `lib/blog.js`) and credited under the image; the build refuses a web cover that isn't Pexels or
+lacks its credit.
+**Why.** Lighthouse (phone) measured the largest content at 6.9–7.2 s on every public page, 93% of
+it render delay from text faded in by JavaScript; twelve looping JS animations kept the home
+page's main thread busy. Outside the brand name GrupChat had about ten indexable pages, most of
+them thin, and the sitemap pointed search engines at a sign-in redirect. Google's guidance rewards
+helpful content whoever drafts it, treats mass-produced AI pages as spam, and asks sites to say
+who made content and how; a named approver and a public policy do both.
+**Consequences.** New public pages use the CSS entrances, not `useRevealVariants`, for anything
+above the fold. Articles follow content/blog/README.md; a published article without an approver
+fails the build. The blog and the hub are noindex while empty. Social profile links stay hidden
+until real URLs exist. Rankings are tracked in the SEO report doc and, once verified, Search Console.
+

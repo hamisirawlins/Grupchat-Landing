@@ -116,6 +116,12 @@ note.
 ## Run the provider journeys offline
 `cd gc-payments && npm run check:providers-flow` (and `check:tickets-flow` for checkout, split, settlement and check-in) — boots the API on an in-memory Firestore and Storage with a mock Paystack (`scripts/lib/fakeFirebase.js`, `mockPaystack.js`, `offlineApi.js`); no credentials or network. For screens, the same pieces plus the Auth emulator (`firebase emulators:start --only auth`) and `NEXT_PUBLIC_USE_EMULATOR=1` in the web app's `.env.local` let you sign in as seeded accounts.
 
+## Publish a blog article (D-047)
+Follow `content/blog/README.md`: brief → AI draft as `status: draft` in a pull request → read it on the Vercel preview at `/blog/<slug>` → set `status: published`, `date`, `approvedBy`, `approvedAt` → merge. The build refuses a published article without an approver, a news piece without sources, and a Pexels cover without its credit (photographer, profile, photo page).
+
+## Search Console
+Verify `https://www.grupchat.net` (domain property, DNS TXT) in Google Search Console and Bing Webmaster Tools, submit `/sitemap.xml`, and check Pages → Not indexed after each release that adds public pages.
+
 ## Webhooks locally
 `ngrok http 4000`, set the Paystack webhook URL to `https://<ngrok>/v2/paystack/webhook` (test mode), and `DEPOSIT_CALLBACK_URL` etc. for Daraja sandbox.
 

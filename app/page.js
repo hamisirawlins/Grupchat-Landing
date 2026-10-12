@@ -182,6 +182,12 @@ export default function Home() {
             </Link>
             <div className="flex items-center gap-3 sm:gap-6">
               <Link
+                href="/blog"
+                className="hidden text-xs sm:text-sm font-semibold text-black transition-colors hover:text-gray-700 whitespace-nowrap min-[400px]:inline"
+              >
+                Blog
+              </Link>
+              <Link
                 href="/sign-in"
                 className="text-xs sm:text-sm font-semibold text-black transition-colors hover:text-gray-700 whitespace-nowrap"
               >
@@ -203,77 +209,53 @@ export default function Home() {
       {/* Stats Section */}
       <section className="relative px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-40 min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div
-            className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-purple-500 rounded-full"
-            animate={{ x: [0, 50, 0], y: [0, -30, 0], scale: [1, 1.1, 1] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            style={{ top: "5%", left: "8%" }}
+          <div
+            className="gc-drift absolute w-16 h-16 sm:w-20 sm:h-20 bg-purple-500 rounded-full"
+            style={{ top: "5%", left: "8%", "--gc-dx": "50px", "--gc-dy": "-30px", "--gc-ds": 1.1, "--gc-dur": "8s" }}
           />
-          <motion.div
-            className="absolute w-14 h-14 sm:w-18 sm:h-18 bg-blue-500 rounded-full"
-            animate={{ x: [0, -40, 0], y: [0, 50, 0], scale: [1, 1.2, 1] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            style={{ top: "15%", right: "12%" }}
+          <div
+            className="gc-drift absolute w-14 h-14 sm:w-18 sm:h-18 bg-blue-500 rounded-full"
+            style={{ top: "15%", right: "12%", "--gc-dx": "-40px", "--gc-dy": "50px", "--gc-ds": 1.2, "--gc-dur": "10s" }}
           />
-          <motion.div
-            className="absolute w-18 h-18 sm:w-22 sm:h-22 bg-pink-500 rounded-full"
-            animate={{ x: [0, 60, 0], y: [0, 40, 0], scale: [1, 1.15, 1] }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            style={{ bottom: "20%", left: "15%" }}
+          <div
+            className="gc-drift absolute w-18 h-18 sm:w-22 sm:h-22 bg-pink-500 rounded-full"
+            style={{ bottom: "20%", left: "15%", "--gc-dx": "60px", "--gc-dy": "40px", "--gc-ds": 1.15, "--gc-dur": "12s" }}
           />
-          <motion.div
-            className="absolute w-12 h-12 sm:w-16 sm:h-16 bg-indigo-500 rounded-full"
-            animate={{ x: [0, -50, 0], y: [0, -40, 0], scale: [1, 1.3, 1] }}
-            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-            style={{ bottom: "30%", right: "8%" }}
+          <div
+            className="gc-drift absolute w-12 h-12 sm:w-16 sm:h-16 bg-indigo-500 rounded-full"
+            style={{ bottom: "30%", right: "8%", "--gc-dx": "-50px", "--gc-dy": "-40px", "--gc-ds": 1.3, "--gc-dur": "9s" }}
           />
-          <motion.div
-            className="absolute w-20 h-20 sm:w-24 sm:h-24 bg-cyan-500 rounded-full"
-            animate={{ x: [0, 30, 0], y: [0, -60, 0], scale: [1, 1.1, 1] }}
-            transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
-            style={{ top: "45%", left: "5%" }}
+          <div
+            className="gc-drift absolute w-20 h-20 sm:w-24 sm:h-24 bg-cyan-500 rounded-full"
+            style={{ top: "45%", left: "5%", "--gc-dx": "30px", "--gc-dy": "-60px", "--gc-ds": 1.1, "--gc-dur": "11s" }}
           />
-          <motion.div
-            className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-orange-500 rounded-full"
-            animate={{ x: [0, -35, 0], y: [0, 45, 0], scale: [1, 1.25, 1] }}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-            style={{ top: "60%", right: "18%" }}
+          <div
+            className="gc-drift absolute w-16 h-16 sm:w-20 sm:h-20 bg-orange-500 rounded-full"
+            style={{ top: "60%", right: "18%", "--gc-dx": "-35px", "--gc-dy": "45px", "--gc-ds": 1.25, "--gc-dur": "7s" }}
           />
-          <motion.div
-            className="absolute w-14 h-14 sm:w-18 sm:h-18 bg-green-500 rounded-full"
-            animate={{ x: [0, 55, 0], y: [0, -25, 0], scale: [1, 1.2, 1] }}
-            transition={{ duration: 13, repeat: Infinity, ease: "easeInOut" }}
-            style={{ top: "25%", left: "25%" }}
+          <div
+            className="gc-drift absolute w-14 h-14 sm:w-18 sm:h-18 bg-green-500 rounded-full"
+            style={{ top: "25%", left: "25%", "--gc-dx": "55px", "--gc-dy": "-25px", "--gc-ds": 1.2, "--gc-dur": "13s" }}
           />
-          <motion.div
-            className="absolute w-18 h-18 sm:w-22 sm:h-22 bg-yellow-500 rounded-full"
-            animate={{ x: [0, -45, 0], y: [0, 35, 0], scale: [1, 1.15, 1] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            style={{ bottom: "15%", left: "30%" }}
+          <div
+            className="gc-drift absolute w-18 h-18 sm:w-22 sm:h-22 bg-yellow-500 rounded-full"
+            style={{ bottom: "15%", left: "30%", "--gc-dx": "-45px", "--gc-dy": "35px", "--gc-ds": 1.15, "--gc-dur": "10s" }}
           />
-          <motion.div
-            className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-red-500 rounded-full"
-            animate={{ x: [0, 40, 0], y: [0, -50, 0], scale: [1, 1.3, 1] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            style={{ top: "70%", left: "20%" }}
+          <div
+            className="gc-drift absolute w-16 h-16 sm:w-20 sm:h-20 bg-red-500 rounded-full"
+            style={{ top: "70%", left: "20%", "--gc-dx": "40px", "--gc-dy": "-50px", "--gc-ds": 1.3, "--gc-dur": "8s" }}
           />
-          <motion.div
-            className="absolute w-12 h-12 sm:w-16 sm:h-16 bg-teal-500 rounded-full"
-            animate={{ x: [0, -30, 0], y: [0, 55, 0], scale: [1, 1.25, 1] }}
-            transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
-            style={{ bottom: "10%", right: "25%" }}
+          <div
+            className="gc-drift absolute w-12 h-12 sm:w-16 sm:h-16 bg-teal-500 rounded-full"
+            style={{ bottom: "10%", right: "25%", "--gc-dx": "-30px", "--gc-dy": "55px", "--gc-ds": 1.25, "--gc-dur": "11s" }}
           />
-          <motion.div
-            className="absolute w-20 h-20 sm:w-24 sm:h-24 bg-violet-500 rounded-full"
-            animate={{ x: [0, 45, 0], y: [0, 30, 0], scale: [1, 1.1, 1] }}
-            transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-            style={{ top: "35%", right: "5%" }}
+          <div
+            className="gc-drift absolute w-20 h-20 sm:w-24 sm:h-24 bg-violet-500 rounded-full"
+            style={{ top: "35%", right: "5%", "--gc-dx": "45px", "--gc-dy": "30px", "--gc-ds": 1.1, "--gc-dur": "9s" }}
           />
-          <motion.div
-            className="absolute w-14 h-14 sm:w-18 sm:h-18 bg-emerald-500 rounded-full"
-            animate={{ x: [0, -55, 0], y: [0, -35, 0], scale: [1, 1.2, 1] }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            style={{ bottom: "40%", left: "10%" }}
+          <div
+            className="gc-drift absolute w-14 h-14 sm:w-18 sm:h-18 bg-emerald-500 rounded-full"
+            style={{ bottom: "40%", left: "10%", "--gc-dx": "-55px", "--gc-dy": "-35px", "--gc-ds": 1.2, "--gc-dur": "12s" }}
           />
         </div>
 
@@ -285,7 +267,7 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            A rich history of
+            GrupChat so far
           </motion.h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12 max-w-4xl mx-auto">
@@ -695,7 +677,8 @@ export default function Home() {
                   { icon: "facebook", href: "#" },
                   { icon: "instagram", href: "#" },
                   { icon: "linkedin", href: "#" },
-                ].map((social, index) => (
+                  // A "#" link is a dead end for people and crawlers: an icon shows only once its profile URL is filled in.
+                ].filter((social) => social.href !== "#").map((social, index) => (
                   <motion.a
                     key={social.icon}
                     href={social.href}
@@ -749,6 +732,8 @@ export default function Home() {
               <h3 className="text-white font-semibold mb-4">Legal</h3>
               <ul className="space-y-2">
                 {[
+                  { name: "Experiences", href: "/experiences" },
+                  { name: "Blog", href: "/blog" },
                   { name: "List your experiences", href: "/providers" },
                   { name: "Privacy Policy", href: "/privacy-policy" },
                   { name: "Terms of Service", href: "/terms-of-service" },

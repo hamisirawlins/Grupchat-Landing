@@ -144,3 +144,68 @@ html,
 body {
   overscroll-behavior-y: contain;
 }
+
+/* Entrances that need no JavaScript (D-047). Public pages paint their text on the
+   first frame and rise into place with CSS, so a slow phone never waits for the
+   bundle to see the words, and Largest Contentful Paint lands with the first paint.
+   `--gc-delay` staggers siblings; reduced motion shows everything in place. */
+/* The fade starts part-way (0.35), not at 0: the words are readable from the first frame,
+   and browsers count that frame as the paint, since a compositor-run fade from 0 is never
+   reported as one. */
+@keyframes gc-rise {
+  from { opacity: 0.35; transform: translateY(var(--gc-rise-y, 12px)); }
+  to { opacity: 1; transform: none; }
+}
+.gc-rise {
+  animation: gc-rise 600ms var(--ease-gc) both;
+  animation-delay: var(--gc-delay, 0ms);
+}
+/* A word of a headline rising out of its own line (SplitText). */
+@keyframes gc-word {
+  from { opacity: 0.35; transform: translateY(55%); }
+  to { opacity: 1; transform: none; }
+}
+.gc-word {
+  display: inline-block;
+  animation: gc-word 700ms var(--ease-gc) both;
+  animation-delay: var(--gc-delay, 0ms);
+}
+/* Decorative drift for background shapes: the compositor runs it, not the main thread. */
+@keyframes gc-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(var(--gc-dx, 0), var(--gc-dy, 0), 0) scale(var(--gc-ds, 1)); }
+}
+.gc-drift {
+  animation: gc-drift var(--gc-dur, 10s) ease-in-out infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gc-rise, .gc-word, .gc-drift { animation: none; }
+}
+
+/* Article text (the blog, D-047): a measure of about 68 characters, generous leading,
+   and headings that sit closer to what follows than to what came before. */
+.gc-prose { color: var(--color-ink-2); font-size: 18px; line-height: 1.75; }
+.gc-prose > * + * { margin-top: 1.15em; }
+.gc-prose h2 { color: var(--color-ink); font-size: 26px; line-height: 1.25; font-weight: 800; letter-spacing: -0.02em; margin-top: 2em; scroll-margin-top: 88px; }
+.gc-prose h3 { color: var(--color-ink); font-size: 20px; line-height: 1.35; font-weight: 800; margin-top: 1.6em; scroll-margin-top: 88px; }
+.gc-prose h2 + *, .gc-prose h3 + * { margin-top: 0.6em; }
+.gc-prose strong { color: var(--color-ink); font-weight: 700; }
+.gc-prose a { color: var(--color-action-strong); font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.gc-prose a:hover { text-decoration-thickness: 2px; }
+.gc-prose ul, .gc-prose ol { padding-left: 1.3em; }
+.gc-prose ul { list-style: disc; }
+.gc-prose ol { list-style: decimal; }
+.gc-prose li + li { margin-top: 0.4em; }
+.gc-prose li::marker { color: var(--color-ink-3); }
+.gc-prose blockquote { border-left: 3px solid var(--color-memory); padding: 0.2em 0 0.2em 1em; color: var(--color-ink); font-weight: 500; }
+.gc-prose img { border-radius: 20px; width: 100%; height: auto; }
+.gc-prose hr { border: 0; border-top: 1px solid var(--color-line); margin: 2.4em 0; }
+.gc-prose table { width: 100%; border-collapse: collapse; font-size: 15px; line-height: 1.5; }
+.gc-prose th, .gc-prose td { border-bottom: 1px solid var(--color-line); padding: 10px 12px 10px 0; text-align: left; vertical-align: top; }
+.gc-prose th { color: var(--color-ink); font-weight: 700; }
+.gc-prose code { font-size: 0.9em; background: var(--color-soft); border-radius: 6px; padding: 0.1em 0.35em; }
+@media (max-width: 640px) {
+  .gc-prose { font-size: 17px; }
+  .gc-prose h2 { font-size: 23px; }
+}

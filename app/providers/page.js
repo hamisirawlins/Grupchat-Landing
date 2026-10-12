@@ -7,7 +7,7 @@ import { ImageIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ButtonLink } from "@/components/kit";
 import { ProviderTag } from "@/components/providers/Tags";
-import { SPRING, STAGGER, useRevealVariants } from "@/lib/motion";
+import { SPRING } from "@/lib/motion";
 
 const STEPS = [
   ["Apply", "Your business, documents and payout account"],
@@ -18,7 +18,6 @@ const STEPS = [
 /** Why providers list with GrupChat, and the way in (KB D-043). Public. */
 export default function ProvidersWelcome() {
   const { user, loading } = useAuth();
-  const item = useRevealVariants();
   const reduce = useReducedMotion();
   const applyHref = user ? "/providers/apply" : "/sign-up?redirect=/providers/apply";
   const statusHref = user ? "/providers/status" : "/sign-in?redirect=/providers/status";
@@ -27,19 +26,19 @@ export default function ProvidersWelcome() {
   return (
     <main className="grid min-h-screen bg-white text-ink lg:grid-cols-2">
       <div className="flex items-center justify-center px-5 py-10 sm:px-12 lg:py-12">
-        <motion.div variants={STAGGER} initial="hidden" animate="show" className="flex w-full max-w-[500px] flex-col gap-8">
-          <motion.div variants={item}>
+        <div className="flex w-full max-w-[500px] flex-col gap-8">
+          <div className="gc-rise">
             <Link href="/" className="inline-flex items-center gap-2.5">
               <Image src="/logo.png" alt="" width={32} height={32} className="h-8 w-8 rounded-full" priority />
               <span className="text-lg font-extrabold tracking-[-0.01em]">GrupChat</span>
               <ProviderTag />
             </Link>
-          </motion.div>
-          <motion.div variants={item} className="flex flex-col gap-3.5">
+          </div>
+          <div className="gc-rise flex flex-col gap-3.5" style={{ "--gc-delay": "70ms" }}>
             <h1 className="text-[40px] font-black leading-[44px] tracking-[-0.03em] sm:text-[52px] sm:leading-[56px]">Get booked by whole groups</h1>
             <p className="text-lg leading-[27px] text-ink-2">Groups on GrupChat plan trips together and book what they find in Discover. List what you run and get paid for every ticket.</p>
-          </motion.div>
-          <motion.ol variants={item} className="grid gap-5 sm:grid-cols-3">
+          </div>
+          <ol className="gc-rise grid gap-5 sm:grid-cols-3" style={{ "--gc-delay": "140ms" }}>
             {STEPS.map(([t, s], i) => (
               <li key={t} className="flex flex-col gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-action-tint text-sm font-extrabold text-action-strong">{i + 1}</span>
@@ -47,12 +46,12 @@ export default function ProvidersWelcome() {
                 <span className="text-sm leading-5 text-ink-2">{s}</span>
               </li>
             ))}
-          </motion.ol>
-          <motion.div variants={item} className="flex flex-wrap items-center gap-3">
+          </ol>
+          <div className="gc-rise flex flex-wrap items-center gap-3" style={{ "--gc-delay": "210ms" }}>
             <ButtonLink href={applyHref} size="lg" className="px-7" aria-disabled={loading}>Apply as a provider</ButtonLink>
             <ButtonLink href={statusHref} variant="text" size="lg">Check my application</ButtonLink>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
 
       <div aria-hidden="true" className="relative flex min-h-[420px] items-center justify-center overflow-hidden bg-sheet px-6 py-12 lg:min-h-0">

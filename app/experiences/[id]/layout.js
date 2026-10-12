@@ -1,29 +1,20 @@
 import { pageMeta } from "@/lib/seo";
+import { experienceById } from "@/lib/publicApi";
 
 // A listing is public, so a shared link should preview as the listing itself.
-// Metadata streams after the page for people; only crawlers wait for it.
+// The fetch is shared with the page (same URL, same cache), so it costs one request.
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const path = `/experiences/${id}`;
-  try {
-    const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v2/experiences/${encodeURIComponent(id)}`, {
-      next: { revalidate: 300 },
-      signal: AbortSignal.timeout(2500),
-    });
-    const e = r.ok ? (await r.json())?.data?.experience : null;
-    if (e) {
-      const where = e.town?.split(",")[0];
-      return pageMeta({
-        title: e.title,
-        description: `${where ? `${where}, with` : "With"} ${e.provider?.name || "a local provider"}. Pick a date and book tickets for your group on GrupChat.`,
-        path,
-        image: e.cover || undefined,
-      });
-    }
-  } catch {
-    // Fall through: the page still renders and says what's wrong.
-  }
-  return pageMeta({ title: "Experience", path, noIndex: true });
+  const e = await experienceById(id);
+  if (!e) return pageMeta({ title: "Experience", path, noIndex: true });
+  const where = e.town?.split(",")[0];
+  return pageMeta({
+    title: where ? `${e.title} · ${where}` : e.title,
+    description: `${e.duration ? `${e.duration}, ` : ""}${e.scheduleLine ? `${e.scheduleLine}. ` : ""}Run by ${e.provider?.name || "a registered business"}${where ? ` in ${where}` : ""}. Pick a date and book tickets for your group.`,
+    path,
+    image: e.cover || undefined,
+  });
 }
 
 export default function Layout({ children }) {

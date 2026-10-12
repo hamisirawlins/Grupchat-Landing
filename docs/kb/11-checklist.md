@@ -106,6 +106,9 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 ## T · Tickets (D-044, 29)
 - [x] T1 Checkout: places held per session, `ticket-sale` transaction, Paystack split to the provider's subaccount (`transaction_charge`, `bearer: account`) · [x] T2 Settlement through the one path: places booked, code issued, buyer and provider emailed, ledger posted; late payments flagged for review · [x] T3 Web: tickets in Discover, public listing page with dates, places left and checkout, return from Paystack, ticket with QR, calendar file and directions, `/tickets` · [x] T4 Provider bookings: totals, sessions with guest lists, check-in by QR or code · [x] T5 `npm run check:tickets-flow` (offline, 41 assertions) · [ ] T6 Split confirmed with Paystack (account manager) and a live test sale · [ ] T7 Refunds: handled in Paystack by hand until a flow is agreed
 
+## S · Search and the blog (D-047)
+- [x] S1 Text paints without JavaScript on public pages; landing loops on CSS · [x] S2 Sitemap and robots: real dates, no signed-in pages, live listings and articles · [x] S3 `/experiences` hub and server-rendered listings with TouristTrip and Breadcrumb JSON-LD · [x] S4 `/blog`: Markdown, four pillars, RSS, BlogPosting JSON-LD, `/blog/how-we-write`, approval enforced by the build · [ ] S5 First three articles approved and published · [ ] S6 Search Console and Bing verified, sitemap submitted · [ ] S7 Social profile URLs added (Organization `sameAs`, footer icons)
+
 ## I · Firebase-direct data layer — **last, before test release** (D-013)
 - [ ] I0 Rotate + purge Admin key (manual, security; can happen any time)
 - [x] I1 P0.3 Firebase config versioned (`firebase.json`, `.firebaserc`, deny-all rules, index file = the project's 20). Deploy via CLI not yet exercised.
@@ -115,6 +118,7 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 - [ ] Z1 All screens pass 25 §Accessibility · [ ] Z2 ≤375px and ≥1280px walkthrough · [ ] Z3 `MVP_USER_JOURNEYS.md` acceptance criteria ticked · [ ] Z4 KB rows `updated` within the release week
 
 ## Log (newest first)
+- 2026-10-12 · Search: text paints on the first frame, a public experiences hub, server-rendered listings with structured data, a cleaner sitemap, and a blog that AI drafts and people approve (D-047).
 - 2026-10-11 · Kenya asks providers for business registration and the payout account only; liability moves into the provider terms and ToS §6; listings say "Registered business" (D-046).
 - 2026-10-11 · Tickets (D-044): groups book provider experiences from Discover; Paystack splits each sale to the provider at checkout; providers check guests in by QR.
 - 2026-10-11 · Experience providers (D-043): apply, admin review against versioned market checklists, a provider portal for listings; drawn in the "Plans to memories" scheme (D-045).

@@ -12,6 +12,9 @@ export default function robots() {
         allow: "/",
         disallow: [
           "/home", "/plans", "/notifications", "/admin",
+          // signed-in screens: tickets, the provider portal and the application steps. /discover stays
+          // crawlable for now so search engines can read its noindex and drop it (it was in the sitemap).
+          "/tickets", "/provider$", "/provider/", "/providers/apply", "/providers/status",
           "/manage-data", "/delete-account", "/verify-email",
           "/reset-password", "/forgot-password", "/api/",
           // an invite code in an index is a code that has leaked
@@ -20,6 +23,5 @@ export default function robots() {
       },
     ],
     sitemap: `${SITE}/sitemap.xml`,
-    host: SITE,
   };
 }

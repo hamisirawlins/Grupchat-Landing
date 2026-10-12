@@ -1,6 +1,5 @@
 "use client";
 
-import { CountUp } from "@/components/bits";
 
 /**
  * The product, in one card. An illustrative plan — not live data — shown because the fastest
@@ -36,7 +35,8 @@ export default function PlanCardMock() {
       <div className="mt-5 flex items-baseline gap-2">
         <span className="text-[13px] font-medium text-gray-400">KES</span>
         <span className="text-3xl font-bold tracking-tight text-black">
-          <CountUp to={RAISED} duration={1600} format={(n) => Math.round(n).toLocaleString()} />
+          {/* Static, not counted up: the largest text on a phone's first screen must be final on the first paint (D-047). */}
+          {RAISED.toLocaleString("en-KE")}
         </span>
         <span className="text-[13px] text-gray-400">of {TARGET.toLocaleString()}</span>
       </div>
