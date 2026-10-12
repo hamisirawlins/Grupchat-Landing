@@ -4,11 +4,11 @@ description: "AI trip planners are good at options and bad at people. What a use
 pillar: tech-and-ai
 tags: [ai, group planning, privacy]
 author: GrupChat Editorial
-status: draft
-date:
+status: published
+date: 2026-10-12
 aiAssisted: true
-approvedBy:
-approvedAt:
+approvedBy: Hamisi Rawlins
+approvedAt: 2026-10-12
 cover: https://images.pexels.com/photos/6210505/pexels-photo-6210505.jpeg
 coverAlt: "Four friends share a meal around a low table, smiling at the camera"
 coverCredit: "PICHA"

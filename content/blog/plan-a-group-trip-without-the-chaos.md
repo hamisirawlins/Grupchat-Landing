@@ -4,11 +4,11 @@ description: "A five-step way to get a group from \"we should go somewhere\" to 
 pillar: planning-together
 tags: [group trips, planning, kenya]
 author: GrupChat Editorial
-status: draft
-date:
+status: published
+date: 2026-10-12
 aiAssisted: true
-approvedBy:
-approvedAt:
+approvedBy: Hamisi Rawlins
+approvedAt: 2026-10-12
 cover: https://images.pexels.com/photos/34688454/pexels-photo-34688454.jpeg
 coverAlt: "A group of friends gathered beside a van at the roadside, ready for a road trip"
 coverCredit: "Justin Joseph"
