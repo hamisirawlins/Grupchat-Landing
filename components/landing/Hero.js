@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
-import { EASE } from "@/lib/motion";
-import { SplitText, Magnet, ClickSpark, SpotlightCard, DotGrid, AnimatedContent } from "@/components/bits";
+import { useReducedMotion } from "framer-motion";
+import { SplitText, Magnet, ClickSpark, SpotlightCard, DotGrid } from "@/components/bits";
 import PlanCardMock from "./PlanCardMock";
 
 /**
@@ -41,11 +40,9 @@ export default function Hero() {
         <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
           {/* ---- the case ------------------------------------------------ */}
           <div className="lg:col-span-7">
-            <motion.div
-              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: EASE }}
-              className="inline-flex items-center gap-2 rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5 backdrop-blur"
+            <div
+              className="gc-rise inline-flex items-center gap-2 rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5 backdrop-blur"
+              style={{ "--gc-rise-y": "10px" }}
             >
               <span className="relative flex h-1.5 w-1.5">
                 {!reduce && (
@@ -56,7 +53,7 @@ export default function Hero() {
               <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-600">
                 Plans to memories
               </span>
-            </motion.div>
+            </div>
 
             <SplitText
               as="h1"
@@ -68,20 +65,16 @@ export default function Hero() {
               stagger={0.05}
             />
 
-            <motion.p
-              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: EASE, delay: 0.42 }}
-              className="mt-6 max-w-xl text-base leading-relaxed text-gray-600 sm:text-lg"
+            <p
+              className="gc-rise mt-6 max-w-xl text-base leading-relaxed text-gray-600 sm:text-lg"
+              style={{ "--gc-delay": "420ms" }}
             >
               Less apps, notifications and follow ups to make those group plans reality!
-            </motion.p>
+            </p>
 
-            <motion.div
-              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: EASE, delay: 0.52 }}
-              className="mt-9 flex flex-wrap items-center gap-3"
+            <div
+              className="gc-rise mt-9 flex flex-wrap items-center gap-3"
+              style={{ "--gc-delay": "520ms" }}
             >
               <Magnet strength={0.22} radius={90}>
                 <ClickSpark color="#7c3aed">
@@ -98,19 +91,17 @@ export default function Hero() {
               </Magnet>
 
               <Link
-                href="/discover"
+                href="/experiences"
                 className="inline-flex min-h-[48px] items-center rounded-full border border-black/[0.12] bg-white/70 px-6 text-[15px] font-semibold text-black backdrop-blur transition-colors duration-300 hover:border-black/25"
               >
-                Browse plans
+                Browse experiences
               </Link>
-            </motion.div>
+            </div>
 
             {/* the three true things */}
-            <motion.dl
-              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: EASE, delay: 0.62 }}
-              className="mt-10 flex flex-wrap gap-x-8 gap-y-4 border-t border-black/[0.07] pt-6"
+            <dl
+              className="gc-rise mt-10 flex flex-wrap gap-x-8 gap-y-4 border-t border-black/[0.07] pt-6"
+              style={{ "--gc-delay": "620ms" }}
             >
               {FACTS.map((f) => (
                 <div key={f.k} className="flex items-baseline gap-2">
@@ -118,21 +109,18 @@ export default function Hero() {
                   <dd className="text-[13px] text-gray-500">{f.v}</dd>
                 </div>
               ))}
-            </motion.dl>
+            </dl>
           </div>
 
           {/* ---- the thing itself ---------------------------------------- */}
           <div className="lg:col-span-5">
-            <AnimatedContent delay={0.25} distance={26}>
+            <div className="gc-rise" style={{ "--gc-delay": "250ms", "--gc-rise-y": "26px" }}>
               <SpotlightCard className="rounded-3xl" radius={380}>
-                <motion.div
-                  animate={reduce ? {} : { y: [0, -8, 0] }}
-                  transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-                >
+                <div className="gc-drift" style={{ "--gc-dy": "-8px", "--gc-dur": "7s" }}>
                   <PlanCardMock />
-                </motion.div>
+                </div>
               </SpotlightCard>
-            </AnimatedContent>
+            </div>
           </div>
         </div>
       </div>

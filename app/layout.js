@@ -17,9 +17,10 @@ const figtree = Figtree({
 // especially og:image — must name www. A share-card scraper that does not follow
 // redirects on an image simply shows no card.
 const SITE = "https://www.grupchat.net";
-const TITLE = "GrupChat — Powering Plans Beyond The Chat";
+// Lead with what people search for; the tagline stays on the page (D-047).
+const TITLE = "GrupChat: plan group trips and pool money together";
 const DESCRIPTION =
-  "Plan, manage, track and pool for group plans and ideas with ease.";
+  "Plan trips and events with your group, pool the money in one place, and book experiences from local providers. Free to join.";
 
 export const metadata = {
   metadataBase: new URL(SITE),
@@ -117,12 +118,14 @@ const JSON_LD = {
       applicationCategory: "LifestyleApplication",
       operatingSystem: "Android, Web",
       url: SITE,
+      downloadUrl: "https://play.google.com/store/apps/details?id=com.grupchat",
+      publisher: { "@id": `${SITE}/#organization` },
       description: DESCRIPTION,
       offers: {
         "@type": "Offer",
         price: "0",
         priceCurrency: "KES",
-        description: "Free to join and to contribute. A 2% fee applies only when a pool is withdrawn.",
+        description: "Free to join.",
       },
     },
   ],
@@ -130,7 +133,7 @@ const JSON_LD = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en-KE">
       <body
         className={`${figtree.variable} antialiased`}
       >

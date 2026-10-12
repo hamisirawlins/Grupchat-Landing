@@ -5,10 +5,11 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function TermsOfService() {
+  // Text is painted on the first frame (no opacity in the hidden state) and only slides
+  // into place once the script runs, so a slow phone reads it straight away (D-047).
   const containerVariants = {
-    hidden: { opacity: 0 },
+    hidden: {},
     visible: {
-      opacity: 1,
       transition: {
         staggerChildren: 0.1,
         delayChildren: 0.1,
@@ -17,10 +18,9 @@ export default function TermsOfService() {
   };
 
   const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { y: 20 },
     visible: {
       y: 0,
-      opacity: 1,
       transition: {
         duration: 0.5,
         ease: [0.4, 0, 0.2, 1],

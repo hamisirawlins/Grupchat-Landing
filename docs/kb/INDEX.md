@@ -37,6 +37,7 @@ the detail lives in the linked file. Never paste document content here.
 - **Touching Firestore from the frontend** → 20 → 21 → 23
 - **Anything with money in it** → 22 (and 24 for what the backend owns)
 - **Experience providers, their listings, tickets or the review queue** → 29 (money: 22)
+- **Search, metadata or the blog** → D-038 and D-047 in 30; articles: `content/blog/README.md`
 - **Running things locally / deploying rules** → 40
 - **"Why is it like this?"** → 30
 - **Found an old `.md` and unsure if it's true** → 90
