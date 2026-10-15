@@ -1,7 +1,7 @@
 ---
 title: Email — verification and transactional notifications (MVP)
 status: active
-updated: 2026-09-12
+updated: 2026-10-16
 read_when: you are implementing or reviewing anything that sends an email, or the sign-up verification flow
 ---
 
@@ -27,6 +27,20 @@ Verify `grupchat.net` on Resend (DKIM/SPF DNS records) and send as **`GrupChat <
 | M5 | *(ops)* Payout needs review | `payout.review_required` | all admins | plan, amount, reason, link to `/admin/payouts` |
 | M6 | *(ops)* Withdrawal to approve | `payout.requested` — every withdrawal (D-028) | all admins | plan, requested, recipient gets, recipient, reference, link to `/admin/payouts` |
 | M7 | Withdrawal not approved | `payout.declined` | plan owner | amount back in the plan, recipient, the admin's reason |
+
+Quick Pool (2a, D-053) — a pooler's email is written to **only when it belongs to a verified account**, so a public form is never a way to mail someone:
+
+| # | Email | Trigger (server) | To | Contents |
+|---|---|---|---|---|
+| Q1 | You pooled *{amount}* | a Quick Pool contribution settles | the pooler, if verified | pool, amount, M-Pesa receipt, when, link to the pool |
+| Q2 | *{pool}* has closed | the pool reaches `endsAt` | the creator; every verified pooler | collected, target, people, payments; the pooler's own total |
+| Q3 | *(ops)* Quick Pool over its cap · payment over the members limit · paybill payment that matched no pool | `quickpool.over_cap` / `over_limit` / `unmatched` | all admins (over-limit also tells the creator) | pool, amount, what to do |
+| Q4 | Refund request · Refund sent · Refund not approved | `quickpool.refund_requested`, `payout.settled` / `payout.declined` on a refund | the creator; the member, if verified | amount, what they receive, reason |
+| Q5 | Your GrupChat sign-in link | `POST /v2/auth/email-link` | the address typed | a one-time Firebase sign-in link (Admin SDK `generateSignInWithEmailLink`), one per address per 10 minutes |
+
+M3 is not sent for Quick Pool contributions, and M4/M7 not for refunds: Q1 and Q4 replace them.
+Verification at sign-in: the client calls `POST /v2/users/me/verification-email` when an unverified
+password account signs in (one per minute, as M1); only creating a Quick Pool and withdrawing are gated.
 
 Explicitly **not** in MVP: welcome email, invite accepted, plan locked / reminders (in-app exists), contribution notices to the owner (in-app exists), digests.
 

@@ -8,6 +8,7 @@ import {
   GoogleAuthProvider,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { requestVerificationEmail } from "@/lib/verification";
 import {
   AuthShell,
   AuthItem,
@@ -65,6 +66,9 @@ export default function SignIn() {
       const data = await completeSignIn(user);
 
       if (data.success) {
+        // D-053: an unverified account gets its link when it signs in (one a minute at most); only
+        // creating a Quick Pool and withdrawing wait on it, so nothing here blocks on the answer.
+        if (!user.emailVerified) await Promise.race([requestVerificationEmail(user, postAuthDestination()).catch(() => null), new Promise((r) => setTimeout(r, 1500))]);
         window.location.href = postAuthDestination();
       } else {
         setError(data.message || "Sign in failed");

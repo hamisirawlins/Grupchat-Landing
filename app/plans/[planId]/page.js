@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowUpRight, CheckCircle2, Circle, Copy, Link2, Pencil, Share2, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -82,6 +82,12 @@ export default function PlanDetails() {
   useEffect(() => {
     if (plan?.id) auditAPI.emit({ action: "ui.plan_viewed", entity: "plan", entityId: plan.id, planId: plan.id });
   }, [plan?.id]);
+
+  // A Quick Pool lives on its pool page (KB 2a).
+  const router = useRouter();
+  useEffect(() => {
+    if (plan?.planType === "quick" && plan.quickPool?.linkCode) router.replace(`/q/${plan.quickPool.linkCode}`);
+  }, [plan?.planType, plan?.quickPool?.linkCode, router]);
 
   const [sheet, setSheet] = useState(null); // "pay" | "invite" | "edit" | "resource" | "item" | "withdraw"
   const [activityShown, setActivityShown] = useState(10);

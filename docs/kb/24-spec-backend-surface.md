@@ -1,7 +1,7 @@
 ---
 title: Backend surface — what gc-payments keeps, deletes, and runs
 status: active
-updated: 2026-10-11
+updated: 2026-10-16
 read_when: you are changing routes, controllers or jobs in gc-payments, or deciding whether something belongs on the backend at all
 ---
 
@@ -27,24 +27,26 @@ Express 4, ESM, port **4000**, firebase-admin 13, socket.io (to be retired). Ent
 | Tickets (D-044, 22, 29) | `GET /v2/experiences/:id/sessions` (public), `POST /v2/experiences/:id/checkout`; `GET /v2/tickets`, `GET /v2/tickets/:orderId`; `GET /v2/providers/me/bookings`, `GET …/bookings/find?code=`, `POST …/bookings/:orderId/check-in` (`{ undo }`) | `controllers/v2/ticketController.js` |
 | Provider review (admin) | `GET /v2/admin/providers[/:uid]`, `…/:uid/documents/:checkId/:fileId`, `POST …/:uid/checks/:checkId`, `…/:uid/decision`, `…/:uid/payout/retry`; `GET|POST /v2/admin/markets`, `GET /v2/admin/markets/:code`, `PUT …/:code/draft`, `POST …/:code/draft/discard`, `POST …/:code/publish`; `POST /v2/admin/experiences/:id/pause` | `controllers/v2/providerAdminController.js` |
 | Public | `GET /v2/invites/:code/preview` — signed-out invite projection (26) | `controllers/v2/invitesPublicController.js` |
+| Quick Pool (2a) | `GET /v2/quick-pools/options`, `POST /v2/quick-pools` (verified), `GET …/mine`, `PUT …/:planId` (owner), `POST …/:planId/refunds`, `…/refunds/:txId/approve` · `/decline` (owner); public `GET …/link/:code`, `POST …/link/:code/pay` (20 per IP per 10 min), `GET …/tx/:txId?key=`; `GET /v2/usernames/:name/available`, `POST /v2/auth/email-link`; C2B booking inside `/core/paybill-confirmation` and `/core/paybill-callback` (D-051) | `controllers/v2/quickPoolController.js`, `services/quickPool/*` |
+| Quick Pool admin, insights (2a, 2b) | `GET /v2/admin/quick-pools/flags`, `POST …/unmatched/:id/resolve`, `POST …/members/:memberKey/refund`, `GET|PUT …/creators/:uid/cap`; `GET /v2/admin/insights/system?days=`, `GET|POST /v2/admin/insights/review` | `quickPoolController`, `services/insights/`, `services/ai/` |
 | Health | `GET /` | `index.js` |
 
 ## Admin guard
-Admin = `users/{uid}.role === "admin"`, defined once in `services/adminAccess.js` and enforced server-side by `middleware/adminMiddleware.js` on every admin route (catalogue writes, audit list, ledger list/verify, payouts review/approve/decline/resolve, callback log, admin plans, everything under `/v2/admin/providers`, `/v2/admin/markets`, `/v2/admin/experiences`). Refused attempts are audited as `admin.access_denied`. `role` is not writable through any client-facing update. Gate: `npm run check:admin-guards` fails if a protected route loses its middleware. The frontend's `isAdmin` only decides what to *show*; the server decides what is *allowed*.
+Admin = `users/{uid}.role === "admin"`, defined once in `services/adminAccess.js` and enforced server-side by `middleware/adminMiddleware.js` on every admin route (catalogue writes, audit list, ledger list/verify, payouts review/approve/decline/resolve, callback log, admin plans, everything under `/v2/admin/providers`, `/v2/admin/markets`, `/v2/admin/experiences`, `/v2/admin/quick-pools`, `/v2/admin/insights`). Refused attempts are audited as `admin.access_denied`. `role` is not writable through any client-facing update. Gate: `npm run check:admin-guards` fails if a protected route loses its middleware. The frontend's `isAdmin` only decides what to *show*; the server decides what is *allowed*.
 
 ## Deletes
 All `DELETE` routes are soft (D-019): milestones and images set `deletedAt`; resources are marked `removedAt` in place; invitations `status: revoked`. `getPlan` strips removed resources; list endpoints filter `deletedAt`. Guard: `npm run check:no-hard-delete`.
 
 ## Jobs
 - **`autoLockService`** — every interval: premium plans `status == active && lockDate <= now` → `status: locked`; 48h-before reminders to `paymentStatus == unpaid` members. **Keeps.** Needs the `plans(planType, status, lockDate)` index.
-- **Reconciliation** (P4.1, shipped) — see 22.
+- **Reconciliation** (P4.1, shipped) — see 22. Every 5th run (≈10 min) it also closes Quick Pools at `endsAt`, writes due pool insights (at most 10 a run) and, on Mondays from 07:00 EAT, the admin review (2a, 2b). It moves Quick Pool refunds a creator left for 7 days to the admins and fails prompts that were never sent.
 - **Recount** (optional) — nightly `membersCount` recompute to correct client-side counter drift.
 
 ## Delete (P5)
 
 | What | Why |
 |---|---|
-| `/v1/auth`, `/v1/users`, `/v1/pools`, `/v1/transactions`, `/v1/invitations`, `/v1/memberships`, `/v1/notifications`, `/v1/community`, `/core`, `/core/paystack` | V1, Supabase-backed; frontend no longer calls them |
+| `/v1/auth`, `/v1/users`, `/v1/pools`, `/v1/transactions`, `/v1/invitations`, `/v1/memberships`, `/v1/notifications`, `/v1/community`, `/core`, `/core/paystack` | V1, Supabase-backed; frontend no longer calls them. **Except** `/core/paybill-confirmation` and `/core/paybill-callback`, the URLs registered with Safaricom: Quick Pool books paybill payments there (D-051), so they stay, with only their V1 part removed |
 | `services/supabaseService.js`, `@supabase/supabase-js`, `database/**`, `scripts/startup-phone-hash.js` (verify), `SUPABASE_*`, `SKIP_SUPABASE_TEST` | Supabase is deprecated |
 | Importers to fix/remove: `controllers/{auth,invitation,membership,mpesa,notification,paystack,pool,transaction,user}Controller.js`, `services/notificationService.js`, `services/paybillIdentifierService.js`, `database/migrations/phone-hash-migration.js` | the 13 Supabase importers |
 | `services/websocketService.js`, `socket.io`, `socket.io-client` | replaced by `onSnapshot` |

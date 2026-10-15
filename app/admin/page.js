@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Inbox, ListChecks, ShieldCheck, Sparkles, Wallet } from "lucide-react";
+import { BarChart3, BookOpen, Inbox, ListChecks, ShieldCheck, Sparkles, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { auditAPI } from "@/lib/api";
 import { unwrap } from "@/lib/data/shape";
@@ -58,6 +58,7 @@ export default function Admin() {
 
       <Section title="Views" className="mt-10">
         <ListGroup>
+          <Row href="/admin/insights" leading={<span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><BarChart3 className="h-4 w-4" /></span>} title="Insights" footnote="The whole system from totals, a weekly AI review, and Quick Pool flags" />
           <Row href="/admin/providers" leading={<span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><Inbox className="h-4 w-4" /></span>} title="Provider review" footnote="Applications checked against their market's checklist" />
           <Row href="/admin/checklists" leading={<span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><ListChecks className="h-4 w-4" /></span>} title="Checklists" footnote="What providers send, by market and version" />
           <Row href="/admin/audit" leading={<span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-600"><ShieldCheck className="h-4 w-4" /></span>} title="Audit trail" footnote="Who did what, to which plan, when" />

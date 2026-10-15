@@ -26,6 +26,8 @@ the detail lives in the linked file. Never paste document content here.
 | 27 | [27-spec-audit.md](27-spec-audit.md) | Audit events and the admin view | active |
 | 28 | [28-spec-email.md](28-spec-email.md) | Email verification + transactional notifications (MVP) | active |
 | 29 | [29-spec-providers.md](29-spec-providers.md) | Experience providers: application states, market checklists, review, listings, tickets and check-in | active |
+| 2a | [2a-spec-quick-pool.md](2a-spec-quick-pool.md) | Quick Pool: link pools paid by M-Pesa — members and seats, caps, paybill codes, refunds, endpoints, screens | draft |
+| 2b | [2b-spec-ai-insights.md](2b-spec-ai-insights.md) | The AI layer, pool insights and admin system insights: models, limits, ledger, checks, sign-offs | draft |
 | 30 | [30-decisions.md](30-decisions.md) | Append-only decision log (ADR-lite) | active |
 | 40 | [40-runbooks.md](40-runbooks.md) | Local dev, emulators, deploying rules, rotating credentials, debugging payments | active |
 | 90 | [90-legacy-docs.md](90-legacy-docs.md) | Every pre-KB document in both repos and what supersedes it | active |
@@ -36,6 +38,7 @@ the detail lives in the linked file. Never paste document content here.
 - **Building or reviewing a screen** → 25
 - **Touching Firestore from the frontend** → 20 → 21 → 23
 - **Anything with money in it** → 22 (and 24 for what the backend owns)
+- **Quick Pool** → 2a (money: 22); **any AI call or insight** → 2b
 - **Experience providers, their listings, tickets or the review queue** → 29 (money: 22)
 - **Search, metadata or the blog** → D-038 and D-047 in 30; articles: `content/blog/README.md`
 - **Running things locally / deploying rules** → 40

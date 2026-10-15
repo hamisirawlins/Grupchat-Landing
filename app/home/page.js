@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, Compass, FolderOpen, Plus, ShieldCheck, Store } from "lucide-react";
+import { ArrowRight, Compass, FolderOpen, Plus, ShieldCheck, Store, Zap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { NextTicket } from "@/components/tickets/NextTicket";
 import AppShell from "@/components/app/AppShell";
@@ -35,15 +35,18 @@ function Greeting({ name }) {
   );
 }
 
-function ActionCard({ href, icon: Icon, title, text, cta, variants }) {
+function ActionCard({ href, icon: Icon, title, text, cta, chip, variants }) {
   return (
     <motion.div variants={variants}>
       <Link
         href={href}
         className="group flex h-full flex-col rounded-2xl border border-black/[0.08] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-purple-600 active:scale-[0.98]"
       >
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
-          <Icon className="h-5 w-5" aria-hidden="true" />
+        <span className="flex items-center justify-between gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+            <Icon className="h-5 w-5" aria-hidden="true" />
+          </span>
+          {chip && <span className="rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-green-700">{chip}</span>}
         </span>
         <h3 className="mt-5 text-[17px] font-semibold tracking-tight">{title}</h3>
         <p className="mt-1 text-sm text-gray-500">{text}</p>
@@ -184,6 +187,8 @@ export default function Home() {
 
   const actions = [
     { href: "/plans/new", icon: Plus, title: "Create a plan", text: "Start one and invite your group.", cta: "Create" },
+    // Quick Pool (KB 2a): a link anyone can pool into; the chip says how they pay.
+    { href: "/quick-pools/new", icon: Zap, title: "Quick Pool", text: "A link anyone can pool into, no account needed.", cta: "Start a pool", chip: "M-Pesa" },
     { href: "/discover", icon: Compass, title: "Discover", text: "Curated plans, ready to join.", cta: "Browse" },
     {
       href: "/plans",
@@ -227,7 +232,7 @@ export default function Home() {
           <Greeting name={firstName} />
         </motion.h1>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-3">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2">
           {actions.map((a) => (
             <ActionCard key={a.href} {...a} variants={item} />
           ))}

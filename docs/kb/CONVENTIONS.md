@@ -1,7 +1,7 @@
 ---
 title: KB conventions
 status: active
-updated: 2026-09-05
+updated: 2026-10-15
 read_when: you are adding to or editing any document in docs/kb
 ---
 
@@ -13,7 +13,7 @@ repeatedly, as it grows**. Every rule below serves that.
 ## Shape
 - **One topic per file.** If a file needs a second `# H1`, it is two files.
 - **≤ 250 lines per file.** Past that, split and cross-link. Long reference tables go in their own file.
-- **Numbered prefixes** group by kind: `00` overview · `1x` plans · `2x` specs · `3x` decisions · `4x` runbooks · `9x` legacy/meta.
+- **Numbered prefixes** group by kind: `00` overview · `1x` plans · `2x` specs (then `2a`, `2b`…, D-056) · `3x` decisions · `4x` runbooks · `9x` legacy/meta.
 - **Frontmatter on every file** (INDEX excepted):
   ```
   ---

@@ -97,7 +97,7 @@ export function MoneyLines({ title, rows, className = "" }) {
       {rows.map(([label, amount, total], i) => (
         <div key={i} className={`flex min-h-10 items-center justify-between gap-3 ${total ? "border-t border-line text-base" : "text-[15px]"}`}>
           <span className={total ? "font-bold text-ink" : "text-ink-2"}>{label}</span>
-          <span className={`tabular ${total ? "font-extrabold" : "font-bold"} text-ink`}>{amount}</span>
+          <span className={`tabular whitespace-nowrap ${total ? "font-extrabold" : "font-bold"} text-ink`}>{amount}</span>
         </div>
       ))}
     </div>

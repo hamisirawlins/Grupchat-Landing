@@ -1,7 +1,7 @@
 ---
 title: Payments — initiation, callbacks, reconciliation, realtime
 status: active
-updated: 2026-10-11
+updated: 2026-10-16
 read_when: you touch anything that moves money or shows its status; you are debugging a stuck or duplicated payment
 ---
 
@@ -20,6 +20,8 @@ then observes the outcome in Firestore. Provider callbacks land on the backend.
 | `POST /v2/plans/:planId/join-premium/mpesa` | Same via STK | `{ phone }` | as above |
 | `POST /v2/plans/:planId/payout` | Owner **requests** a withdrawal (2% fee) | `{ amount, recipient: { type: "member", userId, phone? } \| { type: "custom", name?, phone } }` | `transactions` (`payout`, `pending`, `approvalState: "pending"`); **holds** gross on `plans.heldBalance`. Nothing goes to Daraja until an admin approves (D-028). Pool debited + ledger posted only on `/v2/mpesa/b2c-result` (D-026) |
 
+Quick Pools (2a) are paid from their link instead, with no account: `POST /v2/quick-pools/link/:code/pay` (`{ phone, amount, email?, method: "stk" | "paybill" }`). `contribute` refuses a `planType: "quick"` plan.
+
 Preconditions enforced server-side: plan exists and `status == active`; for `contribute*` the plan has `poolMode in [pool, both]` (else `"Plan does not have pooling enabled"`); **rails follow plan type (D-017)** — `contribute` (M-Pesa) requires `planType == free`, `contributePaystack` requires `planType == premium`; for legacy premium joins the catalogue item is active and the plan isn't locked.
 
 ## Callbacks (provider → backend; unauthenticated, verified by signature/IP)
@@ -29,7 +31,7 @@ Preconditions enforced server-side: plan exists and `status == active`; for `con
 | `POST /v2/paystack/webhook` | Paystack `charge.success` | HMAC-SHA512 of raw body with `PAYSTACK_SECRET_KEY` vs `x-paystack-signature` | see settlement |
 | `POST /v2/mpesa/stk-callback` | Daraja STK result | `ResultCode == 0` | see settlement. **V2 STK pushes must name this URL** (`stkCallbackUrlV2()`, D-022) |
 | `POST /core/deposit_callback` (V1) | Daraja STK result | — | bridges to the V2 handler when the `CheckoutRequestID` is a Firestore transaction (D-022) |
-| `POST /core/paybill-confirmation`, `/core/paybill-callback` (V1 C2B) | Daraja | — | raw payload → `mpesa_logs`; always 200 |
+| `POST /core/paybill-confirmation`, `/core/paybill-callback` (V1 C2B) | Daraja | — | raw payload → `mpesa_logs`; then a Quick Pool account number is booked (`routeC2B`, D-051) and anything else runs V1; always 200 |
 | `POST /v2/mpesa/b2c-result`, `/v2/mpesa/b2c-timeout` | Daraja B2C payout result / queue timeout | matched by `OriginatorConversationID = WITHDRAW_<txId>` | `settlePayoutSuccess` (debit pool, release hold, ledger) / `holdPayoutForReview` (hold kept; admin decides) |
 | `POST /core/withdrawal_callback`, `/core/queue_timeout` (V1) | same | — | bridge to the V2 handlers for `WITHDRAW_` transactions |
 | `POST /v2/payments/*` | Daraja deposit/withdrawal/B2B/paybill/timeouts | per handler | legacy V1-era set; review in P5 |
@@ -60,6 +62,16 @@ arrives after that is **not booked**: the transaction gets `needsReview` + `late
 admins are emailed to issue the ticket by hand or refund it from Paystack (40).
 Rate: `PROVIDER_CHARGES_RATE` (default `0.1`), captured per listing at publish.
 
+## Quick Pool (2a, D-048–D-052)
+Contributions are `contribution` transactions with a `quick` map; `settleSuccess` books the member,
+seat, statistics and flags in the same transaction (`services/quickPool/settle.js`). Paybill payments
+are created as `c2b_<TransID>` and settled at once; a duplicate receipt is booked once. A full pool
+sends no prompt to a new number and fails that payment like an unanswered prompt. Refunds are
+`payout`s with `quick.kind: "refund"` that start at `approvalState: "creator"` (the pool's creator
+approves or declines; after 7 days the reconciliation loop moves them to `pending`), then follow
+the approval below. Fee 2%, or 0 for money that landed with no seat. A creator's withdrawal from a
+pool past its cap carries `beyondCap` and needs `{ allowBeyondCap: true }` on approve (D-050).
+
 ## Withdrawal approval (D-028)
 A withdrawal is a **request** until an admin approves it. Money is held at request time and released only by an approval that succeeds, or by a decline.
 
@@ -72,7 +84,7 @@ A withdrawal is a **request** until an admin approves it. Money is held at reque
 
 Rules: only `approvalState == "pending"` may be approved or declined — anything else has already been to M-Pesa, including payouts created before D-028 (no `approvalState` field), which must go through `…/resolve`. `…/resolve` refuses a request that is still awaiting approval. The reconciliation job skips awaiting-approval payouts entirely and ages the rest from `sentToProviderAt`, not `createdAt`.
 
-`GET /v2/payouts/review` (admin) returns every payout still `pending`, each tagged `stage: "approval" | "sent" | "review"` — the three groups on `/admin/payouts`.
+`GET /v2/payouts/review` (admin) returns every payout still `pending` except Quick Pool refunds still with their creator, each tagged `stage: "approval" | "sent" | "review"` — the three groups on `/admin/payouts`.
 
 ## Provider callback log (D-028)
 Every inbound provider callback, plus the outbound B2C request and the provider's synchronous answer, is written verbatim to `providerCallbacks` by `services/callbackLogService.js` — `source`, `path`, `receivedAt`, `txId`, `resultCode`, `resultDesc`, `outcome` (what we did), and `rawJson` (truncated at 20KB). Logging never throws and never blocks an acknowledgement. Reads are admin-only: `GET /v2/callbacks?source=&limit=` and `GET /v2/payouts/:txId/callbacks`, surfaced under each payout on `/admin/payouts`. The rows carry recipient phone numbers, so no client ever reads this collection.
@@ -108,4 +120,5 @@ Rules allow the payer to read their own transaction and members to read the plan
 ## Environment (gc-payments)
 Daraja: `CONSUMER_KEY`, `CONSUMER_SECRET`, `BUSINESS_SHORT_CODE`, `PASS_KEY`, `STK_PUSH_URL`, `OAUTH_URL`, `DEPOSIT_CALLBACK_URL`, `WITHDRAWAL_CALLBACK_URL`, `QUEUE_TIMEOUT_URL`, `B2B_*`, `INITIATOR_NAME`, `SECURITY_CREDENTIAL`, `SOURCE_ACCOUNT_SHORTCODE`, `PAYMENT_REQUEST_URL`.
 Paystack: `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`, `PAYSTACK_BASE_URL`, `PAYSTACK_WEBHOOK_SECRET`.
+Quick Pool and AI: `QUICK_POOL_PHONE_SECRET` (required: Quick Pool stays off without it; set it once, before the first pool), `QUICK_POOL_OPEN` (`1` turns on open pools, D-048), `QUICK_POOL_PAYBILL` (defaults to `BUSINESS_SHORT_CODE`), `STK_QUERY_URL`, `ANTHROPIC_API_KEY`, `AI_DISABLED`, `AI_LIMIT_*` (lower only), `AI_MODEL_*` (2b).
 Other: `FRONTEND_URL` (Paystack `callback_url` base), `RESEND_API_KEY`, `EMAIL_*`, `FIREBASE_STORAGE_BUCKET`, `PORT` (4000). **To remove in P5:** `SUPABASE_URL`, `SUPABASE_KEY`, `SKIP_SUPABASE_TEST`.

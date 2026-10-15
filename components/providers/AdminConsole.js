@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, BookOpen, Inbox, LayoutGrid, ListChecks, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowUpRight, BarChart3, BookOpen, Inbox, LayoutGrid, ListChecks, ShieldCheck, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, EmptyState, PortalShell } from "@/components/kit";
 import { adminProvidersAPI } from "@/lib/api";
@@ -33,6 +33,7 @@ export default function AdminConsole({ children }) {
     { href: "/admin/payouts", label: "Withdrawals", icon: ArrowUpRight },
     { href: "/admin/checklists", label: "Checklists", icon: ListChecks },
     { href: "/admin", label: "Console", icon: LayoutGrid, match: (p) => p === "/admin" },
+    { href: "/admin/insights", label: "Insights", icon: BarChart3 },
     { href: "/admin/audit", label: "Audit", icon: ShieldCheck },
     { href: "/admin/ledger", label: "Ledger", icon: BookOpen },
     { href: "/admin/catalogue", label: "Curated", icon: Sparkles },

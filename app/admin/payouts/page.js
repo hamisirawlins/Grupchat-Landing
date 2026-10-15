@@ -40,6 +40,7 @@ export default function AdminPayouts() {
   const [busy, setBusy] = useState(null);
   const [confirming, setConfirming] = useState(false); // sending money takes two deliberate taps (D-030)
   const [formError, setFormError] = useState("");
+  const [allowBeyondCap, setAllowBeyondCap] = useState(false); // D-050: a Quick Pool past its cap
 
   // What the provider said about this one, loaded when the sheet opens.
   useEffect(() => {
@@ -51,7 +52,7 @@ export default function AdminPayouts() {
     return () => { alive = false; };
   }, [selected]);
 
-  const open = (t) => { setSelected(t); setReceipt(""); setNote(""); setFormError(""); setConfirming(false); };
+  const open = (t) => { setSelected(t); setReceipt(""); setNote(""); setFormError(""); setConfirming(false); setAllowBeyondCap(false); };
 
   const act = async (kind) => {
     if (!selected) return;
@@ -64,7 +65,8 @@ export default function AdminPayouts() {
       const net = money(selected.netAmount ?? selected.amount, selected.currency);
       const who = selected.recipientName || selected.mpesaPhone;
       if (kind === "approve") {
-        const res = unwrap(await premiumAPI.approvePayout(selected.id, { amount: Number(selected.netAmount ?? selected.amount), ...(note.trim() ? { note: note.trim() } : {}) }));
+        if (selected.beyondCap && !allowBeyondCap) { setBusy(null); return setFormError("This Quick Pool is over its cap. Tick \"Allow beyond the cap\" to send it."); }
+        const res = unwrap(await premiumAPI.approvePayout(selected.id, { amount: Number(selected.netAmount ?? selected.amount), ...(note.trim() ? { note: note.trim() } : {}), ...(selected.beyondCap ? { allowBeyondCap } : {}) }));
         if (res?.sent) toast.success(`${net} on its way to ${who}`);
         else toast.message(res?.message || "M-Pesa didn't accept it — it's parked for review");
       } else if (kind === "decline") {
@@ -118,6 +120,8 @@ export default function AdminPayouts() {
                   {rows.map((t) => (
                     <button key={t.id} type="button" onClick={() => open(t)} className="flex w-full items-center gap-4 px-4 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100">
                       <Tag tone={STAGES[key].tone}>{STAGES[key].tag}</Tag>
+                      {t.quick?.kind === "refund" && <Tag tone="neutral">refund</Tag>}
+                      {t.beyondCap && <Tag tone="warning">over cap</Tag>}
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[15px] font-medium tabular-nums">{money(t.amount, t.currency)} · {t.planName || t.planId}</span>
                         <span className="mt-0.5 block truncate text-[13px] text-gray-500">
@@ -150,6 +154,15 @@ export default function AdminPayouts() {
             {selected.stage === "approval" ? (
               <>
                 <p className="text-sm text-gray-500">Nothing has been sent yet. Approving releases {money(selected.netAmount ?? selected.amount, selected.currency)} to {selected.recipientName || selected.mpesaPhone}; declining puts {money(selected.amount, selected.currency)} back in the plan.</p>
+                {selected.quick?.kind === "refund" && (
+                  <p className="text-[13px] text-gray-600">A Quick Pool refund to the member's number{selected.quick.overLimit ? ", in full: they paid after the pool was full" : ""}. {selected.quick.creatorDecision === "timed-out" ? "The creator didn't answer within 7 days." : "The creator approved it."}</p>
+                )}
+                {selected.beyondCap && (
+                  <label className="flex items-start gap-3 rounded-2xl bg-amber-50 p-4 text-[13px] text-amber-900">
+                    <input type="checkbox" className="mt-0.5 h-4 w-4 accent-purple-600" checked={allowBeyondCap} onChange={(e) => setAllowBeyondCap(e.target.checked)} />
+                    <span><span className="font-semibold">Allow beyond the cap.</span> This Quick Pool collected more than its cap (D-050). Check the pool on Insights before you send it.</span>
+                  </label>
+                )}
                 <FieldGroup>
                   <Field id="pv-note" label="Note (required to decline)" value={note} onChange={(e) => setNote(e.target.value)} required={false} autoComplete="off" />
                 </FieldGroup>

@@ -1,7 +1,7 @@
 ---
 title: Decision log
 status: active
-updated: 2026-10-11
+updated: 2026-10-16
 read_when: you want to know why something is the way it is, or you are about to make a choice that others will need to understand later
 ---
 
@@ -434,3 +434,99 @@ above the fold. Articles follow content/blog/README.md; a published article with
 fails the build. The blog and the hub are noindex while empty. Social profile links stay hidden
 until real URLs exist. Rankings are tracked in the SEO report doc and, once verified, Search Console.
 
+### D-048 · 2026-10-15 · Quick Pool: link pools paid by M-Pesa, private first
+**Decision.** A verified creator can make a Quick Pool (name, required target, duration, private
+with a members limit) and share its link; anyone with the link pools by phone and amount, by STK or
+paybill, with no account. Open pools are built and switched off (`QUICK_POOL_OPEN`) until a payments
+lawyer answers whether holding pooled money needs a licence or a licensed partner (the draft National
+Payment System Bill, 22 Sep 2026) and whether a shared open link is a public appeal (the Public
+Fundraising Appeals Bill, Senate Bills No. 36 of 2024). Spec: 2a. Confirmed by the owner.
+**Why.** The owner's brief of 2026-10-15. Private pools are what friends already do in a chat; open
+links to strangers are where both bills bite.
+**Consequences.** Quick Pools are `plans` with `planType: "quick"`, so the one settlement path, the
+ledger and the admin-approved withdrawal all apply unchanged. Kenya and KES only.
+
+### D-049 · 2026-10-15 · A member is a paying phone number; seats are held for 3 minutes
+**Decision.** A member is a phone number with at least one successful payment. A new number holds a
+seat for 3 minutes when it starts paying, by STK or paybill. The limit runs from the seats in use to
+1,000; a full pool still takes top-ups from members; a payment that lands without a seat is booked
+and flagged, never refused, and refunded at 100% if the member asks. The creator can reset the link.
+The pay form answers alike for every number, so it never reveals who is in.
+**Why.** Three minutes matches the M-Pesa prompt. Money that has moved cannot be refused, so the
+honest answer to a late payment is to book it and make leaving free.
+**Consequences.** Holds live in the pool document (`quickPool.holds`), pruned on each write, so a
+seat check is one document read inside one transaction.
+
+### D-050 · 2026-10-15 · Every pool is capped at KES 1M; past the cap is accepted and flagged
+**Decision.** The cap is KES 1,000,000 for every creator. An admin may set a custom cap only for a
+creator with 90 days on GrupChat, 3 completed pools and more than KES 1,000,000 pooled in total.
+Money past a pool's cap is accepted; the pool is flagged and admins alerted; a withdrawal from a
+flagged pool is approved only with `allowBeyondCap: true`. The target's maximum is the cap, so no
+separate notice is shown.
+**Why.** The owner's settlement of the caps. Refusing money after it has moved helps no one; a
+person deciding the payout is where the risk is managed.
+**Consequences.** `quickPool.cap` is captured at creation; eligibility is checked by the admin endpoint.
+
+### D-051 · 2026-10-15 · Paybill confirmations keep their URLs; the handler is versioned inside them
+**Decision.** The URLs registered with Safaricom do not change. Their handlers route a Quick Pool
+account code to the V2 Quick Pool settlement first, send an unknown code of the same shape to an
+admin queue, and run the V1 logic for everything else. No validation URL. The paybill agreement
+already allows collecting for others (owner, 2026-10-15).
+**Why.** The owner: "don't change the addresses currently handling callbacks, just version the
+functionalities that run". The same shape as D-022 for STK.
+**Consequences.** Transaction id `c2b_<TransID>`; a receipt already booked by STK is not booked again.
+
+### D-052 · 2026-10-15 · Refunds go to the member's number at 98%, creator first, then an admin
+**Decision.** A member who is signed in with the verified email on their member record can ask for
+part or all of their contribution back. It is held at once, approved by the creator (or passed to
+an admin after 7 days), then approved by an admin as any payout (D-028, D-030), and sent by B2C to
+the member's number. The fee is the 2% owners pay (D-026); an over-limit member pays nothing. A full
+refund frees the seat.
+**Why.** The owner chose 98%, like owners. Refunds only to the member's own number keep pools from
+becoming a way to move money between strangers.
+**Consequences.** A refund is a `payout` with `quick.kind: "refund"` and `approvalState: "creator"`
+until the creator passes it on.
+
+### D-053 · 2026-10-15 · Poolers need no account; a verified email unlocks receipts and My pools
+**Decision.** Pooling needs a phone and an amount; email is optional. A verified email (an account,
+created by a passwordless sign-in link when needed) unlocks a receipt per payment, a summary when
+the pool closes, and My pools. Usernames come only with an account, checked as typed. Creating a
+Quick Pool needs a verified email; existing unverified users are sent the link when they sign in,
+and only creation and withdrawals wait on it (D-027 unchanged otherwise).
+**Why.** Pooling must take seconds; a name or a report is worth a sign-in, and a username without an
+account could be squatted.
+**Consequences.** Email link sign-in must be enabled in the Firebase console. Links are generated by
+the Admin SDK and sent through Resend, like M1.
+
+### D-054 · 2026-10-15 · Insights: numbers in code, words from the model, totals only, cached
+**Decision.** Pool insights are computed in code from the pool's stats; a small model (Haiku 5.5)
+writes two short lines from those totals only, after 5 contributors, cached on the pool and refreshed
+at most every 6 hours or at a milestone; Swahili sign-offs are chosen by code. Spec: 2b.
+**Why.** The owner asked for AI insights "without naming anyone or accessing any personally
+identifiable information" and to be "extremely efficient" with the credits.
+**Consequences.** A page view never calls a model. The AI layer, limits and ledger in 2b serve every
+later AI job.
+
+### D-055 · 2026-10-15 · Admin system insights, with a weekly premium-model review
+**Decision.** `/admin/insights` charts the whole system's totals and shows a review written by the
+premium model (Opus 5.5) from those totals: weekly, and on demand at most once a day.
+**Why.** The owner asked for the admin "deeply built to collect insights across the full system",
+with premium requests "well spaced".
+**Consequences.** Spend is bounded by the job's daily ceiling and the once-a-day rule.
+
+### D-056 · 2026-10-15 · The `2x` spec group continues with letters
+**Decision.** With 20–29 taken, new specs are `2a`, `2b`, … They sort after `29`.
+**Why.** Keeps specs together without renumbering anything.
+**Consequences.** CONVENTIONS' numbering line reads "2x (then 2a, 2b…)".
+
+### D-057 · 2026-10-16 · Quick Pool waits for its phone secret; caps and refunds that admins open
+**Decision.** Quick Pool answers 503 `not-configured` until `QUICK_POOL_PHONE_SECRET` is set, and
+the secret is set once, before the first pool. Custom caps live in backend-only
+`quickPoolCreators/{uid}`, above KES 1,000,000 and up to KES 10,000,000. An admin may open a refund
+for a member who can't ask (money over the limit from someone without an account); it starts in
+the admin queue and still needs an approval that names the amount (D-030).
+**Why.** Members are keyed by an HMAC of their number, so changing the secret later would split
+every member in two. `users` documents are client-writable, so a cap kept there could be raised by
+its owner. Money that landed with no seat must be returnable even when its payer has no account.
+**Consequences.** Set the secret on Railway before the screens ship (2a §Before going live). A cap
+above KES 10M is a new decision.

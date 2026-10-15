@@ -9,7 +9,7 @@ import { Avatar, EmptyState, Skeleton, Tag } from "@/components/ui/Bits";
 import { ButtonLink, FormError, OutlineButton } from "@/components/ui/Form";
 import { plansAPI } from "@/lib/api";
 import { date, fraction, plural } from "@/lib/format";
-import { asList, isPooled, planTypeLabel, STATUS_TONE, unwrap } from "@/lib/data/shape";
+import { asList, isPooled, planTypeLabel, STATUS_TONE, unwrap, planHref } from "@/lib/data/shape";
 import { useAsync } from "@/lib/useAsync";
 
 const PAGE = 20;
@@ -79,7 +79,7 @@ export default function Plans() {
               return (
                 <Row
                   key={plan.id}
-                  href={`/plans/${plan.id}`}
+                  href={planHref(plan)}
                   leading={<Avatar name={plan.name} size={40} />}
                   title={plan.name}
                   footnote={[planTypeLabel(plan), plural(plan.membersCount ?? 0, "member"), date(plan.targetDate) || "No date"].join(" · ")}

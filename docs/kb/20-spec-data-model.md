@@ -1,7 +1,7 @@
 ---
 title: Data model — Firestore collections as written by the code
 status: active
-updated: 2026-10-11
+updated: 2026-10-16
 read_when: you are reading or writing any Firestore document from either repo, or writing a rule or index for one
 supersedes: ../V2_FIRESTORE_MODELS.md (partially — this file reflects what gc-payments actually writes today)
 ---
@@ -38,6 +38,8 @@ Fields marked ⚙ are **backend-owned**: clients may read, never write. Timestam
 | `providerMarkets/{code}`, `providerChecklistVersions/{id}` | no | no | ⚙ (admin routes) | market checklists, frozen versions (29) |
 | `experiences/{id}` | no | no | ⚙ (provider routes) | listings; public read through `/v2/experiences` (29) |
 | `ticketOrders/{id}`, `experienceSessions/{id}`, `ticketCodes/{code}` | no | no | ⚙ everything | tickets (D-044); buyer reads via `/v2/tickets`, provider via `/v2/providers/me/bookings` (29) |
+| `quickPoolLinks`, `quickPoolMembers`, `quickPoolCodes`, `quickPoolUnmatched`, `quickPoolCreators`, `rateLimits` | no | no | ⚙ everything | Quick Pool (D-048–D-053); phone numbers live only here and on `transactions`; shapes in 2a |
+| `aiJobs`, `aiUsage`, `aiDaily`, `adminInsights` | no | no | ⚙ everything | the AI ledger and the cached admin review (D-054, D-055; 2b) |
 
 Community collections (`communityGroups`, `communityGroupMembers`, `communityGoals`,
 `communityInvites`, `goalCompletionEvents`) exist in the backend; **Community is deprecated
@@ -55,7 +57,7 @@ name             string
 description      string
 category         string
 status           "active" | "locked" ⚙ | "completed" | "archived"
-planType         "free" | "premium"
+planType         "free" | "premium" | "quick"   (quick: a Quick Pool, D-048)
 poolMode         "coordinate" | "pool" | "both"   (premium defaults to "pool" since D-016; legacy premium docs have null)
 catalogueItemId  string | null                     (premium)
 targetDate       Timestamp | null
@@ -69,6 +71,7 @@ membersCount     number      (denormalised; incremented on join)
 resources        [{ id, title, url, type, removedAt?, removedBy? }]   (arrayUnion; removal = mark, never arrayRemove)
 visibility       "private" | …
 lastActivityAt   Timestamp ⚙
+quickPool        map ⚙ (planType "quick" only: link, seats, cap, stats, feed, theme, insights — shape in 2a)
 ```
 **Naming:** the code writes `currentBalance`. `MVP_USER_JOURNEYS.md` says `currentAmount`. `currentBalance` is authoritative (D-003).
 
@@ -135,7 +138,9 @@ darajaCheckoutRequestId, darajaReceiptNumber,
 darajaConversationId, darajaOriginatorConversationId          string | null
 processedAt       Timestamp | null
 # payouts (D-026): netAmount, holdAmount, recipientType "member"|"custom", recipientUserId, recipientName, needsReview
-# payout approval (D-028): approvalState "pending"|"approved"|"declined", approvedBy/approvedAt/approvalNote,
+# Quick Pool (2a): quick { memberKey, phoneHash, email, channel "stk"|"paybill", … } on contributions;
+#                 quick { kind "refund", memberKey, overLimit, creatorDecision } on refunds; beyondCap (D-050)
+# payout approval (D-028): approvalState "creator" (Quick Pool refund, D-052)|"pending"|"approved"|"declined", approvedBy/approvedAt/approvalNote,
 #                          declinedBy/declinedAt/declineReason, sentToProviderAt, providerResponseCode/Desc
 ```
 Provider references are the idempotency keys: `paystackReference`, `darajaCheckoutRequestId`.
@@ -205,9 +210,11 @@ single-field indexes), so only `where + orderBy`, inequality and `in + orderBy` 
 | `members`, `poolMembers`, `pools`, `transactions(poolId…)` ×2 | — | V1 pools | READY — drop in P5 |
 
 Webhook lookups (`paystackReference`+`status`, `darajaCheckoutRequestId`+`status`) and the pending-invite
-query are equality-only and need nothing. `auditEvents` uses a single-field `orderBy(at)`.
+query are equality-only and need nothing. `auditEvents` uses a single-field `orderBy(at)`. Quick Pool and
+the AI ledger (2a, 2b) use equality-only queries or single-field ranges (`quickPool.insightsDueAt`,
+`createdAt`, `aiDaily.day`), so they add no composite index.
 
 ## State machines
-- plan: `active → locked` (job, premium) · `active → completed` (owner) · `* → archived` (owner)
+- plan: `active → locked` (job, premium) · `active → completed` (owner; for a Quick Pool, the job at `endsAt`) · `* → archived` (owner)
 - invitation: `pending → accepted | declined | revoked`
 - transaction: `pending → success | failed` — terminal; a second transition is a bug

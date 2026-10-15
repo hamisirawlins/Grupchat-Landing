@@ -1,7 +1,7 @@
 ---
 title: Build checklist — trackable line items
 status: active
-updated: 2026-10-11
+updated: 2026-10-16
 read_when: you are doing or reporting implementation work; tick items here as they complete
 ---
 
@@ -109,6 +109,9 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 ## S · Search and the blog (D-047)
 - [x] S1 Text paints without JavaScript on public pages; landing loops on CSS · [x] S2 Sitemap and robots: real dates, no signed-in pages, live listings and articles · [x] S3 `/experiences` hub and server-rendered listings with TouristTrip and Breadcrumb JSON-LD · [x] S4 `/blog`: Markdown, four pillars, RSS, BlogPosting JSON-LD, `/blog/how-we-write`, approval enforced by the build · [ ] S5 First three articles approved and published · [ ] S6 Search Console and Bing verified, sitemap submitted · [ ] S7 Social profile URLs added (Organization `sameAs`, footer icons)
 
+## Q · Quick Pool and AI insights (D-048–D-057, 2a, 2b)
+- [x] Q1 Backend: create, public pool page, STK and paybill pay with 3-minute seat holds and the same answer for every number, C2B booked inside the registered URLs, settlement hooks, refunds (creator, then admin, 7-day escalation), caps and `allowBeyondCap`, unmatched payments, usernames, email-link sign-in · [x] Q2 AI layer: models, limits, prices, ledger; pool insights on Haiku; admin review on Opus weekly + once-a-day refresh · [x] Q3 `npm run check:quickpool-flow` (offline, 114 assertions) and `npm run eval:pool-insights` · [x] Q4 Web: Home card, `/quick-pools/new`, `/q/[code]`, `/quick-pools`, `/auth/email-link`, `/admin/insights`; payouts page allows beyond the cap · [ ] Q5 Owner: rotate the admin key (I0), set `QUICK_POOL_PHONE_SECRET` and `ANTHROPIC_API_KEY` on Railway, enable Email link sign-in in Firebase · [ ] Q6 A live STK and paybill test through the registered URLs · [ ] Q7 Payments lawyer before `QUICK_POOL_OPEN=1` · [ ] Q8 `eval:pool-insights -- --live` passes before launch
+
 ## I · Firebase-direct data layer — **last, before test release** (D-013)
 - [ ] I0 Rotate + purge Admin key (manual, security; can happen any time)
 - [x] I1 P0.3 Firebase config versioned (`firebase.json`, `.firebaserc`, deny-all rules, index file = the project's 20). Deploy via CLI not yet exercised.
@@ -118,6 +121,7 @@ them in commits and decisions. `[ ]` todo · `[~]` in progress · `[x]` done · 
 - [ ] Z1 All screens pass 25 §Accessibility · [ ] Z2 ≤375px and ≥1280px walkthrough · [ ] Z3 `MVP_USER_JOURNEYS.md` acceptance criteria ticked · [ ] Z4 KB rows `updated` within the release week
 
 ## Log (newest first)
+- 2026-10-16 · Quick Pool built on `feat/quick-pool` (gc-payments) and `feat/quick-pool-web`: link pools paid by M-Pesa, refunds, caps, the AI layer with pool insights and the admin review (D-048–D-057). Not merged or deployed.
 - 2026-10-12 · Search: text paints on the first frame, a public experiences hub, server-rendered listings with structured data, a cleaner sitemap, and a blog that AI drafts and people approve (D-047).
 - 2026-10-11 · Kenya asks providers for business registration and the payout account only; liability moves into the provider terms and ToS §6; listings say "Registered business" (D-046).
 - 2026-10-11 · Tickets (D-044): groups book provider experiences from Discover; Paystack splits each sale to the provider at checkout; providers check guests in by QR.
