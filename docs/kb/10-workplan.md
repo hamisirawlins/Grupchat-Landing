@@ -30,7 +30,7 @@ Home with real data → Your plans → Plan details (+ Go to Home) → Create pl
 
 ## P0 — Security and foundations *(P0.1 any time; P0.2+ after U)*
 
-- [ ] **P0.1 Rotate the Admin SDK credential.** The committed `gc-payments/firebase-service-account.json` is live in git history (since `c83f2fc`). Create a new key in the Firebase console, delete the old one, load the new one from `GOOGLE_APPLICATION_CREDENTIALS` or a base64 env var, add the filename to `.gitignore`, purge from history (`git filter-repo`), force-push with the team's agreement.
+- [x] **P0.1 Rotate the Admin SDK credential.** *Done 2026-10-16: every key that was ever committed is deleted, so the copies in history are dead; the history purge and force-push are skipped (D-058).* The committed `gc-payments/firebase-service-account.json` is live in git history (since `c83f2fc`). Create a new key in the Firebase console, delete the old one, load the new one from `GOOGLE_APPLICATION_CREDENTIALS` or a base64 env var, add the filename to `.gitignore`, purge from history (`git filter-repo`), force-push with the team's agreement.
   *Done when:* old key returns 401; repo history has no key; `lib/firebase-config.js` reads from env. *Rollback:* n/a (security).
 - [ ] **P0.2 Initialise Firestore in the web app.** `lib/firebase.js` exports `db = getFirestore(app)`. Nothing uses it yet.
   *Done when:* build passes; bundle diff reviewed. *Rollback:* revert one file.

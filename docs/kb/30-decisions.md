@@ -530,3 +530,12 @@ every member in two. `users` documents are client-writable, so a cap kept there 
 its owner. Money that landed with no seat must be returnable even when its payer has no account.
 **Consequences.** Set the secret on Railway before the screens ship (2a §Before going live). A cap
 above KES 10M is a new decision.
+
+### D-058 · 2026-10-16 · Quick Pool ships private-only; the committed keys are deleted, not purged
+**Decision.** Quick Pool goes to production with private pools only; open pools stay off until a
+payments lawyer answers (D-048), which the owner is arranging. The Admin SDK keys that were ever
+committed to gc-payments are deleted, and their copies stay in git history.
+**Why.** The owner: "lawyer we can leave for now - focusing on closed while I reach out", and "the
+old keys are deleted already". A deleted key can't be used, so purging history would only rewrite
+every branch for no security gain.
+**Consequences.** KB 10 P0.1 is done without the `git filter-repo` step. `QUICK_POOL_OPEN` stays unset.

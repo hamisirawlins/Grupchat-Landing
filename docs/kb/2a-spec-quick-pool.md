@@ -141,6 +141,6 @@ invites, D-039) · `/quick-pools` (My pools) · `/auth/email-link` (completes th
 `/admin/insights` (2b). A plan with `planType: "quick"` opens its pool page from Your plans.
 
 ## Before going live (owner)
-Rotate the admin key (KB 10 P0.1) before any AI ships · set `QUICK_POOL_PHONE_SECRET` and
-`ANTHROPIC_API_KEY` on Railway · enable Email link sign-in in the Firebase console · the payments
-lawyer before `QUICK_POOL_OPEN=1`.
+Done 2026-10-16: the admin key rotated (KB 10 P0.1), `QUICK_POOL_PHONE_SECRET` and
+`ANTHROPIC_API_KEY` set on Railway, Email link sign-in on. Still open: a live STK and paybill test,
+and the payments lawyer before `QUICK_POOL_OPEN=1`; private pools only until then (D-058).
