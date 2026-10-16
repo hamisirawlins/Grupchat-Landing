@@ -1,7 +1,7 @@
 ---
 title: Experience providers — applications, market checklists, listings, tickets
 status: active
-updated: 2026-10-11
+updated: 2026-10-16
 read_when: you are touching the provider application, the admin review queue, market checklists, a provider's listings, or tickets for them
 ---
 
@@ -18,8 +18,8 @@ Web: `/providers/*` (welcome, apply, status, terms), `/provider/*` (portal), `/a
 
 | Doc | Holds | Notes |
 |---|---|---|
-| `providers/{uid}` | `status`, `business{name,type,town,categories,waterActivities,phone,email,website}`, `market`, `marketName`, `currency`, `documents{checkId: [file]}`, `payout{bankCode,bankName,accountLast4,accountName,nameMatches,subaccountCode,setupError}`, `review{results{checkId:{state,note,respondedAt}},reviewerUid,decision,decisionNote,decidedAt}`, `checklistVersionId`, `checklistLabel`, `recheckVersionId`, `history[]`, `submittedAt`, `approvedAt`, `termsAcceptedAt` | One business per account; doc id = owner uid. `users/{uid}.providerStatus` mirrors `status` so Home can show the way back in. |
-| `providerSecrets/{uid}` | `accountNumber`, `bankCode` | Never returned to any client, including admins. Only `setUpPayout` reads it. |
+| `providers/{uid}` | `status`, `business{name,type,town,categories,waterActivities,phone,email,website}`, `market`, `marketName`, `currency`, `documents{checkId: [file]}`, `payout{method,backup,label,backupLabel,payeeName,bankCode,bankName,bankListed,branch,accountLast4,accountName,mpesa{kind,number,account,accountName},nameMatches,subaccountCode,settledTo,setupError,setupManual}`, `review{results{checkId:{state,note,respondedAt}},reviewerUid,decision,decisionNote,decidedAt}`, `checklistVersionId`, `checklistLabel`, `recheckVersionId`, `history[]`, `submittedAt`, `approvedAt`, `termsAcceptedAt` | One business per account; doc id = owner uid. `users/{uid}.providerStatus` mirrors `status` so Home can show the way back in. |
+| `providerSecrets/{uid}` | `primary`, `bank{bankCode,bankName,accountNumber}`, `mpesa{kind,number,account}`; `accountNumber`, `bankCode` on records from before D-063 | Never returned to any client, including admins. Only `setUpPayout` reads it. |
 | `providerMarkets/{code}` | `name`, `currency`, `phonePrefix`, `paystackCountry`, `utcOffsetMinutes`, `live`, `draft`, `versions[]` | `live` = the published checklist; `draft` = the next one being edited. A market with no `live` is **not open**. |
 | `providerChecklistVersions/{code}-v{n}` | frozen `checks[]`, `label`, `changeNote`, `publishedAt`, `publishedBy` | Label for version *n* is `1.(n-1)`. An application is judged against the version it was submitted under. |
 | `experiences/{id}` | `providerId`, `status` (draft · live · paused · archived), `title`, `category`, `meetingPoint`, `town`, `description`, `duration`, `included`, `photos[]`, `schedule{days,startTime,dates,spaces}`, `price`, `cancellation` (`48h` · `none`), `chargesRate`, `stats.ticketsSold` | Archive is a soft delete (D-019). Photos are removed by `removedAt`. |
@@ -43,7 +43,7 @@ Kenya 1.0 asks for business registration and a payout account (plus the terms); 
 Per check, an admin sets `pass`, `fix` (with a note the provider sees) or `fail`.
 **Approve** needs every required check to pass and none to fail; it creates the Paystack
 subaccount (`setUpPayout`, never throws — a failure is stored in `payout.setupError` and
-retried from the review page). **Request changes** needs at least one `fix`. **Decline**
+retried from the review page; §Payout methods). **Request changes** needs at least one `fix`. **Decline**
 pauses any live listings. Every decision emails the provider (`providerEmails.js`, one send
 per history entry).
 
@@ -51,12 +51,46 @@ Publishing a new checklist version with "re-check approved providers" ticked set
 `recheckVersionId` on every approved provider in that market; they stay live and appear in
 the queue under *Re-check*. Note is required for `fix` and `fail`.
 
+## Payout methods (D-063)
+
+A provider is paid to one of: a **bank account** (a bank from Paystack's list for the market,
+or one typed in, with an optional branch, when it isn't listed), an **M-Pesa Paybill** (the
+business number, plus the account number to pay into when the paybill needs one) or an
+**M-Pesa Till**. They can add the other kind as a **backup**: a bank with M-Pesa behind it, or
+M-Pesa with a bank behind it. `PUT /v2/providers/me/payout` takes
+`{ primary: "bank"|"mpesa", bank?, mpesa? }`; the older bank-only body still works.
+`services/providerPayout.js` checks it, writes what screens show to `providers.payout`
+(`label` such as "Equity Bank ••• 8901" or "M-Pesa Till 5123456") and the numbers to
+`providerSecrets`. A bank account number never leaves `providerSecrets`; a Paybill's account
+number is a reference and shows whole.
+
+`GET /v2/providers/banks` returns `{ banks, mpesa: { paybill, till } }`. Paystack's list is
+asked for the country and currency first and widened until it answers; an empty answer is
+never cached. M-Pesa entries (`type: mobile_money_business`) come from a second ask and are
+kept out of `banks`. When the list won't load, the form asks for the bank's name instead.
+
+On approval, `setUpPayout` tries the chosen method, then the backup. What Paystack can't take
+automatically is marked `payout.setupManual` with the reason: a bank not on its list, M-Pesa
+when its list has no Paybill or Till option, and a Paybill with an account number (a
+subaccount carries one number). An admin creates that subaccount in Paystack's dashboard and
+saves its code on the review page (`PUT /v2/admin/providers/:uid/payout/subaccount`, a code
+starting `ACCT_`); `POST …/payout/retry` answers 409 for these.
+
 ## Files
 
 Uploads are raw request bodies (`express.raw`), `?fileName=` in the query. Documents: PDF,
 JPG, PNG up to 10 MB, private in Storage, read through a ten-minute signed URL. Listing photos:
 JPG, PNG, WebP up to 8 MB, public via a Firebase download token at
 `experiences/{id}/photos/{fileId}` (no uid in the path).
+
+A storage failure never reaches the person as Google's error: `services/storageFiles.js`
+answers 503 with a `code` (`storage_not_configured`, `storage_bucket_missing`,
+`storage_denied`, `storage_unreachable`), a sentence saying the problem is ours and nothing is
+wrong with the file, and a `ref`; the log line `[storage] save failed ref=… code=… bucket=…
+status=…` carries Google's message. At start the server logs whether the bucket is usable
+(`checkStorage`). The web refuses a wrong type or size before sending, keeps each file that
+did upload, and offers **Try again** for the rest (`components/providers/DocumentRow.js`,
+`components/kit/ErrorNote.js`).
 
 ## Listings
 
@@ -99,4 +133,4 @@ bookings, each with its guest list.
 
 ## Endpoints
 Listed in 24 §Keep. All return `{ success, data }`; errors carry `message` and, where useful,
-`details`.
+`details`, `code` and `ref` (24 §Errors).

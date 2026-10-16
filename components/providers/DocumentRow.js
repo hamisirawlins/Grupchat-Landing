@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, FileText, Upload, X } from "lucide-react";
-import { DOCUMENT_ACCEPT, FilePickButton, MAX_DOCUMENT_MB, fileSize } from "@/components/kit";
-import { providersAPI } from "@/lib/api";
+import { DOCUMENT_ACCEPT, ErrorNote, FilePickButton, MAX_DOCUMENT_MB, fileSize } from "@/components/kit";
+import { providersAPI, uploadType } from "@/lib/api";
 import { unwrap } from "@/lib/data/shape";
 import { useListItemVariants } from "@/lib/motion";
 import { AppliesTag } from "./Tags";
@@ -14,37 +14,55 @@ import { AppliesTag } from "./Tags";
  * button to add more. Uploads go straight to the API as raw bytes; a file that
  * is too big or the wrong kind is refused here first, with the reason.
  */
+const ACCEPTED = new Set(DOCUMENT_ACCEPT.split(","));
+
+/** Why a file can't go, before it's sent; null when it can. */
+function refuse(f) {
+  if (!ACCEPTED.has(uploadType(f))) return `${f.name} isn't a PDF, JPG or PNG. Save it as one of those and try again.`;
+  if (f.size === 0) return `${f.name} is empty. Choose the file again.`;
+  if (f.size > MAX_DOCUMENT_MB * 1024 * 1024) return `${f.name} is ${fileSize(f.size)}. Files must be ${MAX_DOCUMENT_MB} MB or smaller: try a photo or a scan at a lower quality.`;
+  return null;
+}
+
 export function DocumentRow({ item, onChange, readOnly = false, compact = false }) {
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
+  const [failed, setFailed] = useState([]); // files to send again with "Try again"
   const [removing, setRemoving] = useState(null);
   const itemVariants = useListItemVariants();
   const done = item.files.length > 0;
 
-  const pick = async (files) => {
-    setError("");
-    const list = Array.isArray(files) ? files : [files];
-    const big = list.find((f) => f.size > MAX_DOCUMENT_MB * 1024 * 1024);
-    if (big) return setError(`${big.name} is over ${MAX_DOCUMENT_MB} MB.`);
+  // One file at a time; each success shows straight away, so a later failure never hides it.
+  const send = async (list) => {
+    setError(null);
+    setFailed([]);
+    const refused = list.map(refuse).find(Boolean);
+    if (refused) return setError(refused);
     setBusy(true);
-    try {
-      let out = null;
-      for (const f of list) out = unwrap(await providersAPI.uploadDocument(item.id, f));
-      onChange(out);
-    } catch (e) {
-      setError(e.message || "Upload failed. Try again.");
-    } finally {
-      setBusy(false);
+    for (let i = 0; i < list.length; i += 1) {
+      try {
+        onChange(unwrap(await providersAPI.uploadDocument(item.id, list[i])));
+      } catch (e) {
+        if (e?.name === "SessionError") break;
+        const rest = list.slice(i);
+        setFailed(e?.retryable === false ? [] : rest);
+        setError(rest.length > 1 && e?.retryable !== false ? Object.assign(e, { message: `${e.message} ${rest.length} files weren't sent.` }) : e);
+        break;
+      }
     }
+    setBusy(false);
   };
+
+  const pick = (files) => send(Array.isArray(files) ? files : [files]);
 
   const remove = async (fileId) => {
     setRemoving(fileId);
-    setError("");
+    setError(null);
+    setFailed([]);
     try {
       onChange(unwrap(await providersAPI.removeDocument(item.id, fileId)));
     } catch (e) {
-      setError(e.message || "Couldn't remove it.");
+      setError(e?.message ? e : "Couldn't remove it. Try again.");
     } finally {
       setRemoving(null);
     }
@@ -55,7 +73,7 @@ export function DocumentRow({ item, onChange, readOnly = false, compact = false 
       const { url } = unwrap(await providersAPI.documentUrl(item.id, fileId));
       window.open(url, "_blank", "noopener");
     } catch (e) {
-      setError(e.message || "Couldn't open it.");
+      setError(e?.message ? e : "Couldn't open it. Try again.");
     }
   };
 
@@ -87,7 +105,7 @@ export function DocumentRow({ item, onChange, readOnly = false, compact = false 
             ))}
           </AnimatePresence>
         </ul>
-        {error && <span role="alert" className="text-[13px] font-semibold text-critical">{error}</span>}
+        <ErrorNote error={error} onRetry={failed.length ? () => send(failed) : null} retryLabel={failed.length > 1 ? `Send the ${failed.length} files again` : "Try again"} busy={busy} topic={`Document upload: ${item.title}`} />
       </div>
       {!readOnly && (
         <div className="shrink-0">

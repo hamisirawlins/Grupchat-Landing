@@ -7,4 +7,5 @@ export { StatusTag, Kicker, PageTitle, BackLink, Card, StatTile, MoneyLines, Pro
 export { VerticalStepper, CompactStepper } from "./Steps";
 export { FilePickButton, DOCUMENT_ACCEPT, PHOTO_ACCEPT, MAX_DOCUMENT_MB, MAX_PHOTO_MB, fileSize } from "./Upload";
 export { ResponsiveTable } from "./Table";
+export { ErrorNote } from "./ErrorNote";
 export { default as PortalShell, PortalContext, useInPortal } from "./PortalShell";

@@ -9,7 +9,7 @@ import { FormError, StepFooter, StepTitle, useApplication } from "@/components/p
 import { providersAPI } from "@/lib/api";
 import { unwrap } from "@/lib/data/shape";
 import { SPRING } from "@/lib/motion";
-import { categoryLabel, uploadChecks } from "@/lib/providers";
+import { categoryLabel, uploadChecks, hasPayout, payoutLabel, payoutName } from "@/lib/providers";
 
 function Row({ ok, title, sub, href }) {
   return (
@@ -74,9 +74,9 @@ export default function Submit() {
             {data?.checklist && (
               <Row ok={missing.length === 0} title={`Documents · ${checks.length - missing.length} of ${checks.length}`} sub={missing.length ? `Still to add: ${missing.map((m) => m.title).join(", ")}` : "Everything your checklist asks for"} href="/providers/apply/documents" />
             )}
-            <Row ok={Boolean(p?.payout)} title={p?.payout ? `${p.payout.bankName} ••• ${p.payout.accountLast4}` : "Payout account"} sub={p?.payout ? p.payout.accountName : "Not added yet"} href="/providers/apply/payouts" />
+            <Row ok={hasPayout(p?.payout)} title={hasPayout(p?.payout) ? payoutLabel(p.payout) : "Where your share goes"} sub={hasPayout(p?.payout) ? [payoutName(p.payout), p.payout.backupLabel ? `backup: ${p.payout.backupLabel}` : null].filter(Boolean).join(" · ") : "Not added yet"} href="/providers/apply/payouts" />
           </ul>
-          {p?.payout?.nameMatches && <OkLine>Your payout account is in your business's name</OkLine>}
+          {p?.payout?.nameMatches && <OkLine>Your payout is in your business's name</OkLine>}
           <p className="text-sm leading-5 text-ink-2">
             By sending your application, you agree to the{" "}
             <Link href="/providers/terms" target="_blank" className="font-semibold text-action-strong underline-offset-2 hover:underline">provider terms</Link>.

@@ -25,7 +25,7 @@ the detail lives in the linked file. Never paste document content here.
 | 26 | [26-spec-invites.md](26-spec-invites.md) | Invite links incl. signed-out preview; accept/decline flow | active |
 | 27 | [27-spec-audit.md](27-spec-audit.md) | Audit events and the admin view | active |
 | 28 | [28-spec-email.md](28-spec-email.md) | Email verification + transactional notifications (MVP) | active |
-| 29 | [29-spec-providers.md](29-spec-providers.md) | Experience providers: application states, market checklists, review, listings, tickets and check-in | active |
+| 29 | [29-spec-providers.md](29-spec-providers.md) | Experience providers: application states, market checklists, review, payout methods, listings, tickets and check-in | active |
 | 2a | [2a-spec-quick-pool.md](2a-spec-quick-pool.md) | Quick Pool: link pools paid by M-Pesa — members and seats, caps, paybill codes, refunds, endpoints, screens | draft |
 | 2b | [2b-spec-ai-insights.md](2b-spec-ai-insights.md) | The AI layer, pool insights and admin system insights: models, limits, ledger, checks, sign-offs | draft |
 | 30 | [30-decisions.md](30-decisions.md) | Append-only decision log (ADR-lite) | active |

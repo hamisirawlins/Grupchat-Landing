@@ -9,7 +9,7 @@ import { providersAPI } from "@/lib/api";
 import { unwrap } from "@/lib/data/shape";
 import { STAGGER, useRevealVariants } from "@/lib/motion";
 import { useAsync } from "@/lib/useAsync";
-import { fmtMoney } from "@/lib/providers";
+import { fmtMoney, hasPayout, payoutLabel } from "@/lib/providers";
 
 /** The provider's home: how they're doing, and their listings. */
 export default function Overview() {
@@ -40,7 +40,7 @@ export default function Overview() {
             <StatTile label="Live experiences" value={live} />
             <StatTile label="Guests coming" value={s?.upcomingGuests ?? 0} />
             <StatTile label={s ? `Paid to you in ${s.month}` : "Paid to you"} value={fmtMoney(s?.paidThisMonth ?? 0, s?.currency || provider?.currency)} sub="After provider charges" />
-            <StatTile label="Payout account" value={payoutReady ? "Ready" : "Being set up"} sub={provider?.payout ? `${provider.payout.bankName} ••• ${provider.payout.accountLast4}` : null} />
+            <StatTile label="Payout account" value={payoutReady ? "Ready" : "Being set up"} sub={hasPayout(provider?.payout) ? payoutLabel(provider.payout) : null} />
           </>
         )}
       </motion.div>

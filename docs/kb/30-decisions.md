@@ -581,3 +581,25 @@ survived; Flutter gives one codebase for both stores.
 **Consequences.** Keeping `com.grupchat` needs an upload-key reset in Play Console, which works
 only if the app is enrolled in Play App Signing. Until the app ships, the site says "coming soon"
 (D-059). The app's own KB and its API contract live in its repo.
+
+### D-063 · 2026-10-16 · Providers are paid by bank, M-Pesa Paybill or M-Pesa Till, with a backup
+**Decision.** The payout step offers a bank account, an M-Pesa Paybill (with an optional
+account number) or an M-Pesa Till, and the other kind as an optional backup. A bank missing
+from Paystack's list, or a list that won't load, is typed in. On approval the chosen method is
+tried, then the backup; what Paystack can't take automatically (an unlisted bank, a Paybill
+with an account number, M-Pesa where Paystack's list has none) is set up by an admin in
+Paystack and its subaccount code saved on the review page.
+**Why.** Owner, 2026-10-16: a provider was stuck at bank selection, with no bank to choose,
+and many Kenyan businesses are paid by Paybill or Till, not a bank.
+**Consequences.** `providers.payout` gains `method`, `backup`, `label` and `mpesa`; bank-only
+records read the same through `payoutView`. Spec: 29 §Payout methods.
+
+### D-064 · 2026-10-16 · Unexpected errors carry a reference; storage failures say whose problem it is
+**Decision.** An unexpected server error answers `code: "server_error"` with a six-character
+`ref` that is also in the log line with the route and stack. A failed file save answers 503
+with a storage code, a sentence saying the problem is ours and not the file's, and a `ref`.
+The server checks its bucket at start and logs the result.
+**Why.** Owner, 2026-10-16: a 77 KB PDF upload failed with "Something went wrong. Try again in
+a moment.", which told neither the provider nor a developer anything.
+**Consequences.** Clients show `ref` when present (web `ErrorNote`). Spec: 24 §Errors,
+29 §Files; runbook: 40 §Image or document uploads fail.

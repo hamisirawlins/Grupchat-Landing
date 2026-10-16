@@ -11,7 +11,7 @@ import {
 } from "@/components/kit";
 import { Sheet } from "@/components/ui/Sheet";
 import { useProvider } from "@/components/providers/ProviderPortal";
-import { providersAPI } from "@/lib/api";
+import { providersAPI, uploadType } from "@/lib/api";
 import { unwrap } from "@/lib/data/shape";
 import { SPRING, STAGGER, useListItemVariants, useRevealVariants } from "@/lib/motion";
 import { CANCELLATION, CATEGORIES, chargesFor, fmtMoney, readiness, scheduleLine } from "@/lib/providers";
@@ -102,14 +102,23 @@ export default function ExperienceEditor({ params }) {
   });
   const addPhotos = async (files) => {
     setError("");
+    const notPhoto = files.find((x) => !PHOTO_ACCEPT.split(",").includes(uploadType(x)));
+    if (notPhoto) return setError(`${notPhoto.name} isn't a JPG, PNG or WebP photo.`);
     const big = files.find((x) => x.size > MAX_PHOTO_MB * 1024 * 1024);
-    if (big) return setError(`${big.name} is over ${MAX_PHOTO_MB} MB.`);
+    if (big) return setError(`${big.name} is over ${MAX_PHOTO_MB} MB. Try a smaller copy of the photo.`);
     setBusy("photo");
+    let sent = 0;
     try {
-      let out = e;
-      for (const file of files) out = unwrap(await providersAPI.uploadPhoto(e.id, file)).experience;
-      setE((cur) => ({ ...cur, photos: out.photos, readiness: out.readiness }));
-    } catch (err) { setError(err.message || "Upload failed."); } finally { setBusy(""); }
+      // Each photo shows as soon as it's saved, so a later failure never hides the earlier ones.
+      for (const file of files) {
+        const out = unwrap(await providersAPI.uploadPhoto(e.id, file)).experience;
+        setE((cur) => ({ ...cur, photos: out.photos, readiness: out.readiness }));
+        sent += 1;
+      }
+    } catch (err) {
+      const left = files.length - sent;
+      setError(`${err.message || "That photo didn't upload. Try again."}${left > 1 ? ` ${left} photos weren't sent.` : ""}${err.ref ? ` (Reference ${err.ref})` : ""}`);
+    } finally { setBusy(""); }
   };
   const removePhoto = async (photoId) => {
     setError("");

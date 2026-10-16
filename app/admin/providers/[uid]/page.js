@@ -4,7 +4,7 @@ import { use, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, ExternalLink, FileText } from "lucide-react";
 import { toast } from "sonner";
-import { Avatar, BackLink, Button, Card, OkLine, ReviewToggle, Skeleton, StatusTag, TextArea } from "@/components/kit";
+import { Avatar, BackLink, Button, Card, OkLine, ReviewToggle, Skeleton, StatusTag, TextArea, TextField } from "@/components/kit";
 import { Sheet } from "@/components/ui/Sheet";
 import { useAdminConsole } from "@/components/providers/AdminConsole";
 import { AppliesTag } from "@/components/providers/Tags";
@@ -12,7 +12,7 @@ import { adminProvidersAPI } from "@/lib/api";
 import { unwrap } from "@/lib/data/shape";
 import { date } from "@/lib/format";
 import { STAGGER, useRevealVariants } from "@/lib/motion";
-import { categoryLabel } from "@/lib/providers";
+import { PAYOUT_METHODS, categoryLabel, hasPayout, payoutLabel, payoutName } from "@/lib/providers";
 
 const REVIEWABLE = ["submitted", "in-review"];
 
@@ -27,6 +27,8 @@ export default function ReviewProvider({ params }) {
   const [busy, setBusy] = useState("");
   const [sheet, setSheet] = useState(null); // "approve" | "decline"
   const [declineNote, setDeclineNote] = useState("");
+  const [subaccount, setSubaccount] = useState("");
+  const [manualOpen, setManualOpen] = useState(false);
 
   const load = () => adminProvidersAPI.detail(uid).then((r) => setD(unwrap(r))).catch((e) => setError(e.message || "Couldn't load it."));
   useEffect(() => { load(); }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -86,7 +88,19 @@ export default function ReviewProvider({ params }) {
   const retryPayout = async () => {
     setBusy("payout");
     try { setD(unwrap(await adminProvidersAPI.retryPayout(uid))); toast.success("Payout account is ready"); }
-    catch (e) { toast.error(e.message); }
+    catch (e) { toast.error(e.message); if (e.status === 409) setManualOpen(true); }
+    finally { setBusy(""); }
+  };
+  // Set up in Paystack's dashboard by hand (an unlisted bank, a Paybill with an account): save its code here.
+  const saveSubaccount = async () => {
+    const code = subaccount.trim();
+    if (!/^ACCT_[A-Za-z0-9]{4,40}$/.test(code)) return toast.error("Paste the subaccount code from Paystack. It starts with ACCT_.");
+    setBusy("subaccount");
+    try {
+      setD(unwrap(await adminProvidersAPI.setSubaccount(uid, { subaccountCode: code, settledTo: d.provider.payout?.method })));
+      setSubaccount(""); setManualOpen(false);
+      toast.success("Saved. Ticket sales now split to this subaccount.");
+    } catch (e) { toast.error(e.message); }
     finally { setBusy(""); }
   };
 
@@ -107,10 +121,23 @@ export default function ReviewProvider({ params }) {
       </motion.div>
 
       {p.status === "approved" && !p.payoutSetup?.ready && (
-        <motion.div variants={item} className="flex flex-wrap items-center gap-3 rounded-tile bg-warning-tint px-5 py-4">
-          <AlertTriangle className="h-5 w-5 text-warning" aria-hidden="true" />
-          <span className="min-w-[220px] flex-1 text-[15px] font-semibold text-warning">Payout account isn't set up on Paystack yet{p.payoutSetup?.error ? `: ${p.payoutSetup.error}` : ""}. Ticket sales wait until it is.</span>
-          <Button variant="secondary" size="sm" onClick={retryPayout} loading={busy === "payout"}>Try again</Button>
+        <motion.div variants={item} className="flex flex-col gap-3 rounded-tile bg-warning-tint px-5 py-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-warning" aria-hidden="true" />
+            <span className="min-w-[220px] flex-1 text-[15px] font-semibold text-warning">
+              {p.payoutSetup?.manual
+                ? `Set this payout up by hand in Paystack: ${p.payoutSetup.error}. Then paste the subaccount code here.`
+                : `Payout account isn't set up on Paystack yet${p.payoutSetup?.error ? `: ${p.payoutSetup.error}` : ""}.`} Ticket sales wait until it is.
+            </span>
+            {!p.payoutSetup?.manual && <Button variant="secondary" size="sm" onClick={retryPayout} loading={busy === "payout"}>Try again</Button>}
+            {!p.payoutSetup?.manual && !manualOpen && <Button variant="text" size="sm" onClick={() => setManualOpen(true)}>Set up by hand</Button>}
+          </div>
+          {(p.payoutSetup?.manual || manualOpen) && (
+            <div className="flex flex-wrap items-end gap-3">
+              <TextField className="min-w-[240px] flex-1" label="Paystack subaccount code" value={subaccount} onChange={(e) => setSubaccount(e.target.value)} placeholder="ACCT_xxxxxxxxxx" autoComplete="off" helper={`Create it in Paystack for ${payoutLabel(p.payout) || "their payout"} at ${Math.round((d.charges?.rate ?? 0.1) * 100)}% to GrupChat.`} />
+              <Button onClick={saveSubaccount} loading={busy === "subaccount"}>Save code</Button>
+            </div>
+          )}
         </motion.div>
       )}
 
@@ -124,8 +151,13 @@ export default function ReviewProvider({ params }) {
               {b.website && <><dt className="text-ink-3">Link</dt><dd className="[overflow-wrap:anywhere]"><a href={b.website} target="_blank" rel="noopener noreferrer" className="text-action-strong hover:underline">{b.website}</a></dd></>}
               <dt className="text-ink-3">Payout</dt>
               <dd className="flex flex-col gap-1">
-                <span>{p.payout ? `${p.payout.bankName} ••• ${p.payout.accountLast4} · ${p.payout.accountName}` : "Not added"}</span>
-                {p.payout && (p.payout.nameMatches ? <OkLine>Name matches the business</OkLine> : <span className="text-[13px] font-semibold text-warning">Name differs from the business</span>)}
+                <span>{hasPayout(p.payout) ? `${payoutLabel(p.payout)} · ${payoutName(p.payout)}` : "Not added"}</span>
+                {hasPayout(p.payout) && (
+                  <span className="text-[13px] text-ink-3">
+                    {[PAYOUT_METHODS[p.payout.method], p.payout.bankListed === false ? "bank typed in, not on Paystack's list" : null, p.payout.branch ? `branch ${p.payout.branch}` : null, p.payout.backupLabel ? `backup ${p.payout.backupLabel}` : null, p.payoutSetup?.ready && p.payoutSetup.settledTo ? `settles to ${PAYOUT_METHODS[p.payoutSetup.settledTo] || p.payoutSetup.settledTo}` : null].filter(Boolean).join(" · ")}
+                  </span>
+                )}
+                {hasPayout(p.payout) && (p.payout.nameMatches ? <OkLine>Name matches the business</OkLine> : <span className="text-[13px] font-semibold text-warning">Name differs from the business</span>)}
               </dd>
               <dt className="text-ink-3">Listings</dt><dd>{d.experiences}</dd>
             </dl>

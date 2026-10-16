@@ -1,7 +1,7 @@
 ---
 title: Runbooks
 status: active
-updated: 2026-10-11
+updated: 2026-10-16
 read_when: you need to run, deploy, seed, rotate, or debug something — not to understand it
 ---
 
@@ -82,7 +82,14 @@ Before pushing backend changes that touch routes: `npm run check:admin-guards` (
 ## Seed data
 `cd gc-payments && npm run firebase:seed` (`scripts/firebase-seed-cli.js`). Writes catalogue items and sample plans. Point at the emulator with `FIRESTORE_EMULATOR_HOST` to avoid touching production.
 
-## Image uploads fail ("Failed to upload image")
+## Image or document uploads fail ("Failed to upload image", "We can't save files right now")
+The API says why in its log (D-064). At start: `[storage] bucket … is ready`, or what's wrong.
+On each failed save: `[storage] save failed ref=<REF> code=… bucket=… status=…: <Google's message>`;
+a provider quoting a reference is that `ref`. `storage_not_configured` ⇒ `FIREBASE_STORAGE_BUCKET`
+is unset; `storage_bucket_missing` ⇒ it names a bucket that doesn't exist; `storage_denied` ⇒
+billing (below) or the service account's Storage role; `storage_unreachable` ⇒ Google or the
+network, usually passing. Logs from before D-064 show `Provider document error: <message>`.
+
 Cloud Storage **writes** need an active billing account on the GCP project (`grupchat-prod-3ab64`; bucket `grupchat-prod-3ab64.firebasestorage.app` — new default buckets require Blaze). Reproduce from gc-payments with the server's credentials:
 ```sh
 node --input-type=module -e 'import { firebaseService } from "./services/firebaseService.js"; const f = firebaseService.bucket.file("uploads/_probe/x.txt"); await f.save(Buffer.from("x")).then(()=>console.log("ok"), e=>console.log(e.message)); process.exit(0)'
@@ -104,7 +111,7 @@ Symptom in Railway logs: `POST /core/deposit_callback 500` + `Supabase query err
 3. Another country: **Add market** (code, name, currency, phone prefix, UTC offset), build its draft, publish when ready. Until then its applicants wait.
 
 ## Review a provider
-`/admin/providers` → open the application → open each document (links last ten minutes) → Pass / Needs fix (note) / Fail per check → Approve, Request changes or Decline. Approve creates the Paystack subaccount; if that fails the page says why and offers **Retry payout setup** (usually a wrong bank code or account number — ask the provider to fix it under Payouts).
+`/admin/providers` → open the application → open each document (links last ten minutes) → Pass / Needs fix (note) / Fail per check → Approve, Request changes or Decline. Approve creates the Paystack subaccount; if that fails the page says why and offers **Try again** (usually a wrong bank code or account number — ask the provider to fix it under Payouts). A bank that isn't on Paystack's list, or a Paybill with an account number, is set up by hand (29 §Payout methods): create the subaccount in Paystack's dashboard at the provider charge, then paste its `ACCT_…` code on the review page and **Save code**.
 
 ## A ticket was paid late (`latePayment`)
 The buyer paid after their places went back on sale, so nothing was booked. Admins get an email

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Card, MoneyLines, OkLine, PageTitle, Skeleton, StatusTag } from "@/components/kit";
 import { useProvider } from "@/components/providers/ProviderPortal";
 import { STAGGER, useRevealVariants } from "@/lib/motion";
-import { chargesFor, fmtMoney } from "@/lib/providers";
+import { chargesFor, fmtMoney, payoutLabel, payoutName } from "@/lib/providers";
 
 /** Where a provider's share goes, and how a sale splits (KB D-044). */
 export default function Payouts() {
@@ -15,13 +15,14 @@ export default function Payouts() {
   const example = chargesFor(3000, me?.charges?.rate ?? 0.1);
   return (
     <motion.div variants={STAGGER} initial="hidden" animate="show" className="flex flex-col gap-7">
-      <motion.div variants={item}><PageTitle sub="Guests pay when they book. Your share goes straight to your bank, not through GrupChat.">Payouts</PageTitle></motion.div>
+      <motion.div variants={item}><PageTitle sub="Guests pay when they book. Your share goes straight to your bank or M-Pesa, not through GrupChat.">Payouts</PageTitle></motion.div>
       <motion.div variants={item} className="grid gap-5 lg:grid-cols-2">
-        <Card title="Payout account" action={payout ? <StatusTag status={payout.ready ? "live" : "pending"}>{payout.ready ? "Ready" : "Being set up"}</StatusTag> : null}>
+        <Card title="Where your share goes" action={payout ? <StatusTag status={payout.ready ? "live" : "pending"}>{payout.ready ? "Ready" : "Being set up"}</StatusTag> : null}>
           {!payout ? <Skeleton className="h-16 w-full" /> : (
             <div className="flex flex-col gap-1.5">
-              <span className="text-lg font-bold">{payout.bankName} ••• {payout.accountLast4}</span>
-              <span className="text-[15px] text-ink-2">{payout.accountName}</span>
+              <span className="text-lg font-bold">{payoutLabel(payout)}</span>
+              <span className="text-[15px] text-ink-2">{payoutName(payout)}</span>
+              {payout.backupLabel && <span className="text-sm text-ink-2">Backup: {payout.backupLabel}</span>}
               {payout.nameMatches && <OkLine>In your business's name</OkLine>}
               <p className="mt-2 text-sm leading-5 text-ink-3">To change it, write to info@grupchat.net from your business email. We check a new account before money goes to it.</p>
             </div>
