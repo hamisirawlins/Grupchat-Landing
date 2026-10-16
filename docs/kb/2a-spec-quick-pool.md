@@ -71,7 +71,8 @@ the AI, or another pooler.
   existing members can top up; the pay form answers the same way for every number ("If this
   number is in the pool, check your phone"), so it never confirms who is in: a new number gets no
   prompt, its payment fails like an unanswered one, and a quick retry gets the same "prompt on its
-  way" answer a member would.
+  way" answer a member would. The page's "places left" counts members only, never live holds,
+  so a hold can't reveal whether a number was already in.
 - **The limit** can be set anywhere from the seats in use to 1,000. Lowering it to the seats in
   use closes the pool to new numbers at once. **Reset link** issues a new code; members are
   recognised by phone, so they keep their place.
