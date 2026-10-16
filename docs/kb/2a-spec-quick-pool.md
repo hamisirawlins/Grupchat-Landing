@@ -91,6 +91,8 @@ the AI, or another pooler.
   public), and a short blocklist. The name never reaches the AI.
 - **Closing**: at `endsAt` contributions stop and the pool becomes `completed`; the creator
   withdraws through the usual request (22, D-028).
+- **Numbers stay on the server (D-060).** A plan's transaction list, which every member and the
+  creator can read, carries no payer's number, phone hash, email or M-Pesa reference.
 
 ## Endpoints (gc-payments)
 

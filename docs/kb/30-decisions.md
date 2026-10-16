@@ -550,3 +550,34 @@ the old listing, and search should not advertise an Android download.
 **Consequences.** When the Flutter app is live, restore the Play link, `operatingSystem` and
 `downloadUrl` in a new decision, with one package id: the site had linked both `com.grupchat` and
 `com.grupchat.app`.
+
+### D-060 · 2026-10-16 · A plan's transaction list never carries a payer's number
+**Decision.** `GET /v2/plans/:planId/transactions` returns each transaction without `mpesaPhone`,
+the phone hash and email in `quick` (only `quick.kind` stays), `c2b`, and the Daraja and Paystack
+references (`forMember` in `controllers/v2/planExtController.js`).
+**Why.** Every member can list a plan's transactions, and a Quick Pool's creator is a member of
+it, so the endpoint handed every pooler's M-Pesa number to the creator. The pool page and the
+launch say "your number is never shown to the group" (2a). No screen read those fields.
+**Consequences.** Admin screens keep the full record through their own routes
+(`/v2/payouts/review`). `check:quickpool-flow` asserts the list is clean.
+
+### D-061 · 2026-10-16 · The plans list carries what a row needs
+**Decision.** `GET /v2/plans` items add `ownerId`, `planType`, `poolMode`, `targetAmount`,
+`currentBalance`, `currency`, and `quickPool: { linkCode }` for a Quick Pool (else `null`).
+**Why.** The list was a slim projection, so on the web the Mine/Joined filter, the type label, the
+progress %, opening a Quick Pool from the list and Home's "Pooled" figure silently did nothing.
+The Flutter app (D-062) needs the same fields.
+**Consequences.** Only the link code leaves the `quickPool` map. `check:quickpool-flow` asserts the
+row; the offline Firestore double gains `offset()`, which the list query uses.
+
+### D-062 · 2026-10-16 · The mobile app is rebuilt in Flutter, Quick Pool and plans first
+**Decision.** A new Flutter app replaces the current Android app. Its first release covers
+sign-in, Quick Pool (create, the pool page, pay by M-Pesa, My pools) and group plans (list,
+detail, create, invites, contribute, withdraw requests), on the existing `gc-payments` API. It
+ships to the existing Play listing `com.grupchat`; it builds for iOS from the start but ships
+there later.
+**Why.** Owner, 2026-10-16: the build machine was reset and the old app's setup may not have
+survived; Flutter gives one codebase for both stores.
+**Consequences.** Keeping `com.grupchat` needs an upload-key reset in Play Console, which works
+only if the app is enrolled in Play App Signing. Until the app ships, the site says "coming soon"
+(D-059). The app's own KB and its API contract live in its repo.
