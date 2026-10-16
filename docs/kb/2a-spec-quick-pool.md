@@ -68,8 +68,8 @@ the AI, or another pooler.
 - **Members and seats (D-049).** A member is a phone number with at least one successful payment.
   A new number holds a seat for **3 minutes** when it starts paying, by STK or paybill. Seats in
   use = `memberCount` + live holds. When a private pool is full, the link still opens, and
-  existing members can top up; the pay form answers the same way for every number ("If this
-  number is in the pool, check your phone"), so it never confirms who is in: a new number gets no
+  existing members can top up; the pay form answers the same way for every number ("Check your
+  phone for the M-Pesa prompt and enter your PIN to finish"), so it never confirms who is in: a new number gets no
   prompt, its payment fails like an unanswered one, and a quick retry gets the same "prompt on its
   way" answer a member would. The page's "places left" counts members only, never live holds,
   so a hold can't reveal whether a number was already in.

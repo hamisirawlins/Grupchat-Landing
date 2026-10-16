@@ -136,7 +136,7 @@ export function PaySheet({ open, onClose, pool, signedIn, onPaid }) {
             <Smartphone className="h-7 w-7" aria-hidden="true" />
             <span className="absolute inset-0 animate-ping rounded-full bg-action/10 motion-reduce:animate-none" aria-hidden="true" />
           </span>
-          <p className="max-w-xs text-[15px] text-ink-2">{step === "waiting" ? "If this number can pool here, an M-Pesa prompt is on its way. Enter your PIN to finish." : "We haven't heard back from M-Pesa yet. If you entered your PIN, it will show on the pool shortly."}</p>
+          <p className="max-w-xs text-[15px] text-ink-2">{step === "waiting" ? "Check your phone for the M-Pesa prompt and enter your PIN to finish." : "We haven't heard back from M-Pesa yet. If you entered your PIN, it will show on the pool shortly."}</p>
           {step === "waiting-long" && <Button variant="secondary" onClick={onClose}>Close</Button>}
         </div>
       )}
