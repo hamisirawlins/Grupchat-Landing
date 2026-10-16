@@ -539,3 +539,14 @@ committed to gc-payments are deleted, and their copies stay in git history.
 old keys are deleted already". A deleted key can't be used, so purging history would only rewrite
 every branch for no security gain.
 **Consequences.** KB 10 P0.1 is done without the `git filter-repo` step. `QUICK_POOL_OPEN` stays unset.
+
+### D-059 · 2026-10-16 · The store apps show "coming soon" while the mobile app is rebuilt
+**Decision.** The landing page's Google Play badge opens the same "Coming soon" popup as the App
+Store badge, `/rate-app` drops its store links for a "coming soon" note, and the JSON-LD
+`SoftwareApplication` in `app/layout.js` lists `operatingSystem: "Web"` with no `downloadUrl`.
+**Why.** Owner, 2026-10-16: the mobile app is being redone in Flutter, and the old build machine's
+Play signing setup may not have survived a reset. Until the new app ships, nobody should land on
+the old listing, and search should not advertise an Android download.
+**Consequences.** When the Flutter app is live, restore the Play link, `operatingSystem` and
+`downloadUrl` in a new decision, with one package id: the site had linked both `com.grupchat` and
+`com.grupchat.app`.

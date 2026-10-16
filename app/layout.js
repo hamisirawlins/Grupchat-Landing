@@ -116,9 +116,8 @@ const JSON_LD = {
       "@type": "SoftwareApplication",
       name: "GrupChat",
       applicationCategory: "LifestyleApplication",
-      operatingSystem: "Android, Web",
+      operatingSystem: "Web",
       url: SITE,
-      downloadUrl: "https://play.google.com/store/apps/details?id=com.grupchat",
       publisher: { "@id": `${SITE}/#organization` },
       description: DESCRIPTION,
       offers: {

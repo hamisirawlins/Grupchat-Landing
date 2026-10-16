@@ -553,14 +553,24 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <motion.a
-              href="https://play.google.com/store/apps/details?id=com.grupchat"
-              target="_blank"
-              rel="noopener noreferrer"
+            {/* Android is "coming soon" again while the mobile app is rebuilt (D-059). */}
+            <motion.button
+              onClick={() => setShowComingSoonPopup(true)}
               className="relative flex items-center px-6 py-3 bg-black rounded-xl text-white hover:bg-gray-800 transition-all duration-300 shadow-lg group border-2 border-transparent hover:border-purple-300"
               whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.95 }}
             >
+              <motion.div
+                className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg"
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                Coming Soon
+              </motion.div>
               <svg
                 className="w-8 h-8 mr-3"
                 viewBox="0 0 24 24"
@@ -574,7 +584,7 @@ export default function Home() {
                 </div>
                 <div className="text-xl font-semibold">Google Play</div>
               </div>
-            </motion.a>
+            </motion.button>
 
             <motion.button
               onClick={() => setShowComingSoonPopup(true)}
